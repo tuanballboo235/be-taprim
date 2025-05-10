@@ -3,9 +3,12 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35312.102
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test2fa", "test2fa\test2fa.csproj", "{AD2F16FE-AB26-4B75-B4F0-E9C78404E4EC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "test2fa", "test2fa\test2fa.csproj", "{AD2F16FE-AB26-4B75-B4F0-E9C78404E4EC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2ECE5C82-9C6B-4360-B98E-C8D6828F2136} = {2ECE5C82-9C6B-4360-B98E-C8D6828F2136}
+	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TAPrim", "TAPrim\TAPrim.csproj", "{2ECE5C82-9C6B-4360-B98E-C8D6828F2136}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TAPrim", "TAPrim\TAPrim.csproj", "{2ECE5C82-9C6B-4360-B98E-C8D6828F2136}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,6 +1,6 @@
 ﻿using TAPrim.Shared.Constants;
 
-namespace BasketballAcademyManagementSystemAPI.Application.DTOs
+namespace TAPrim.Application.DTOs
 {
     public class ApiResponseModel<T>
     {

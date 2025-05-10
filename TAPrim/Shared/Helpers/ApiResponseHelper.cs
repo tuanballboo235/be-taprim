@@ -1,8 +1,8 @@
-﻿using BasketballAcademyManagementSystemAPI.Application.DTOs;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using TAPrim.Application.DTOs;
 using TAPrim.Shared.Constants;
 
-namespace BasketballAcademyManagementSystemAPI.Common.Helpers
+namespace TAPrim.Common.Helpers
 {
 	public static class ApiResponseHelper
 	{
