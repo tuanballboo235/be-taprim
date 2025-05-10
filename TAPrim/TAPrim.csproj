@@ -23,9 +23,9 @@
 
   <ItemGroup>
     <Folder Include="API\Controllers\" />
-    <Folder Include="Application\ServiceImpl\" />
     <Folder Include="Infrastructure\RepositoryImpl\" />
-    <Folder Include="Shared\" />
+    <Folder Include="Shared\Jobs\" />
+    <Folder Include="Shared\Messages\" />
   </ItemGroup>
 
 </Project>
