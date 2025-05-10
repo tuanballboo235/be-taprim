@@ -40,13 +40,12 @@ namespace TAPrim.Application.ServiceImpl
 
 					try
 					{
-						// Deserialize the JSON data into the response model
-						var apiResponseModel = JsonConvert.DeserializeObject<ApiResponseModel<List<EmailResponseDto>>>(data);
-						;
+						// Deserialize directly into List<EmailResponseDto> if the JSON is an array
+						var emailList = JsonConvert.DeserializeObject<List<EmailResponseDto>>(data);
 
-						if (apiResponseModel?.Data != null)
+						if (emailList != null)
 						{
-							var filteredEmails = apiResponseModel.Data
+							var filteredEmails = emailList
 								.Where(email => email?.Subject != null && email.Subject.Contains("Mã truy cập Netflix tạm thời của bạn"))
 								.ToList();
 
@@ -59,10 +58,10 @@ namespace TAPrim.Application.ServiceImpl
 							apiResponse.Message = "No data found.";
 						}
 					}
-					catch (Exception ex)
+					catch (System.Text.Json.JsonException ex)
 					{
 						apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
-						apiResponse.Message = $"JSON deserialization error: {ex.Message}"; // In chi tiết lỗi JSON
+						apiResponse.Message = $"JSON deserialization error: {ex.Message}";
 					}
 				}
 				else
@@ -84,6 +83,8 @@ namespace TAPrim.Application.ServiceImpl
 
 			return apiResponse;
 		}
+
+
 	}
 }
 
