@@ -25,6 +25,7 @@ namespace TAPrim.Application.ServiceImpl
 			return dataFiltered; // Trả về kết quả đã lọc
 		}
 
+		//Hàm lấy ra danh sách email xác minh hộ gia đình netflix
 		private async Task<ApiResponseModel<List<EmailResponseDto>>> FilterEmailNetflix(string email)
 		{
 			var apiResponse = new ApiResponseModel<List<EmailResponseDto>>();
@@ -46,7 +47,10 @@ namespace TAPrim.Application.ServiceImpl
 						if (emailList != null)
 						{
 							var filteredEmails = emailList
-								.Where(email => email?.Subject != null && email.Subject.Contains("Mã truy cập Netflix tạm thời của bạn"))
+								.Where(email => email?.Subject != null && 
+								email.Subject.Contains(NetflixConstant.TemporaryNetflixCode) ||
+								email.Subject.Contains(NetflixConstant.UpdateFamilyNetflix)
+								)
 								.ToList();
 
 							apiResponse.Status = ApiResponseStatusConstant.SuccessStatus;
@@ -83,8 +87,6 @@ namespace TAPrim.Application.ServiceImpl
 
 			return apiResponse;
 		}
-
-
 	}
 }
 
