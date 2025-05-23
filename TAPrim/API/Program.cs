@@ -28,9 +28,21 @@ foreach (var type in assembly.GetTypes())
 }
 builder.Services.AddHttpClient();  // Đăng ký HttpClient vào DI container
 builder.Services.AddScoped<INetflixService, NetflixService>();
+builder.Services.AddCors(options =>
+{
+	options.AddPolicy("AllowReactDev",
+		builder =>
+		{
+			builder
+				.WithOrigins("http://localhost:5173") // ✅ port React đang chạy
+				.AllowAnyHeader()
+				.AllowAnyMethod()
+				.AllowCredentials(); // nếu dùng cookies/auth
+		});
+});
 
 var app = builder.Build();
-
+app.UseCors("AllowReactDev");
 // Cấu hình pipeline HTTP request.
 if (app.Environment.IsDevelopment())
 {

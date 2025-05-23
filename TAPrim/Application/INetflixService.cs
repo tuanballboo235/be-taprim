@@ -5,6 +5,6 @@ namespace TAPrim.Application
 {
 	public interface INetflixService
 	{
-		Task<ApiResponseModel<List<EmailResponseDto>>> GetJsonDataAsync(string email);
+		Task<ApiResponseModel<List<EmailResponseDto>>> GetJsonDataAsync(string email, int typeFilter);
 	}
 }

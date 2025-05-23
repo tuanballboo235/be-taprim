@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Infrastructure\RepositoryImpl\" />
     <Folder Include="Shared\Jobs\" />
     <Folder Include="Shared\Messages\" />
   </ItemGroup>

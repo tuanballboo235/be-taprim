@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application;
+using TAPrim.Application.DTOs.Netflix;
 using TAPrim.Common.Helpers;
 
 namespace TAPrim.API.Controllers
@@ -17,8 +19,14 @@ namespace TAPrim.API.Controllers
 		}
 
 		[HttpGet("get-email-temporary-watch-netflix")]
-		public async Task<IActionResult> GetNetflixMail(string email) {
-			return ApiResponseHelper.HandleApiResponse(await _netflixServices.GetJsonDataAsync(email));
+		public async Task<IActionResult> GetNetflixMail([FromQuery] NetflixMailRequest request) {
+			return ApiResponseHelper.HandleApiResponse(await _netflixServices.GetJsonDataAsync(request.Email, request.TypeMailRequest));
+		}
+
+		[HttpGet("get-email-code-netflix")]
+		public async Task<IActionResult> GetNetflixCode([FromQuery] NetflixMailRequest request)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _netflixServices.GetJsonDataAsync(request.Email, request.TypeMailRequest));
 		}
 	}
 }
