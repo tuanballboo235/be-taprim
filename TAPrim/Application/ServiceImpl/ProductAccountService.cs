@@ -15,6 +15,7 @@ namespace TAPrim.Application.ServiceImpl
 			_productAccountRepository = productAccountRepository;
 		}
 
+		
 		public async Task<ApiResponseModel<ProductAccountResponseDto>> CreateProductAccountAsync(int productId, CreateProductAccountDto dto)
 		{
 			var product = await _productAccountRepository.GetProductByIdAsync(productId);
@@ -54,6 +55,35 @@ namespace TAPrim.Application.ServiceImpl
 				Data = responseDto
 			};
 		}
+		public async Task<ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>> GetProductAccountsAsync(ProductAccountQueryDto query)
+		{
+			var result = await _productAccountRepository.GetFilteredProductAccountsAsync(query);
+
+			var mapped = result.Items.Select(pa => new ProductAccountResponseDto
+			{
+				ProductAccountId = pa.ProductAccountId,
+				ProductId = pa.ProductId,
+				AccountData = pa.AccountData,
+				UsernameProductAccount = pa.UsernameProductAccount,
+				PasswordProductAccount = pa.PasswordProductAccount,
+				Status = pa.Status,
+				DateChangePass = pa.DateChangePass,
+				SellCount = pa.SellCount
+			}).ToList();
+
+			return new ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>
+			{
+				Data = new PagedResponseDto<ProductAccountResponseDto>
+				{
+					Items = mapped,
+					TotalRecords = result.TotalRecords,
+					TotalPages = result.TotalPages,
+					CurrentPage = result.CurrentPage,
+					PageSize = result.PageSize
+				}
+			};
+		}
+
 
 	}
 }

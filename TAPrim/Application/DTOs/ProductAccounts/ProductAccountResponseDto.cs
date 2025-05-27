@@ -2,6 +2,7 @@
 {
 	public class ProductAccountResponseDto
 	{
+		public int? ProductAccountId {get;set;}
 		public int ProductId { get; set; }
 		public string? AccountData { get; set; }
 		public string? UsernameProductAccount { get; set; }

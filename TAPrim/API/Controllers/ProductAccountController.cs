@@ -23,5 +23,11 @@ namespace TAPrim.API.Controllers
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productAccountService.CreateProductAccountAsync(productId, request));
 		}
+
+		[HttpGet("get-product-account")]
+		public async Task<IActionResult> CreateProductAccount([FromQuery] ProductAccountQueryDto filter)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _productAccountService.GetProductAccountsAsync(filter));
+		}
 	}
 }

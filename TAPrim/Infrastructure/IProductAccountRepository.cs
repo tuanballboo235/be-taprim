@@ -1,4 +1,5 @@
-﻿using TAPrim.Application.DTOs.ProductAccounts;
+﻿using TAPrim.Application.DTOs;
+using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Models;
 
 namespace TAPrim.Infrastructure
@@ -7,5 +8,6 @@ namespace TAPrim.Infrastructure
 	{
 		Task<Product?> GetProductByIdAsync(int productId);
 		Task AddProductAccountAsync(ProductAccount account);
+		Task<PagedResponseDto<ProductAccount>> GetFilteredProductAccountsAsync(ProductAccountQueryDto query);
 	}
 }
