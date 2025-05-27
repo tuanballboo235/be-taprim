@@ -17,6 +17,10 @@ public partial class ProductAccount
 
     public int Status { get; set; }
 
+    public DateTime? DateChangePass { get; set; }
+
+    public int? SellCount { get; set; }
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual Product Product { get; set; } = null!;

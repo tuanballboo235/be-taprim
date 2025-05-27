@@ -1,0 +1,27 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using TAPrim.Application;
+using TAPrim.Application.DTOs.ProductAccounts;
+using TAPrim.Application.ServiceImpl;
+using TAPrim.Common.Helpers;
+
+namespace TAPrim.API.Controllers
+{
+	[Route("api/[controller]")]
+	[ApiController]
+	public class ProductAccountController : ControllerBase
+	{
+		private readonly IProductAccountService _productAccountService;
+
+		public ProductAccountController(IProductAccountService productAccountService)
+		{
+			_productAccountService = productAccountService;	
+		}
+
+		[HttpPost("add-product-account/{productId}")]
+		public async Task<IActionResult> CreateProductAccount(int productId, [FromBody] CreateProductAccountDto request)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _productAccountService.CreateProductAccountAsync(productId, request));
+		}
+	}
+}

@@ -26,6 +26,7 @@
   <ItemGroup>
     <Folder Include="Shared\Jobs\" />
     <Folder Include="Shared\Messages\" />
+    <Folder Include="wwwroot\images\default\" />
   </ItemGroup>
 
 </Project>

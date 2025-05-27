@@ -36,10 +36,9 @@ public partial class TaprimContext : DbContext
 							  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 		IConfigurationRoot configuration = builder.Build();
 		optionsBuilder.UseSqlServer(configuration.GetConnectionString("MyCnn"));
-
 	}
 
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
         {
@@ -47,9 +46,7 @@ public partial class TaprimContext : DbContext
 
             entity.ToTable("Category");
 
-            entity.Property(e => e.CategoryId)
-                .ValueGeneratedNever()
-                .HasColumnName("categoryId");
+            entity.Property(e => e.CategoryId).HasColumnName("categoryId");
             entity.Property(e => e.CategoryName)
                 .HasMaxLength(100)
                 .HasColumnName("categoryName");
@@ -202,8 +199,12 @@ public partial class TaprimContext : DbContext
 
             entity.Property(e => e.ProductAccountId).HasColumnName("productAccountId");
             entity.Property(e => e.AccountData).HasColumnName("accountData");
+            entity.Property(e => e.DateChangePass)
+                .HasColumnType("datetime")
+                .HasColumnName("dateChangePass");
             entity.Property(e => e.PasswordProductAccount).HasColumnName("passwordProductAccount");
             entity.Property(e => e.ProductId).HasColumnName("productId");
+            entity.Property(e => e.SellCount).HasColumnName("sellCount");
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.UsernameProductAccount).HasColumnName("usernameProductAccount");
 

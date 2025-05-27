@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using TAPrim.Application.ServiceImpl;
 using TAPrim.Application;
+using Microsoft.EntityFrameworkCore;
+using TAPrim.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,7 +12,8 @@ builder.Services.AddControllers();
 // Cấu hình Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddDbContext<TaprimContext>(options =>
+	options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
 // Đăng ký các dịch vụ thông qua Reflection
 var assembly = Assembly.GetExecutingAssembly();
 foreach (var type in assembly.GetTypes())
@@ -50,6 +53,7 @@ if (app.Environment.IsDevelopment())
 	app.UseSwagger();
 	app.UseSwaggerUI();
 }
+app.UseStaticFiles(); // Cho phép truy cập file tĩnh trong wwwroot
 
 app.UseHttpsRedirection();
 
