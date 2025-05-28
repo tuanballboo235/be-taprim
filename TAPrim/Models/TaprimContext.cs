@@ -145,6 +145,7 @@ public partial class TaprimContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("paidDateAt");
             entity.Property(e => e.PaymentMethod).HasColumnName("paymentMethod");
+            entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.TransactionCode)
                 .HasMaxLength(20)
                 .IsUnicode(false)

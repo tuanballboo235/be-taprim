@@ -23,6 +23,8 @@ public partial class Payment
 
     public string? Note { get; set; }
 
+    public int? Status { get; set; }
+
     public virtual Order Order { get; set; } = null!;
 
     public virtual User? User { get; set; }
