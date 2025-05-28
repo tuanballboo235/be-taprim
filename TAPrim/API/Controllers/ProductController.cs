@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application.DTOs.Products;
-using TAPrim.Application;
 using TAPrim.Common.Helpers;
+using TAPrim.Application.Services;
 
 namespace TAPrim.API.Controllers
 {
-	[Route("api/product")]
+    [Route("api/product")]
 	[ApiController]
 	public class ProductController: ControllerBase
 	{

@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
-using TAPrim.Application.ServiceImpl;
-using TAPrim.Application;
 using Microsoft.EntityFrameworkCore;
 using TAPrim.Models;
+using TAPrim.Application.Services.ServiceImpl;
+using TAPrim.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

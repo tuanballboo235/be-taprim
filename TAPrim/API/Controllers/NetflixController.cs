@@ -1,13 +1,13 @@
 ﻿using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TAPrim.Application;
 using TAPrim.Application.DTOs.Netflix;
+using TAPrim.Application.Services;
 using TAPrim.Common.Helpers;
 
 namespace TAPrim.API.Controllers
 {
-	[Route("api/netflix")]
+    [Route("api/netflix")]
 	[ApiController]
 	public class NetflixController : ControllerBase
 	{
