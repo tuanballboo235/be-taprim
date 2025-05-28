@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using TAPrim.Models;
 
 namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
@@ -17,5 +18,11 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
         }
-    }
+		public async Task<Product?> GetProductByIdAsync(int id)
+		{
+			return await _context.Products
+				.Include(p => p.Category)
+				.FirstOrDefaultAsync(p => p.ProductId == id);
+		}
+	}
 }

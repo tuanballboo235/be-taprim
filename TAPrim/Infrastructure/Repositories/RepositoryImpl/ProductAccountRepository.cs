@@ -89,5 +89,14 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
                 PageSize = query.PageSize
             };
         }
-    }
+
+        //lấy ra số lượng product Account dựa vào productId
+		public async Task<int> GetQuantityStockProductAccountByProductId(int productId)
+		{
+			int totalSellCount = await _context.ProductAccounts
+	                            .Where(x => x.ProductId == productId)
+	                            .SumAsync(x => x.SellCount ?? 0);
+            return totalSellCount;
+		}
+	}
 }

@@ -7,6 +7,7 @@ namespace TAPrim.Application.Services
     public interface IProductService
     {
         Task<ApiResponseModel<Product>> CreateProductAsync(CreateProductRequest dto);
+        Task<ApiResponseModel<ProductDetailResponseDto>> GetProductDetailAsync(int productId);
 
-    }
+	}
 }

@@ -22,7 +22,10 @@ namespace TAPrim.API.Controllers
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productService.CreateProductAsync(request));
 		}
-
-
+		[HttpPost("get-productp-details/{productId}")]
+		public async Task<IActionResult> GetProductDetails(int productId)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _productService.GetProductDetailAsync(productId));
+		}
 	}
 }

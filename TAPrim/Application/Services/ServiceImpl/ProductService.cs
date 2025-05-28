@@ -1,6 +1,7 @@
 ﻿using TAPrim.Application.DTOs;
 using TAPrim.Application.DTOs.Products;
 using TAPrim.Infrastructure.Repositories;
+using TAPrim.Infrastructure.Repositories.RepositoryImpl;
 using TAPrim.Models;
 using TAPrim.Shared.Constants;
 
@@ -10,11 +11,12 @@ namespace TAPrim.Application.Services.ServiceImpl
     {
         private readonly IProductRepository _productRepo;
         private readonly IFileService _fileService;
-
-        public ProductService(IProductRepository productRepo, IFileService fileService)
+        private readonly IProductAccountRepository _productAccountRepository;
+        public ProductService(IProductRepository productRepo, IFileService fileService,IProductAccountRepository productAccountRepository)
         {
             _productRepo = productRepo;
             _fileService = fileService;
+            _productAccountRepository = productAccountRepository;
         }
 
         public async Task<ApiResponseModel<Product>> CreateProductAsync(CreateProductRequest dto)
@@ -48,6 +50,40 @@ namespace TAPrim.Application.Services.ServiceImpl
             };
         }
 
+		public async Task<ApiResponseModel<ProductDetailResponseDto>> GetProductDetailAsync(int productId)
+		{
+			var product = await _productRepo.GetProductByIdAsync(productId);
+            var StockAccounts = await _productAccountRepository.GetQuantityStockProductAccountByProductId(productId);
+			if (product == null)
+			{
+				return new ApiResponseModel<ProductDetailResponseDto>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Product not found"
+				};
+			}
 
-    }
+			var dto = new ProductDetailResponseDto
+			{
+				ProductId = product.ProductId,
+				ProductName = product.ProductName,
+				Price = product.Price,
+				DiscountPercentDisplay = product.DiscountPercentDisplay,
+				AttentionNote = product.AttentionNote,
+				Description = product.Description?.ToString(), // nếu là int bạn cần xử lý riêng
+				ProductImage = product.ProductImage,
+				ProductCode = product.ProductCode,
+				CategoryId = product.CategoryId,
+				CategoryName = product.Category.CategoryName,
+                AccountStockQuantity = StockAccounts
+			};
+
+			return new ApiResponseModel<ProductDetailResponseDto>
+			{
+				Status = ApiResponseStatusConstant.SuccessStatus,
+				Data = dto
+			};
+		}
+
+	}
 }

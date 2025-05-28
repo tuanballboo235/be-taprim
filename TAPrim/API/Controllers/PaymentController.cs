@@ -17,6 +17,7 @@ namespace TAPrim.API.Controllers
 		{
 			_paymentService = paymentService;	
 		}
+		[HttpPost]
 		public async Task<IActionResult> ReceiveAsync([FromBody] SePayWebhookDto data)
 		{
 			return Ok();
