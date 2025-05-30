@@ -4,6 +4,10 @@ using System.Text;
 using TAPrim.Application.DTOs;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Shared.Constants;
+using Azure.Core;
+using Microsoft.EntityFrameworkCore;
+using TAPrim.Models;
+using TAPrim.Application.DTOs.Payment;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
@@ -12,6 +16,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		private readonly HttpClient _httpClient;
 		private readonly VietQrDto _options;
 		private readonly IPaymentRepository _paymentRepository;
+		private readonly IOrderRe
 
 		public PaymentService(HttpClient httpClient, IOptions<VietQrDto> options, IPaymentRepository paymentRepository)
 		{
@@ -20,135 +25,136 @@ namespace TAPrim.Application.Services.ServiceImpl
 			_paymentRepository = paymentRepository;
 		}
 
-		//public async Task<ApiResponseModel<object>> GenerateQrAsync(string paymentId)
-		//{
-		//	var errors = new Dictionary<string, string>();
+		public async Task<ApiResponseModel<object>> GenerateQrAsync(CreateOrderRequest createOrderRequest)
+		{
+			var errors = new Dictionary<string, string>();
 
-		//	try
-		//	{
-		//		// 1. Lấy thông tin payment
-		//		var payment = await _teamFundRepository.GetPaymentByIdAsync(paymentId);
-		//		if (payment == null)
-		//		{
-		//			return new ApiResponseModel<object>
-		//			{
-		//				Status = ApiResponseStatusConstant.FailedStatus,
-		//				Message = "Không tìm thấy thông tin thanh toán.",
-		//				Errors = new Dictionary<string, string> { { "PaymentId", $"Không tồn tại paymentId: {paymentId}" } }
-		//			};
-		//		}
+			try
+			{
+				try
+				{
+					// Tạo order
+					var order = new Order
+					{
+						UserId = request.UserId,
+						ProductId = request.ProductId,
+						CouponId = request.CouponId,
+						TotalAmount = request.TotalAmount,
+						Status = 0, // Pending
+						CreateAt = DateTime.UtcNow,
+						UpdateAt = DateTime.UtcNow,
+						RemainGetCode = 1
+					};
 
-		//		// Lấy thông tin manager từ payment
-		//		var managerPaymentInfo = await _teamFundRepository.GetManagerPaymentByPaymentId(paymentId);
-		//		if (managerPaymentInfo == null)
-		//		{
-		//			return new ApiResponseModel<object>
-		//			{
-		//				Status = ApiResponseStatusConstant.FailedStatus,
-		//				Message = "Không có quản lí quỹ đội, xin vui lòng thêm quản lí cho đội bóng này.",
-		//				Errors = new Dictionary<string, string> { { "notFoundFundManager", "Không có quản lí quỹ đội, xin vui lòng thêm quản lí cho đội bóng này." } }
-		//			};
-		//		}
+					_context.Orders.Add(order);
+					await _context.SaveChangesAsync();
 
-		//		if (string.IsNullOrWhiteSpace(managerPaymentInfo.BankBinId) || string.IsNullOrWhiteSpace(managerPaymentInfo.BankAccountNumber))
-		//		{
-		//			return new ApiResponseModel<object>
-		//			{
-		//				Status = ApiResponseStatusConstant.FailedStatus,
-		//				Message = "Không thể tạo mã thanh toán do thiếu thông tin ngân hàng của người quản lí.",
-		//				Errors = new Dictionary<string, string> { { "BankInfo", "Thiếu BankBinId hoặc BankAccountNumber." } }
-		//			};
-		//		}
+					// Tạo payment
+					var transactionCode = GenerateTransactionCode();
+					var payment = new Payment
+					{
+						OrderId = order.OrderId,
+						TransactionCode = transactionCode,
+						PaymentMethod = 1, // QR Code
+						CreateAt = DateTime.UtcNow,
+						UserId = request.UserId,
+						Amount = request.TotalAmount,
+						Status = 0 // Pending
+					};
 
-		//		var payload = new
-		//		{
-		//			accountNo = managerPaymentInfo.BankAccountNumber,
-		//			accountName = managerPaymentInfo.BankName,
-		//			acqId = managerPaymentInfo.BankBinId,
-		//			addInfo = payment.PaymentId,
-		//			amount = payment.PaymentItems.Sum(x => x.Amount),
-		//			template = _options.DefaultTemplate
-		//		};
+					_context.Payments.Add(payment);
+					await _context.SaveChangesAsync();
 
-		//		var httpRequest = new HttpRequestMessage(HttpMethod.Post, "https://api.vietqr.io/v2/generate")
-		//		{
-		//			Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
-		//		};
 
-		//		httpRequest.Headers.Add("x-client-id", _options.ClientId);
-		//		httpRequest.Headers.Add("x-api-key", _options.ApiKey);
 
-		//		var response = await _httpClient.SendAsync(httpRequest);
+					var payload = new
+				{
+					accountNo = "0344665098",
+					accountName = "TPBank",
+					acqId = ,
+					addInfo = payment.PaymentId,
+					amount = payment.PaymentItems.Sum(x => x.Amount),
+					template = _options.DefaultTemplate
+				};
 
-		//		if (!response.IsSuccessStatusCode)
-		//		{
-		//			var errorContent = await response.Content.ReadAsStringAsync();
-		//			return new ApiResponseModel<object>
-		//			{
-		//				Status = ApiResponseStatusConstant.FailedStatus,
-		//				Message = $"Lấy Qr lỗi, xin kiểm tra lại thông tin ngân hàng của quản lý hoặc thử lại sau.",
-		//				Errors = new Dictionary<string, string> { { "APIResponse", errorContent } }
-		//			};
-		//		}
+				var httpRequest = new HttpRequestMessage(HttpMethod.Post, "https://api.vietqr.io/v2/generate")
+				{
+					Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
+				};
 
-		//		var content = await response.Content.ReadAsStringAsync();
+				httpRequest.Headers.Add("x-client-id", _options.ClientId);
+				httpRequest.Headers.Add("x-api-key", _options.ApiKey);
 
-		//		using var jsonDoc = JsonDocument.Parse(content);
+				var response = await _httpClient.SendAsync(httpRequest);
 
-		//		if (jsonDoc.RootElement.TryGetProperty("data", out var dataElement) &&
-		//			dataElement.TryGetProperty("qrDataURL", out var qrElement))
-		//		{
-		//			var qrDataUrl = qrElement.GetString();
+				if (!response.IsSuccessStatusCode)
+				{
+					var errorContent = await response.Content.ReadAsStringAsync();
+					return new ApiResponseModel<object>
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = $"Lấy Qr lỗi, xin kiểm tra lại thông tin ngân hàng của quản lý hoặc thử lại sau.",
+						Errors = new Dictionary<string, string> { { "APIResponse", errorContent } }
+					};
+				}
 
-		//			return new ApiResponseModel<object>
-		//			{
-		//				Status = ApiResponseStatusConstant.SuccessStatus,
-		//				Message = "Tạo QR thành công.",
-		//				Data = new
-		//				{
-		//					Data = payload,
-		//					PaymentMethod = managerPaymentInfo.PaymentMethod.ToString(),
-		//					QrCode = qrDataUrl
-		//				}
-		//			};
-		//		}
+				var content = await response.Content.ReadAsStringAsync();
 
-		//		return new ApiResponseModel<object>
-		//		{
-		//			Data = payload,
-		//			Status = ApiResponseStatusConstant.FailedStatus,
-		//			Message = "Không thể lấy mã tạo QR từ phản hồi VietQR.",
+				using var jsonDoc = JsonDocument.Parse(content);
 
-		//		};
-		//	}
-		//	catch (JsonException ex)
-		//	{
-		//		return new ApiResponseModel<object>
-		//		{
-		//			Status = ApiResponseStatusConstant.FailedStatus,
-		//			Message = "Lỗi xử lý dữ liệu phản hồi từ VietQR.",
-		//			Errors = new Dictionary<string, string> { { "JsonParse", ex.Message } }
-		//		};
-		//	}
-		//	catch (HttpRequestException ex)
-		//	{
-		//		return new ApiResponseModel<object>
-		//		{
-		//			Status = ApiResponseStatusConstant.FailedStatus,
-		//			Message = "Lỗi gửi yêu cầu tới VietQR API.",
-		//			Errors = new Dictionary<string, string> { { "HttpRequest", ex.Message } }
-		//		};
-		//	}
-		//	catch (Exception ex)
-		//	{
-		//		return new ApiResponseModel<object>
-		//		{
-		//			Status = ApiResponseStatusConstant.FailedStatus,
-		//			Message = "Đã xảy ra lỗi trong quá trình tạo mã QR.",
-		//			Errors = new Dictionary<string, string> { { "Exception", ex.Message } }
-		//		};
-		//	}
-		//}
+				if (jsonDoc.RootElement.TryGetProperty("data", out var dataElement) &&
+					dataElement.TryGetProperty("qrDataURL", out var qrElement))
+				{
+					var qrDataUrl = qrElement.GetString();
+
+					return new ApiResponseModel<object>
+					{
+						Status = ApiResponseStatusConstant.SuccessStatus,
+						Message = "Tạo QR thành công.",
+						Data = new
+						{
+							Data = payload,
+							QrCode = qrDataUrl
+						}
+					};
+				}
+
+				return new ApiResponseModel<object>
+				{
+					Data = payload,
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Không thể lấy mã tạo QR từ phản hồi VietQR.",
+
+				};
+			}
+			catch (JsonException ex)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Lỗi xử lý dữ liệu phản hồi từ VietQR.",
+					Errors = new Dictionary<string, string> { { "JsonParse", ex.Message } }
+				};
+			}
+			catch (HttpRequestException ex)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Lỗi gửi yêu cầu tới VietQR API.",
+					Errors = new Dictionary<string, string> { { "HttpRequest", ex.Message } }
+				};
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Đã xảy ra lỗi trong quá trình tạo mã QR.",
+					Errors = new Dictionary<string, string> { { "Exception", ex.Message } }
+				};
+			}
+		}
 
 
 	}
