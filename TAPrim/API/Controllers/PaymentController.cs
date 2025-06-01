@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application.DTOs;
+using TAPrim.Application.DTOs.Payment;
 using TAPrim.Application.Services;
 using TAPrim.Common.Helpers;
 using TAPrim.Infrastructure.Repositories;
@@ -23,6 +24,10 @@ namespace TAPrim.API.Controllers
 			return Ok();
 		}
 
-
+		[HttpPost("generate-vietqr")]
+		public async Task<IActionResult> GenerateQrAndCreatePayment(CreateOrderRequest request)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _paymentService.GenerateQrAsync(request));
+		}
 	}
 }

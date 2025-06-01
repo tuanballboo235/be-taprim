@@ -8,22 +8,29 @@ using Azure.Core;
 using Microsoft.EntityFrameworkCore;
 using TAPrim.Models;
 using TAPrim.Application.DTOs.Payment;
+using TAPrim.Shared.Helpers;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
 	public class PaymentService : IPaymentService
 	{
 		private readonly HttpClient _httpClient;
-		private readonly VietQrDto _options;
+		private readonly VietQrDto _vietQrConfig;
 		private readonly IPaymentRepository _paymentRepository;
 		private readonly IOrderRepository _orderRepository;
+		private readonly TransactionCodeHelper _transactionCodeHelper;
 
-		public PaymentService(HttpClient httpClient, IOptions<VietQrDto> options, IPaymentRepository paymentRepository, IOrderRepository orderRepository)
+		public PaymentService(HttpClient httpClient,
+			IOptions<VietQrDto> options,
+			IPaymentRepository paymentRepository,
+			IOrderRepository orderRepository,
+			TransactionCodeHelper transactionCodeHelper)
 		{
 			_httpClient = httpClient;
-			_options = options.Value;
+			_vietQrConfig = options.Value;
 			_paymentRepository = paymentRepository;
 			_orderRepository = orderRepository;
+			_transactionCodeHelper = transactionCodeHelper;
 		}
 
 		public async Task<ApiResponseModel<object>> GenerateQrAsync(CreateOrderRequest createOrderRequest)
@@ -31,8 +38,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 			var errors = new Dictionary<string, string>();
 
 			try
-			{
-				try
 				{
 					// Tạo order
 					var order = new Order
@@ -50,28 +55,28 @@ namespace TAPrim.Application.Services.ServiceImpl
 					await _orderRepository.AddOrderAsync(order);
 
 					// Tạo payment
-					var transactionCode = GenerateTransactionCode();
+					var transactionCode = await _transactionCodeHelper.GetCode();
 					var payment = new Payment
 					{
 						OrderId = order.OrderId,
 						TransactionCode = transactionCode,
 						PaymentMethod = 1, // QR Code
 						CreateAt = DateTime.UtcNow,
-						UserId = request.UserId,
-						Amount = request.TotalAmount,
+						UserId = createOrderRequest.UserId,
+						Amount = createOrderRequest.TotalAmount,
 						Status = 0 // Pending
 					};
-					_paymentRepository.AddPaymentAsync(payment);
+					await _paymentRepository.AddPaymentAsync(payment);
 
 
 					var payload = new
 					{
-						accountNo = "0344665098",
-						accountName = "TPBank",
-						acqId = ,
-						addInfo = payment.PaymentId,
-						amount = payment.PaymentItems.Sum(x => x.Amount),
-						template = _options.DefaultTemplate
+						accountNo = _vietQrConfig.DefaultAccountNo,
+						accountName = _vietQrConfig.DefaultAccountName,
+						acqId = _vietQrConfig.DefaultAcqId,
+						addInfo = transactionCode,
+						amount = createOrderRequest.TotalAmount,
+						template = _vietQrConfig.DefaultTemplate
 					};
 
 					var httpRequest = new HttpRequestMessage(HttpMethod.Post, "https://api.vietqr.io/v2/generate")
@@ -79,8 +84,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 						Content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json")
 					};
 
-					httpRequest.Headers.Add("x-client-id", _options.ClientId);
-					httpRequest.Headers.Add("x-api-key", _options.ApiKey);
+					httpRequest.Headers.Add("x-client-id", _vietQrConfig.ClientId);
+					httpRequest.Headers.Add("x-api-key", _vietQrConfig.ApiKey);
 
 					var response = await _httpClient.SendAsync(httpRequest);
 
@@ -151,9 +156,9 @@ namespace TAPrim.Application.Services.ServiceImpl
 						Errors = new Dictionary<string, string> { { "Exception", ex.Message } }
 					};
 				}
+
+
+
 			}
-
-
-	}
 	} 
 }

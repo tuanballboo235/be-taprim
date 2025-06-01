@@ -15,7 +15,7 @@ namespace TAPrim.Shared.Helpers
 		// tạo ngẫu nhiên mã thanh toán : TA XXXX 
 		public static string GenerateTransactionCode()
 		{
-			var chars = new char[10];
+			var chars = new char[4];
 			for (int i = 0; i < 4; i++)
 				chars[i] = Chars[_random.Next(Chars.Length)];
 			return $"TP {new string(chars)}";
@@ -25,7 +25,7 @@ namespace TAPrim.Shared.Helpers
 			string transactionCode;
 			do
 			{
-				transactionCode = TransactionCodeHelper.GenerateTransactionCode();
+				transactionCode = GenerateTransactionCode();
 			} while (await _paymentRepository.IsExistedTransactionCode(transactionCode)); // tạo mời transaction code và kiểm tra có trùng lặp code trong db hay chưa
 			return transactionCode;
 		}

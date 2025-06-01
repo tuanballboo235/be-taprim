@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using TAPrim.Models;
 using TAPrim.Application.Services.ServiceImpl;
 using TAPrim.Application.Services;
+using TAPrim.Application.DTOs;
+using TAPrim.Shared.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +45,11 @@ builder.Services.AddCors(options =>
 				.AllowCredentials(); // nếu dùng cookies/auth
 		});
 });
+//cấu hình VietQr trong appsettings
+builder.Services.Configure<VietQrDto>(builder.Configuration.GetSection("VietQr"));
+//Cấu hình TransactionCodeHelper
+builder.Services.AddScoped<TransactionCodeHelper>();
+
 
 var app = builder.Build();
 app.UseCors("AllowReactDev");
