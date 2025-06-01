@@ -11,6 +11,8 @@ namespace TAPrim.Infrastructure.Repositories
         Task<PagedResponseDto<ProductAccount>> GetFilteredProductAccountsAsync(ProductAccountQueryDto query);
         Task<int> GetQuantityStockProductAccountByProductId(int productId);
         Task<ProductAccount?> GetProductAccountByProductId(int productId);
+		Task<ProductAccountResponseDto?> GetProductAccountByPaymentTransactionCode(string transactionCode);
+
 
 	}
 }

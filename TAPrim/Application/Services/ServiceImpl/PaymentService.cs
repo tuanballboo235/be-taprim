@@ -190,9 +190,31 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 
 			var productAccount = await _productAccountRepository.GetProductAccountByProductId(order.ProductId);
+			//kiểm tra còn tài khoản ko 
+			if (productAccount == null)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098 ",
 
+				};
+			}
+			else
+			{
+				//Nếu lượt bán > 1 thì giảm lượt bán xuống
+				if (productAccount.SellCount > 1)
+				{
+					productAccount.SellCount -= 1;
+				}
+				else //còn ko thì cập nhật trạng thái thành 1, là đã bán
+				{
+					productAccount.Status = ProductAccountStatusConstant.Unavailable;
+				}
+
+			}
+			//sau khi thanh toán thành công thì set cho order tk 
 			order.ProductAccountId = productAccount?.ProductAccountId;
-			productAccount.Status = 1;
 			return new ApiResponseModel<object>()
 			{
 				Status = ApiResponseStatusConstant.FailedStatus,

@@ -83,7 +83,15 @@ namespace TAPrim.Application.Services.ServiceImpl
                 }
             };
         }
+		public async Task<ApiResponseModel<object>> GetProductAccountsByTransactionCodeAsync(string transactionCode)
+        {
+            return new ApiResponseModel<object>()
+            {
+                Status = ApiResponseStatusConstant.SuccessStatus,
+                Data = await _productAccountRepository.GetProductAccountByPaymentTransactionCode(transactionCode),
+                Message = "Lấy thông tin tài khoản thành công"
+            };
+        }
 
-
-    }
+	}
 }

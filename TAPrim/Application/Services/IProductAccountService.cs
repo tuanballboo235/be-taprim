@@ -8,5 +8,7 @@ namespace TAPrim.Application.Services
     {
         Task<ApiResponseModel<ProductAccountResponseDto>> CreateProductAccountAsync(int productId, CreateProductAccountDto dto);
         Task<ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>> GetProductAccountsAsync(ProductAccountQueryDto query);
-    }
+        Task<ApiResponseModel<object>> GetProductAccountsByTransactionCodeAsync(string transactionCode);
+
+	}
 }

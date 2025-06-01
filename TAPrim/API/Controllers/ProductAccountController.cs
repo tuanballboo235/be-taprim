@@ -28,5 +28,11 @@ namespace TAPrim.API.Controllers
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productAccountService.GetProductAccountsAsync(filter));
 		}
+
+		[HttpPost("get-product-account-by-transaction-code")]
+		public async Task<IActionResult> GetProductAccountByTransactionCode([FromBody] GetProductAccountByTransactionCodeRequestDto request)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _productAccountService.GetProductAccountsByTransactionCodeAsync(request.TransactionCode));
+		}
 	}
 }
