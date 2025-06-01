@@ -32,7 +32,6 @@ foreach (var type in assembly.GetTypes())
 	}
 }
 builder.Services.AddHttpClient();  // Đăng ký HttpClient vào DI container
-builder.Services.AddScoped<INetflixService, NetflixService>();
 builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowReactDev",

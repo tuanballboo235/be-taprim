@@ -5,6 +5,6 @@ namespace TAPrim.Infrastructure.Repositories
 	public interface IOrderRepository
 	{
 		Task AddOrderAsync(Order orders);
-
+		Task<Order?> FindByPaymentTransactionCodeAsync(string transactionCode);
 	}
 }

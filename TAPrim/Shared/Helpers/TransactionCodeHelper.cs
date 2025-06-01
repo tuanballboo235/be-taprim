@@ -18,7 +18,7 @@ namespace TAPrim.Shared.Helpers
 			var chars = new char[4];
 			for (int i = 0; i < 4; i++)
 				chars[i] = Chars[_random.Next(Chars.Length)];
-			return $"TP {new string(chars)}";
+			return $"TAPRIM {new string(chars)}";
 		}
 		public async Task<string> GetCode()
 		{

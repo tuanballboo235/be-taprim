@@ -98,5 +98,10 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 	                            .SumAsync(x => x.SellCount ?? 0);
             return totalSellCount;
 		}
+
+		public async Task<ProductAccount?> GetProductAccountByProductId(int productId)
+		{
+            return await _context.ProductAccounts.Where(x => x.ProductId == productId).FirstOrDefaultAsync();
+		}
 	}
 }

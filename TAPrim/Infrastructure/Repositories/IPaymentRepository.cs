@@ -6,5 +6,6 @@ namespace TAPrim.Infrastructure.Repositories
     {
 		Task AddPaymentAsync(Payment payment);
 		Task<bool> IsExistedTransactionCode(string transactionCode);
+		
 	}
 }
