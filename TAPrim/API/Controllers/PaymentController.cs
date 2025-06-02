@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Azure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application.DTOs;
 using TAPrim.Application.DTOs.Payment;
@@ -21,7 +22,8 @@ namespace TAPrim.API.Controllers
 		[HttpPost]
 		public async Task<IActionResult> ReceiveAsync([FromBody] SePayWebhookDto data)
 		{
-			return Ok();
+
+			return ApiResponseHelper.HandleApiResponse(await _paymentService.SetProductAccountForPaymentByTransactionCode(data));
 		}
 
 		[HttpPost("generate-vietqr")]

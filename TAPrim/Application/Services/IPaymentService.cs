@@ -10,5 +10,6 @@ namespace TAPrim.Application.Services
 	public interface IPaymentService
 	{
 		Task<ApiResponseModel<object>> GenerateQrAsync(CreateOrderRequest createOrderRequest);
+		Task<ApiResponseModel<object>> SetProductAccountForPaymentByTransactionCode(SePayWebhookDto response);
 	}
 }

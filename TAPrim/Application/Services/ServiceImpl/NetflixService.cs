@@ -15,12 +15,12 @@ namespace TAPrim.Application.Services.ServiceImpl
             _httpClient = httpClient;
         }
 
-        /*
-		 Hàm lấy ra nội dung email từ api trang https://hunght1890.com/
-		- mail đang đc sử dụng để forward test : 
+		/*
+		 Hàm lấy ra nội dung email từ api trang https://tempmail.id.vn/
+		- mail đang đc sử dụng để forward test : netflix@booshop.id.vn
 		- typeFilter : 1 = getCode, 0 = get mail update family
 		 */
-        public async Task<ApiResponseModel<List<EmailResponseDto>>> GetJsonDataAsync(string email, int typeFilter)
+		public async Task<ApiResponseModel<List<EmailResponseDto>>> GetJsonDataAsync(string email, int typeFilter)
         {
             // Lọc dữ liệu email từ phương thức FilterEmailNetflix
 
@@ -36,7 +36,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 
             try
             {
-                var url = $"https://hunght1890.com/{email}";
+                var url = $"https://tempmail.id.vn/{email}";
                 var response = await _httpClient.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)
@@ -99,7 +99,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 
             try
             {
-                var url = $"https://hunght1890.com/{email}";
+                var url = $"https://tempmail.id.vn/{email}";
                 var response = await _httpClient.GetAsync(url);
 
                 if (response.IsSuccessStatusCode)

@@ -176,8 +176,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 		}
 
 		//hàm set product account dựa vào product Account sau khi người dùng thanh toán thành công 
-		public async Task<ApiResponseModel<object>> SetProductAccountForPaymentByTransactionCode(string transactionCode)
+		public async Task<ApiResponseModel<object>> SetProductAccountForPaymentByTransactionCode(SePayWebhookDto data)
 		{
+			// replace chuỗi 
+			var transactionCode = data.Content.Replace("QR - ", "");
+			//Kiểm tra có chuyển khoản đúng số tiền và mã transaction Code ko ??
 			var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
 			if (order == null)
 			{
@@ -189,7 +192,19 @@ namespace TAPrim.Application.Services.ServiceImpl
 				};
 			}
 
-			var productAccount = await _productAccountRepository.GetProductAccountByProductId(order.ProductId);
+			// Nếu khách hàng chuyển sai tiền , thì ko cho thanh toán
+			if (order.TotalAmount != data.TransferAmount)
+			{
+				return new ApiResponseModel<object>()
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Bạn đã chuyển khoan sai giá trị đơn hàng, vui lòng liên hệ zalo: 0344665098 để được hỗ trợ",
+					Data = order
+				};
+			}
+
+
+				var productAccount = await _productAccountRepository.GetProductAccountByProductId(order.ProductId);
 			//kiểm tra còn tài khoản ko 
 			if (productAccount == null)
 			{
