@@ -1,0 +1,10 @@
+
+dotnet ef dbcontext scaffold "server =localhost; database =Taprim;uid=sa;pwd=123456;TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -o Models -f  
+
+----------------------
+
+var builder = new ConfigurationBuilder()
+							  .SetBasePath(Directory.GetCurrentDirectory())
+							  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+		IConfigurationRoot configuration = builder.Build();
+		optionsBuilder.UseSqlServer(configuration.GetConnectionString("MyCnn"));

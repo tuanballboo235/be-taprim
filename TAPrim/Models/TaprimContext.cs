@@ -27,6 +27,8 @@ public partial class TaprimContext : DbContext
 
     public virtual DbSet<ProductAccount> ProductAccounts { get; set; }
 
+    public virtual DbSet<TempMailEmailStore> TempMailEmailStores { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -36,9 +38,11 @@ public partial class TaprimContext : DbContext
 							  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 		IConfigurationRoot configuration = builder.Build();
 		optionsBuilder.UseSqlServer(configuration.GetConnectionString("MyCnn"));
+
 	}
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
         {
@@ -203,6 +207,7 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.DateChangePass)
                 .HasColumnType("datetime")
                 .HasColumnName("dateChangePass");
+            entity.Property(e => e.Note).HasColumnName("note");
             entity.Property(e => e.PasswordProductAccount).HasColumnName("passwordProductAccount");
             entity.Property(e => e.ProductId).HasColumnName("productId");
             entity.Property(e => e.SellCount).HasColumnName("sellCount");
@@ -213,6 +218,23 @@ public partial class TaprimContext : DbContext
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("ProductAccount_Product__fk");
+        });
+
+        modelBuilder.Entity<TempMailEmailStore>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("TempMailEmailStore_pk");
+
+            entity.ToTable("TempMailEmailStore");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Email)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("email");
+            entity.Property(e => e.EmailId)
+                .HasMaxLength(10)
+                .IsUnicode(false)
+                .HasColumnName("email_id");
         });
 
         modelBuilder.Entity<User>(entity =>
