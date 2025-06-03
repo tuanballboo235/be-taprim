@@ -15,10 +15,23 @@ namespace TAPrim.API.Controllers
 		public TempMailController(ITempmailService tempmailService) {
 			_tempmailService = tempmailService;
 		}
-		[HttpPost("get-2fa-chatgpt")]
+		[HttpPost("get-netflix-update-family")]
 		public async Task<IActionResult> GetNetflixMail([FromBody] TransactionCodeRequestDto request)
 		{
-			return ApiResponseHelper.HandleApiResponse(await _tempmailService.FilterEmailNetflixUpdateHouse(request.TransactionCode));
+			return ApiResponseHelper.HandleApiResponse(await _tempmailService.EmailNetflixUpdateHouseFilter(request.TransactionCode));
 		}
+
+		[HttpPost("get-netflix-code-sign-in")]
+		public async Task<IActionResult> GetNetflixCodeSignIn([FromBody] TransactionCodeRequestDto request)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _tempmailService.GetNetflixCodeLoginEmailFilter(request.TransactionCode));
+		}
+
+		[HttpPost("get-chatgpt-authen-code")]
+		public async Task<IActionResult> GetChatgptAuthenCode([FromBody] TransactionCodeRequestDto request)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _tempmailService.GetChatgptVerificationEmailFilter(request.TransactionCode));
+		}
+
 	}
 }
