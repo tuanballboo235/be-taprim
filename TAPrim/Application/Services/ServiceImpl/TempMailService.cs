@@ -6,6 +6,8 @@ using TAPrim.Application.DTOs.Tempmail;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Shared.Constants;
 using TAPrim.Shared.Helpers;
+using System.Transactions;
+using TAPrim.Models;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
@@ -39,14 +41,9 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 			//lấy ra order theo payment transaction Code
 			var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
-			if (order == null) {
-				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
-				apiResponse.Message = "Đơn hàng này không tồn tại hoặc đã hết hiệu lực";
-			}
-			//Nếu đơn hết hạn
-			if (order.ExpiredAt > DateTime.Now)
+			if (!ValidateOrder(order, apiResponse))
 			{
-
+				return apiResponse;
 			}
 			try
 			{
@@ -71,7 +68,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 						{
 							var filteredEmails = result.Data.Items
 								.Where(email =>
-									email.Subject != null)
+									email.Subject != null && ( email.Subject.Contains(NetflixConstant.TemporaryNetflixCode) || email.Subject.Contains(NetflixConstant.UpdateFamilyNetflix)))
 								.ToList();
 
 							apiResponse.Status = ApiResponseStatusConstant.SuccessStatus;
@@ -109,6 +106,27 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 
 			return apiResponse;
+		}
+
+
+		//======================================================================
+		private bool ValidateOrder(dynamic order, ApiResponseModel<List<TempmailEmailItemDto>> apiResponse)
+		{
+			if (order == null)
+			{
+				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
+				apiResponse.Message = "Đơn hàng này không tồn tại hoặc đã bị vô hiệu hóa.";
+				return false;
+			}
+
+			if (order.ExpiredAt < DateTime.Now)
+			{
+				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
+				apiResponse.Message = "Đơn hàng này đã hết hiệu lực.";
+				return false;
+			}
+
+			return true;
 		}
 
 	}

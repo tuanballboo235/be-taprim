@@ -5,6 +5,6 @@ namespace TAPrim.Application.Services
 {
 	public interface ITempmailService
 	{
-		Task<ApiResponseModel<List<TempmailEmailItemDto>>> FilterEmailNetflixUpdateHouse(string emailId);
+		Task<ApiResponseModel<List<TempmailEmailItemDto>>> FilterEmailNetflixUpdateHouse(string transactionCode);
 	}
 }

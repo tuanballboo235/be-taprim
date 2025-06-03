@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\DTOs\Payment\" />
     <Folder Include="Shared\Jobs\" />
     <Folder Include="Shared\Messages\" />
     <Folder Include="wwwroot\images\default\" />
