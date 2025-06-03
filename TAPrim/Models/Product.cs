@@ -25,6 +25,8 @@ public partial class Product
 
     public string? ProductCode { get; set; }
 
+    public int? DurationDay { get; set; }
+
     public virtual Category Category { get; set; } = null!;
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();

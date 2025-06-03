@@ -38,11 +38,9 @@ public partial class TaprimContext : DbContext
 							  .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
 		IConfigurationRoot configuration = builder.Build();
 		optionsBuilder.UseSqlServer(configuration.GetConnectionString("MyCnn"));
-
 	}
 
-
-	protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
         {
@@ -100,6 +98,9 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.CreateAt)
                 .HasColumnType("datetime")
                 .HasColumnName("createAt");
+            entity.Property(e => e.ExpiredAt)
+                .HasColumnType("datetime")
+                .HasColumnName("expiredAt");
             entity.Property(e => e.ProductAccountId).HasColumnName("productAccountId");
             entity.Property(e => e.ProductId).HasColumnName("productId");
             entity.Property(e => e.RemainGetCode).HasColumnName("remainGetCode");
@@ -177,6 +178,7 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.CategoryId).HasColumnName("categoryId");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.DiscountPercentDisplay).HasColumnName("discountPercentDisplay");
+            entity.Property(e => e.DurationDay).HasColumnName("durationDay");
             entity.Property(e => e.Price).HasColumnName("price");
             entity.Property(e => e.ProductCode)
                 .HasMaxLength(20)

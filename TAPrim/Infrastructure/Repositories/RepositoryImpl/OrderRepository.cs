@@ -21,7 +21,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		{
 			return await _context.Payments
 								 .Where(p => p.TransactionCode == transactionCode)
-								 .Select(p => p.Order)
+								 .Select(p => p.Order).Where(x=>x.Status == 1)
 								 .FirstOrDefaultAsync();
 		}
 

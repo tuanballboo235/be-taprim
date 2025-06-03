@@ -63,7 +63,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					ProductId = createOrderRequest.ProductId,
 					CouponId = createOrderRequest.CouponId,
 					TotalAmount = createOrderRequest.TotalAmount,
-					Status = 0, // Pending
+					Status = OrderStatus.Deactive, // Pending
 					CreateAt = DateTime.UtcNow,
 					UpdateAt = DateTime.UtcNow,
 					RemainGetCode = 3

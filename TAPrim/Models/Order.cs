@@ -25,6 +25,8 @@ public partial class Order
 
     public int RemainGetCode { get; set; }
 
+    public DateTime? ExpiredAt { get; set; }
+
     public virtual Coupon? Coupon { get; set; }
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();

@@ -8,16 +8,16 @@ namespace TAPrim.API.Controllers
 {
     [Route("api/[controller]")]
 	[ApiController]
-	public class ChatgptController : ControllerBase
+	public class TempMailController : ControllerBase
 	{
-		private readonly IChatgptService _chatgService;
-		public ChatgptController(IChatgptService chatgService) { 
-			_chatgService = chatgService;
+		private readonly ITempmailService _tempmailService;
+		public TempMailController(ITempmailService tempmailService) {
+			_tempmailService = tempmailService;
 		}
 		[HttpPost("get-2fa-chatgpt")]
 		public async Task<IActionResult> GetNetflixMail([FromBody] Chatgpt2FaRequest request)
 		{
-			return ApiResponseHelper.HandleApiResponse(await _chatgService.GetChatgptOtp(request.PaymentCode, request.HashCode));
+			return ApiResponseHelper.HandleApiResponse(await _tempmailService.FilterEmailNetflixUpdateHouse(request.PaymentCode));
 		}
 	}
 }
