@@ -41,8 +41,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 		public async Task<ApiResponseModel<object>> GenerateQrAsync(CreateOrderRequest createOrderRequest)
 		{
 			var errors = new Dictionary<string, string>();
-
-		
 			try
 			{
 				// Kiểm tra nếu product ko có product account thì báo lỗi 
@@ -143,7 +141,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 					Data = payload,
 					Status = ApiResponseStatusConstant.FailedStatus,
 					Message = "Không thể lấy mã tạo QR từ phản hồi VietQR.",
-
 				};
 			}
 			catch (JsonException ex)

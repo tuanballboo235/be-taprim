@@ -61,8 +61,6 @@ if (app.Environment.IsDevelopment())
 }
 app.UseStaticFiles(); // Cho phép truy cập file tĩnh trong wwwroot
 
-app.UseHttpsRedirection();
-
 // Sử dụng Authorization (nếu cần)
 app.UseAuthorization();
 
