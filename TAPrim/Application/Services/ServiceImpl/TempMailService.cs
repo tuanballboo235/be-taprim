@@ -47,7 +47,13 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 			//lấy ra order theo payment transaction Code
 			var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
-			if (! await ValidateOrder(order, apiResponse))
+			if (!await ValidateOrder(order, apiResponse))
+			{
+				return apiResponse;
+			}
+
+			// Kiểm tra xem có đc lấy code Chatgpt ko 
+			if (!await IsAllowGetNetflixMail(order, apiResponse))
 			{
 				return apiResponse;
 			}
@@ -124,6 +130,12 @@ namespace TAPrim.Application.Services.ServiceImpl
 			//lấy ra order theo payment transaction Code
 			var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
 			if (!await ValidateOrder(order, apiResponse))
+			{
+				return apiResponse;
+			}
+
+			// Kiểm tra xem có đc lấy code Chatgpt ko 
+			if (!await IsAllowGetNetflixMail(order, apiResponse))
 			{
 				return apiResponse;
 			}
@@ -204,7 +216,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 				{
 					return apiResponse;
 				}
-				if (! await IsAllowGetChatgptMail(order, apiResponse))
+				// kiểm tra xem có quyền  lấy code chatgpt k o
+				if (!await IsAllowGetChatgptMail(order, apiResponse))
 				{
 					return apiResponse;
 				}
@@ -293,19 +306,14 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 
 		//Hàm kiểm tra xem với payment transactionCode truyền vào có đc phép lấy email NETFLIX hay ko
-		private bool IsAllowGetNetflixMail(dynamic order, ApiResponseModel<List<TempmailEmailItemDto>> apiResponse)
+		private async Task<bool> IsAllowGetNetflixMail(Order order, ApiResponseModel<List<TempmailEmailItemDto>> apiResponse)
 		{
-			if (order == null)
+			var product = await _productRepository.GetProductByIdAsync(order.ProductId);
+			var category = await _categoryRepository.GetCategoryWithParentAsync(product.CategoryId);
+			if (category.CategoryName != CategoryConstant.NetflixCategory)
 			{
 				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
-				apiResponse.Message = "Đơn hàng này không tồn tại hoặc đã bị vô hiệu hóa.";
-				return false;
-			}
-
-			if (order.ExpiredAt < DateTime.Now)
-			{
-				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
-				apiResponse.Message = "Đơn hàng này đã hết hiệu lực.";
+				apiResponse.Message = "Đơn hàng không có quyền lấy mã mail Netflix.";
 				return false;
 			}
 
