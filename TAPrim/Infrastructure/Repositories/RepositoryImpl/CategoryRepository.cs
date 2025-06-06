@@ -13,16 +13,19 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		}
 		public async Task<Category?> GetCategoryWithParentAsync(int categoryId)
 		{
-			var category = await _context.Categories
-				.Include(c => c.Parent)
-				.FirstOrDefaultAsync(c => c.CategoryId == categoryId);
-			while (category.ParentId != null) { 
-			
-			return await _context.Categories
-				.Include(c => c.Parent)
-				.FirstOrDefaultAsync(c => c.CategoryId == category.ParentId);
+			var category = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == categoryId);
+			if (category == null)
+				return null;
+
+			Category? current = category;
+
+			while (current?.ParentId != null)
+			{
+				current.Parent = await _context.Categories.FirstOrDefaultAsync(c => c.CategoryId == current.ParentId);
+				current = current.Parent;
 			}
-			return null;	
+
+			return category;
 		}
 
 	}

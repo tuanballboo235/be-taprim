@@ -23,7 +23,7 @@ namespace TAPrim.API.Controllers
 			return ApiResponseHelper.HandleApiResponse(await _netflixServices.GetJsonDataAsync(request.Email, request.TypeMailRequest));
 		}
 
-		[HttpGet("get-email-code-netflix")]
+		[HttpGet("get-email-code-netflixs")]
 		public async Task<IActionResult> GetNetflixCode([FromQuery] NetflixMailRequest request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _netflixServices.GetJsonDataAsync(request.Email, request.TypeMailRequest));

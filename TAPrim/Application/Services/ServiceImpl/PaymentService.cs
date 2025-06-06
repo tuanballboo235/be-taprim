@@ -227,10 +227,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 			//sau khi thanh toán thành công thì set cho order tk 
 			order.ProductAccountId = productAccount?.ProductAccountId;
+			await _orderRepository.SaveChange();
 			return new ApiResponseModel<object>()
 			{
-				Status = ApiResponseStatusConstant.FailedStatus,
-				Message = "Không tìm thấy đơn"
+				Status = ApiResponseStatusConstant.SuccessStatus,
+				Message = "Lấy tài khoản thành công",
 			};
 		}
 	}
