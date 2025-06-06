@@ -3,11 +3,15 @@ name: CI/CD Deploy to VPS
 on:
   push:
     branches:
-      - main   # hoặc nhánh bạn muốn deploy
+      - main
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+
+    env:
+      IMAGE_NAME: tuanballboo/taprim
+      CONTAINER_NAME: taprim
 
     steps:
     - name: Checkout code
@@ -27,7 +31,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: yourdockerhubusername/yourapp:latest
+        tags: ${{ env.IMAGE_NAME }}:latest
 
     - name: Deploy to VPS via SSH
       uses: appleboy/ssh-action@v0.1.8
@@ -36,7 +40,11 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
-          docker pull yourdockerhubusername/yourapp:latest
-          docker stop yourapp || true
-          docker rm yourapp || true
-          docker run -d --name yourapp -p 80:80 yourdockerhubusername/yourapp:latest
+          docker pull ${{ env.IMAGE_NAME }}:latest
+          docker stop ${{ env.CONTAINER_NAME }} || true
+          docker rm ${{ env.CONTAINER_NAME }} || true
+          docker run -d \
+            --name ${{ env.CONTAINER_NAME }} \
+            -p 80:8080 \
+            -e ASPNETCORE_ENVIRONMENT=Production \
+            ${{ env.IMAGE_NAME }}:latest
