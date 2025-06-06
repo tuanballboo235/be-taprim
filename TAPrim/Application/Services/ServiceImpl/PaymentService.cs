@@ -76,7 +76,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					OrderId = order.OrderId,
 					TransactionCode = transactionCode,
 					PaymentMethod = 1, // QR Code
-					CreateAt = DateTime.UtcNow,
+					CreateAt = DateTime.Now,
 					UserId = createOrderRequest.UserId,
 					Amount = createOrderRequest.TotalAmount,
 					Status = 0 // Pending

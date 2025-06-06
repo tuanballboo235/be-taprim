@@ -8,63 +8,71 @@ using TAPrim.Shared.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// ✅ Lắng nghe đúng cổng Docker expose
+builder.WebHost.UseUrls("http://0.0.0.0:8080");
+
 // Thêm các dịch vụ vào container.
 builder.Services.AddControllers();
-
-// Cấu hình Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// ✅ Cấu hình DbContext
 builder.Services.AddDbContext<TaprimContext>(options =>
 	options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
-// Đăng ký các dịch vụ thông qua Reflection
+
+// ✅ Đăng ký dịch vụ tự động qua reflection
 var assembly = Assembly.GetExecutingAssembly();
 foreach (var type in assembly.GetTypes())
 {
-	// Kiểm tra nếu là class (không phải abstract hoặc BackgroundService)
 	if (type.IsClass && !type.IsAbstract && !typeof(BackgroundService).IsAssignableFrom(type))
 	{
-		// Lấy interface đầu tiên mà lớp implement
 		var interfaceType = type.GetInterfaces().FirstOrDefault();
 		if (interfaceType != null)
 		{
-			builder.Services.AddScoped(interfaceType, type);  // Đăng ký dịch vụ theo interface và lớp thực thi
+			builder.Services.AddScoped(interfaceType, type);
 		}
 	}
 }
-builder.Services.AddHttpClient();  // Đăng ký HttpClient vào DI container
+
+builder.Services.AddHttpClient();
+
+// ✅ CORS chỉ bật trong dev
 builder.Services.AddCors(options =>
 {
-	options.AddPolicy("AllowReactDev",
-		builder =>
-		{
-			builder
-				.WithOrigins("http://localhost:5173") // ✅ port React đang chạy
-				.AllowAnyHeader()
-				.AllowAnyMethod()
-				.AllowCredentials(); // nếu dùng cookies/auth
-		});
+	options.AddPolicy("AllowReactDev", policy =>
+	{
+		policy.WithOrigins("http://localhost:5173")
+			  .AllowAnyHeader()
+			  .AllowAnyMethod()
+			  .AllowCredentials();
+	});
 });
-//cấu hình VietQr trong appsettings
+
+// ✅ Đăng ký config và helpers
 builder.Services.Configure<VietQrDto>(builder.Configuration.GetSection("VietQr"));
-//Cấu hình TransactionCodeHelper
 builder.Services.AddScoped<TransactionCodeHelper>();
 
-
 var app = builder.Build();
-app.UseCors("AllowReactDev");
-// Cấu hình pipeline HTTP request.
+
+// ✅ Tự động migrate DB nếu cần
+using (var scope = app.Services.CreateScope())
+{
+	var db = scope.ServiceProvider.GetRequiredService<TaprimContext>();
+	db.Database.Migrate(); // hoặc db.EnsureCreated() nếu không dùng migration
+}
+
+// ✅ Middleware pipeline
+app.UseRouting();
+
 if (app.Environment.IsDevelopment())
 {
-	// Cấu hình Swagger UI chỉ trong môi trường Development
 	app.UseSwagger();
 	app.UseSwaggerUI();
+	app.UseCors("AllowReactDev");
 }
-app.UseStaticFiles(); // Cho phép truy cập file tĩnh trong wwwroot
 
-// Sử dụng Authorization (nếu cần)
+app.UseStaticFiles();
 app.UseAuthorization();
 
-// Ánh xạ các controller
 app.MapControllers();
-
 app.Run();
