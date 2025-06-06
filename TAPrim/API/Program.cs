@@ -9,7 +9,11 @@ using TAPrim.Shared.Helpers;
 var builder = WebApplication.CreateBuilder(args);
 
 // ✅ Lắng nghe đúng cổng Docker expose
-builder.WebHost.UseUrls("http://0.0.0.0:8080");
+if (builder.Environment.IsProduction())
+{
+	builder.WebHost.UseUrls("http://0.0.0.0:8080");
+}
+
 
 // Thêm các dịch vụ vào container.
 builder.Services.AddControllers();
@@ -64,10 +68,13 @@ using (var scope = app.Services.CreateScope())
 // ✅ Middleware pipeline
 app.UseRouting();
 
+// ✅ Luôn bật Swagger ở mọi môi trường
+app.UseSwagger();
+app.UseSwaggerUI();
+
+// ✅ CORS chỉ bật trong môi trường phát triển
 if (app.Environment.IsDevelopment())
 {
-	app.UseSwagger();
-	app.UseSwaggerUI();
 	app.UseCors("AllowReactDev");
 }
 
