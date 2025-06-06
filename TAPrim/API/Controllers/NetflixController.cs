@@ -18,7 +18,7 @@ namespace TAPrim.API.Controllers
 			_netflixServices = netflixServices;
 		}
 
-		[HttpGet("get-email-temporary-watch-netflix")]
+		[HttpGet("get-email-temporary-watch-netflixs")]
 		public async Task<IActionResult> GetNetflixMail([FromQuery] NetflixMailRequest request) {
 			return ApiResponseHelper.HandleApiResponse(await _netflixServices.GetJsonDataAsync(request.Email, request.TypeMailRequest));
 		}
