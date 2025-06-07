@@ -113,10 +113,6 @@ public partial class TaprimContext : DbContext
                 .HasColumnName("updateAt");
             entity.Property(e => e.UserId).HasColumnName("userId");
 
-            entity.HasOne(d => d.Coupon).WithMany(p => p.Orders)
-                .HasForeignKey(d => d.CouponId)
-                .HasConstraintName("Order__couponId_fk");
-
             entity.HasOne(d => d.ProductAccount).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.ProductAccountId)
                 .HasConstraintName("Order__productAccountId_fk");
@@ -125,10 +121,6 @@ public partial class TaprimContext : DbContext
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Order__productId_fk");
-
-            entity.HasOne(d => d.User).WithMany(p => p.Orders)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("Order__userId_fk");
         });
 
         modelBuilder.Entity<Payment>(entity =>

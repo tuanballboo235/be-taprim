@@ -27,13 +27,9 @@ public partial class Order
 
     public DateTime? ExpiredAt { get; set; }
 
-    public virtual Coupon? Coupon { get; set; }
-
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
     public virtual Product Product { get; set; } = null!;
 
     public virtual ProductAccount? ProductAccount { get; set; }
-
-    public virtual User? User { get; set; }
 }

@@ -19,7 +19,5 @@ public partial class User
 
     public string Role { get; set; } = null!;
 
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
-
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }
