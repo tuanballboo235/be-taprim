@@ -6,6 +6,7 @@ namespace TAPrim.Infrastructure.Repositories
 	{
 		Task AddOrderAsync(Order orders);
 		Task<Order?> FindByPaymentTransactionCodeAsync(string transactionCode);
+		Task<Order?> FindByProductAccountId(int productAccountId);
 		Task SaveChange();
 	}
 }

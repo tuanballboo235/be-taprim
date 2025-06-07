@@ -25,6 +25,13 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 								 .FirstOrDefaultAsync();
 		}
 
+		public async Task<Order?> FindByProductAccountId(int productAccountId)
+		{
+			return await _context.Orders
+								 .Where(o => o.ProductAccountId == productAccountId)
+								 .FirstOrDefaultAsync();
+		}
+
 		public async Task SaveChange()
 		{
 			await _context.SaveChangesAsync();
