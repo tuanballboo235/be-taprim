@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Runtime.InteropServices;
 using TAPrim.Application.DTOs.Order;
 using TAPrim.Application.Services;
 using TAPrim.Common.Helpers;
@@ -17,6 +18,12 @@ namespace TAPrim.API.Controllers
 		public async Task<IActionResult> GetOrderByProductAccountId([FromBody] OrderByProductAcountRequestDto request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _orderService.GetOrderByProductAccount(request.ProductAccountId));
+		}
+
+		[HttpPost("update-order)")]
+		public async Task<IActionResult> UpdateOrder([FromBody] OrderByProductAcountRequestDto request)
+		{
+			return Ok();
 		}
 	}
 }
