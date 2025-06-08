@@ -72,9 +72,12 @@ namespace TAPrim.Application.Services.ServiceImpl
             }).ToList();
 
             return new ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>
-            {
-                Data = new PagedResponseDto<ProductAccountResponseDto>
+			{
+				Status = ApiResponseStatusConstant.SuccessStatus,
+
+				Data = new PagedResponseDto<ProductAccountResponseDto>
                 {
+                    
                     Items = mapped,
                     TotalRecords = result.TotalRecords,
                     TotalPages = result.TotalPages,

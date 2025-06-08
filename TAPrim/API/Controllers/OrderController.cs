@@ -14,7 +14,7 @@ namespace TAPrim.API.Controllers
 		private readonly IOrderService _orderService;
 		OrderController(IOrderService orderService) => _orderService = orderService;
 		
-		[HttpGet("get-order-by-product-account-id")]
+		[HttpPost("get-order-by-product-account-id")]
 		public async Task<IActionResult> GetOrderByProductAccountId([FromBody] OrderByProductAcountRequestDto request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _orderService.GetOrderByProductAccount(request.ProductAccountId));
