@@ -43,14 +43,15 @@ builder.Services.AddHttpClient();
 // ✅ CORS chỉ bật trong dev
 builder.Services.AddCors(options =>
 {
-	options.AddPolicy("AllowReactDev", policy =>
+	options.AddPolicy("AllowFrontend", policy =>
 	{
-		policy.WithOrigins("http://localhost:5173")
-			  .AllowAnyHeader()
-			  .AllowAnyMethod()
-			  .AllowCredentials();
+		policy
+			.WithOrigins("http://localhost:5173", "http://103.238.235.227:8080") // 👈 sửa theo IP React app
+			.AllowAnyHeader()
+			.AllowAnyMethod();
 	});
 });
+
 
 // ✅ Đăng ký config và helpers
 builder.Services.Configure<VietQrDto>(builder.Configuration.GetSection("VietQr"));
@@ -72,11 +73,8 @@ app.UseRouting();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// ✅ CORS chỉ bật trong môi trường phát triển
-if (app.Environment.IsDevelopment())
-{
-	app.UseCors("AllowReactDev");
-}
+app.UseCors("AllowFrontend"); // 👈 không cần if
+
 
 app.UseStaticFiles();
 app.UseAuthorization();
