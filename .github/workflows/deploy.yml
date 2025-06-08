@@ -17,9 +17,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Debug – List all files recursively
-      run: ls -lR
-
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
@@ -43,11 +40,19 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
+          echo "🛠️ Pulling latest image..."
           docker pull ${{ env.IMAGE_NAME }}:latest
+
+          echo "🧼 Stopping & removing old container..."
           docker stop ${{ env.CONTAINER_NAME }} || true
           docker rm ${{ env.CONTAINER_NAME }} || true
+
+          echo "🚀 Running new container..."
           docker run -d \
             --name ${{ env.CONTAINER_NAME }} \
             -p 80:8080 \
             -e ASPNETCORE_ENVIRONMENT=Production \
             ${{ env.IMAGE_NAME }}:latest
+
+          echo "🧹 Cleaning up unused Docker images..."
+          docker image prune -f
