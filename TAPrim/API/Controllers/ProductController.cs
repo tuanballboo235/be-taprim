@@ -34,6 +34,6 @@ namespace TAPrim.API.Controllers
 		{
 			var products = await _productService.GetProductListAsync();
 			return Ok(products);
-		}
+		} 
 	}
 }
