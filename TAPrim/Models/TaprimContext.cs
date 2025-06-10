@@ -171,7 +171,9 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.ProductId).HasColumnName("productId");
             entity.Property(e => e.AttentionNote).HasColumnName("attentionNote");
             entity.Property(e => e.CategoryId).HasColumnName("categoryId");
-            entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.Description)
+                .HasMaxLength(1)
+                .HasColumnName("description");
             entity.Property(e => e.DiscountPercentDisplay).HasColumnName("discountPercentDisplay");
             entity.Property(e => e.DurationDay).HasColumnName("durationDay");
             entity.Property(e => e.Price).HasColumnName("price");

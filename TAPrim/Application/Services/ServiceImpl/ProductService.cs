@@ -84,6 +84,9 @@ namespace TAPrim.Application.Services.ServiceImpl
 				Data = dto
 			};
 		}
-
+		public async Task<List<ProductDetailResponseDto>> GetProductListAsync()
+		{
+			return await _productRepo.GetAllAsync();
+		}
 	}
 }

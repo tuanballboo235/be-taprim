@@ -8,7 +8,7 @@
 		public int CategoryId { get; set; }
 		public string? AttentionNote { get; set; }
 		public int? DiscountPercentDisplay { get; set; }
-		public int? Description { get; set; }
+		public string? Description { get; set; }
 		public string? ProductCode { get; set; }
 		public IFormFile ProductImage { get; set; } = null!;
 	}

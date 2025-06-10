@@ -8,6 +8,7 @@ namespace TAPrim.Application.Services
     {
         Task<ApiResponseModel<Product>> CreateProductAsync(CreateProductRequest dto);
         Task<ApiResponseModel<ProductDetailResponseDto>> GetProductDetailAsync(int productId);
+		Task<List<ProductDetailResponseDto>> GetProductListAsync();
 
 	}
 }

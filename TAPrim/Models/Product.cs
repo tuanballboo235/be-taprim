@@ -19,7 +19,7 @@ public partial class Product
 
     public string? AttentionNote { get; set; }
 
-    public int? Description { get; set; }
+    public string? Description { get; set; }
 
     public string ProductImage { get; set; } = null!;
 

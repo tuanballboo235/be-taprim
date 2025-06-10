@@ -27,5 +27,13 @@ namespace TAPrim.API.Controllers
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productService.GetProductDetailAsync(productId));
 		}
+
+
+		[HttpGet("list-products")]
+		public async Task<IActionResult> GetProductList()
+		{
+			var products = await _productService.GetProductListAsync();
+			return Ok(products);
+		}
 	}
 }

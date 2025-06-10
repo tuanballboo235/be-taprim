@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using TAPrim.Application.DTOs.Products;
 using TAPrim.Models;
 
 namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
@@ -23,6 +24,23 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			return await _context.Products
 				.Include(p => p.Category)
 				.FirstOrDefaultAsync(p => p.ProductId == id);
+		}
+
+		public async Task<List<ProductDetailResponseDto>> GetAllAsync()
+		{
+			return await _context.Products
+								 .Include(p => p.Category).Select(x=>new ProductDetailResponseDto
+								 {
+									 ProductId=x.ProductId,
+									 ProductName=x.ProductName,
+									 Price=x.Price,
+									 CategoryName=x.Category.CategoryName,
+									 CategoryId=x.Category.CategoryId,
+									 ProductCode=x.ProductCode,
+									 Description=x.Description,
+									 ProductImage=x.ProductImage
+								 })
+								 .ToListAsync();
 		}
 	}
 }
