@@ -39,7 +39,6 @@ public partial class TaprimContext : DbContext
 		IConfigurationRoot configuration = builder.Build();
 		optionsBuilder.UseSqlServer(configuration.GetConnectionString("MyCnn"));
 	}
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -94,6 +93,10 @@ public partial class TaprimContext : DbContext
             entity.ToTable("Order");
 
             entity.Property(e => e.OrderId).HasColumnName("orderId");
+            entity.Property(e => e.ContactInfo)
+                .HasMaxLength(200)
+                .IsUnicode(false)
+                .HasColumnName("contactInfo");
             entity.Property(e => e.CouponId).HasColumnName("couponId");
             entity.Property(e => e.CreateAt)
                 .HasColumnType("datetime")

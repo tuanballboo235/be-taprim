@@ -27,6 +27,8 @@ public partial class Order
 
     public DateTime? ExpiredAt { get; set; }
 
+    public string? ContactInfo { get; set; }
+
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
     public virtual Product Product { get; set; } = null!;
