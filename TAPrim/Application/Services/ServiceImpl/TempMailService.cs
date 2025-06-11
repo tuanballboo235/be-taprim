@@ -41,12 +41,9 @@ namespace TAPrim.Application.Services.ServiceImpl
 		}
 
 		// Lấy ra email netflix update house  
-		public async Task<ApiResponseModel<List<TempmailEmailItemDto>>> EmailNetflixUpdateHouseFilter(string transactionCode)
+		public async Task<ApiResponseModel<List<TempmailEmailItemDto>>> EmailNetflixUpdateHouseFilter()
 		{
 			var apiResponse = new ApiResponseModel<List<TempmailEmailItemDto>>();
-
-
-		
 			try
 			{
 				// URL chuẩn

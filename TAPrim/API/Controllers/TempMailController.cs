@@ -16,9 +16,9 @@ namespace TAPrim.API.Controllers
 			_tempmailService = tempmailService;
 		}
 		[HttpPost("get-netflix-update-family")]
-		public async Task<IActionResult> GetNetflixMail([FromBody] TransactionCodeRequestDto request)
+		public async Task<IActionResult> GetNetflixMail()
 		{
-			return ApiResponseHelper.HandleApiResponse(await _tempmailService.EmailNetflixUpdateHouseFilter(request.TransactionCode));
+			return ApiResponseHelper.HandleApiResponse(await _tempmailService.EmailNetflixUpdateHouseFilter());
 		}
 
 		[HttpPost("get-netflix-code-sign-in")]
