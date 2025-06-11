@@ -45,18 +45,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 		{
 			var apiResponse = new ApiResponseModel<List<TempmailEmailItemDto>>();
 
-			//lấy ra order theo payment transaction Code
-			var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
-			if (!await ValidateOrder(order, apiResponse))
-			{
-				return apiResponse;
-			}
 
-			// Kiểm tra xem có đc lấy code Chatgpt ko 
-			if (!await IsAllowGetNetflixMail(order, apiResponse))
-			{
-				return apiResponse;
-			}
+		
 			try
 			{
 				// URL chuẩn
