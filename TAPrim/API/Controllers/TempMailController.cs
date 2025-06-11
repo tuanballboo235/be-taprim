@@ -27,7 +27,7 @@ namespace TAPrim.API.Controllers
 			return ApiResponseHelper.HandleApiResponse(await _tempmailService.GetNetflixCodeLoginEmailFilter(request.TransactionCode));
 		}
 
-		[HttpPost("get-chatgpt-authen-code")]
+		[HttpGet("get-chatgpt-authen-code")]
 		public async Task<IActionResult> GetChatgptAuthenCode([FromBody] TransactionCodeRequestDto request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _tempmailService.GetChatgptVerificationEmailFilter(request.TransactionCode));
