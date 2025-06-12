@@ -8,6 +8,7 @@ namespace TAPrim.Infrastructure.Repositories
         Task AddProductAsync(Product product);
         Task<Product?> GetProductByIdAsync(int id);
 		Task<List<ProductDetailResponseDto>> GetAllAsync();
+		Task<Product> UpdateProductAsync(Product updated);
 
 	}
 }

@@ -50,6 +50,60 @@ namespace TAPrim.Application.Services.ServiceImpl
             };
         }
 
+		public async Task<ApiResponseModel<ProductDetailResponseDto>> UpdateProductAsync(UpdateProductRequest dto)
+		{
+			var product = await _productRepo.GetProductByIdAsync(dto.ProductId);
+			if (product == null)
+			{
+				return new ApiResponseModel<ProductDetailResponseDto>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Không tìm thấy sản phẩm"
+				};
+			}
+
+			string imagePath = product.ProductImage;
+			if (dto.ProductImage != null)
+			{
+				imagePath = await _fileService.SaveImageAsync(dto.ProductImage);
+			}
+
+			// Gán lại thông tin
+			product.ProductName = dto.ProductName;
+			product.DiscountPercentDisplay = dto.DiscountPercentDisplay;
+			product.Price = dto.Price ?? product.Price;
+			product.Status = dto.Status ?? product.Status;
+			product.CategoryId = dto.CategoryId ?? product.CategoryId;
+			product.AttentionNote = dto.AttentionNote;
+			product.Description = dto.Description;
+			product.ProductCode = dto.ProductCode;
+			product.ProductImage = imagePath;
+
+			var updated = await _productRepo.UpdateProductAsync(product);
+
+			var response = new ProductDetailResponseDto
+			{
+				ProductId = updated.ProductId,
+				ProductName = updated.ProductName,
+				Price = updated.Price,
+				DiscountPercentDisplay = updated.DiscountPercentDisplay,
+				AttentionNote = updated.AttentionNote,
+				Description = updated.Description,
+				ProductImage = updated.ProductImage,
+				ProductCode = updated.ProductCode,
+				CategoryId = updated.CategoryId,
+				CategoryName = updated.Category?.CategoryName ?? "Unknown",
+				AccountStockQuantity = 0 // hoặc bỏ hoàn toàn field này nếu không cần
+			};
+
+			return new ApiResponseModel<ProductDetailResponseDto>
+			{
+				Status = ApiResponseStatusConstant.SuccessStatus,
+				Message = "Cập nhật thành công",
+				Data = response
+			};
+		}
+
 		public async Task<ApiResponseModel<ProductDetailResponseDto>> GetProductDetailAsync(int productId)
 		{
 			var product = await _productRepo.GetProductByIdAsync(productId);

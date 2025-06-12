@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application.DTOs.Products;
 using TAPrim.Common.Helpers;
 using TAPrim.Application.Services;
+using TAPrim.Application.DTOs;
+using TAPrim.Models;
 
 namespace TAPrim.API.Controllers
 {
@@ -27,7 +29,11 @@ namespace TAPrim.API.Controllers
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productService.GetProductDetailAsync(productId));
 		}
-
+		[HttpPut("update-product")]
+		public async Task<IActionResult> UpdateProduct([FromForm] UpdateProductRequest request)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _productService.UpdateProductAsync(request));
+		}
 
 		[HttpGet("list-products")]
 		public async Task<IActionResult> GetProductList()
