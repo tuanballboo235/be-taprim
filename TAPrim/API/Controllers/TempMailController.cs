@@ -36,6 +36,8 @@ namespace TAPrim.API.Controllers
 		[HttpPost("get-mail-content")]
 		public async Task<IActionResult> GetMailContent([FromBody] MailContentRequestDto request)
 		{
+			Console.WriteLine($"📥 EmailId nhận được từ client: {request?.EmailId}");
+
 			return ApiResponseHelper.HandleApiResponse(await _tempmailService.GetMailContentByEmailId(request.EmailId));
 		}
 	}

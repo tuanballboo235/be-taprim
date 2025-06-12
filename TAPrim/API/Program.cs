@@ -65,6 +65,7 @@ using (var scope = app.Services.CreateScope())
 	var db = scope.ServiceProvider.GetRequiredService<TaprimContext>();
 	db.Database.Migrate(); // hoặc db.EnsureCreated() nếu không dùng migration
 }
+app.UseStaticFiles();
 
 // ✅ Middleware pipeline
 app.UseRouting();
@@ -76,7 +77,6 @@ app.UseSwaggerUI();
 app.UseCors("AllowFrontend"); // 👈 không cần if
 
 
-app.UseStaticFiles();
 app.UseAuthorization();
 
 app.MapControllers();

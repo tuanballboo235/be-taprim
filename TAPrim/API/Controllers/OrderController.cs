@@ -20,7 +20,7 @@ namespace TAPrim.API.Controllers
 			return ApiResponseHelper.HandleApiResponse(await _orderService.GetOrderByProductAccount(request.ProductAccountId));
 		}
 
-		[HttpPost("update-order)")]
+		[HttpPost("update-order")]
 		public async Task<IActionResult> UpdateOrder([FromBody] OrderByProductAcountRequestDto request)
 		{
 			int a = 0;
