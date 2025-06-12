@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application.DTOs.Chatgpt;
 using TAPrim.Application.DTOs.Payment;
+using TAPrim.Application.DTOs.Tempmail;
 using TAPrim.Application.Services;
 using TAPrim.Common.Helpers;
 
@@ -32,6 +33,10 @@ namespace TAPrim.API.Controllers
 		{
 			return ApiResponseHelper.HandleApiResponse(await _tempmailService.GetChatgptVerificationEmailFilter(request.TransactionCode));
 		}
-
+		[HttpPost("get-mail-content")]
+		public async Task<IActionResult> GetMailContent([FromBody] MailContentRequestDto request)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _tempmailService.GetMailContentByEmailId(request.EmailId));
+		}
 	}
 }

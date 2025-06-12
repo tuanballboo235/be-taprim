@@ -61,7 +61,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					try
 					{
 
-						var result = JsonConvert.DeserializeObject<TempmailApiResponseDto>(data);
+						var result = JsonConvert.DeserializeObject<TempmailApiResponseDto<TempmailDataDto>>(data);
 
 						if (result != null && result.Success && result.Data != null && result.Data.Items != null)
 						{
@@ -143,7 +143,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					try
 					{
 
-						var result = JsonConvert.DeserializeObject<TempmailApiResponseDto>(data);
+						var result = JsonConvert.DeserializeObject<TempmailApiResponseDto<TempmailDataDto>>(data);
 
 						if (result != null && result.Success && result.Data != null && result.Data.Items != null)
 						{
@@ -224,7 +224,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					try
 					{
 
-						var result = JsonConvert.DeserializeObject<TempmailApiResponseDto>(data);
+						var result = JsonConvert.DeserializeObject<TempmailApiResponseDto<TempmailDataDto>>(data);
 
 						if (result != null && result.Success && result.Data != null && result.Data.Items != null)
 						{
@@ -241,6 +241,70 @@ namespace TAPrim.Application.Services.ServiceImpl
 						{
 							apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
 							apiResponse.Message = result?.Message ?? "No data found.";
+						}
+
+
+					}
+					catch (System.Text.Json.JsonException ex)
+					{
+						apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
+						apiResponse.Message = $"JSON deserialization error: {ex.Message}";
+					}
+				}
+				else
+				{
+					apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
+					apiResponse.Message = $"Error: {response.ReasonPhrase}";
+				}
+			}
+			catch (HttpRequestException ex)
+			{
+				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
+				apiResponse.Message = $"HttpRequestException: {ex.Message}";
+			}
+			catch (Exception ex)
+			{
+				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
+				apiResponse.Message = $"Unexpected error: {ex.Message}";
+			}
+
+			return apiResponse;
+		}
+
+		//Lấy Nội dung Email theo emailId
+		public async Task<ApiResponseModel<TempMailMessage>> GetMailContentByEmailId(string emailId)
+		{
+			var apiResponse = new ApiResponseModel<TempMailMessage>();
+			try
+			{
+				// URL chuẩn
+				var url = $"https://tempmail.id.vn/api/message/{emailId}";
+				_httpClient.DefaultRequestHeaders.Authorization =
+				new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "vQAtLsNbO4vmwVJO91iTiHeQfVFDznm0GGBxaUyq374d6c34");
+				var response = await _httpClient.GetAsync(url);
+
+				// Thêm header Authorization
+
+				if (response.IsSuccessStatusCode)
+				{
+					var data = await response.Content.ReadAsStringAsync();
+
+					try
+					{
+
+						var result = JsonConvert.DeserializeObject<TempmailApiResponseDto<TempMailMessage>>(data);
+
+						if (result != null)
+						{
+						
+							apiResponse.Status = ApiResponseStatusConstant.SuccessStatus;
+							apiResponse.Data = result.Data ?? new TempMailMessage() ;
+							apiResponse.Message = result != null ? "Lấy danh sách email thành công" : "Danh sách email trống";
+						}
+						else
+						{
+							apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
+							apiResponse.Message = result != null ? "Lấy danh sách email thành công" : "Danh sách email trống";
 						}
 
 
