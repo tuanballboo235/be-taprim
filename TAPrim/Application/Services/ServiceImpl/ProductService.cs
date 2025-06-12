@@ -55,8 +55,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 		{
 			try
 			{
-
-
 				var product = await _productRepo.GetProductByIdAsync(dto.ProductId);
 				if (product == null)
 				{
