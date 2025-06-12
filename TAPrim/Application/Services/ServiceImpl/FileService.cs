@@ -4,7 +4,7 @@
 	{
 		private readonly IWebHostEnvironment _env;
 		private readonly string[] _allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
-		private const long MaxFileSize = 2 * 1024 * 1024; // 2MB
+		private const long MaxFileSize = 20 * 1024 * 1024; // 2MB
 
 		public FileService(IWebHostEnvironment env)
 		{
@@ -12,8 +12,6 @@
 		}
 
 		public async Task<string> SaveImageAsync(IFormFile file)
-
-
 		{
 			if (file == null || file.Length == 0)
 				throw new Exception("File không hợp lệ.");
