@@ -66,6 +66,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 						Message = "Không tìm thấy sản phẩm"
 					};
 				}
+				//lưu lại đường dẫn cũ của file để xóa 
+				string oldImgPath = product.ProductImage;
 
 				string imagePath = product.ProductImage;
 				if (dto.ProductImage != null)
@@ -101,7 +103,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					AccountStockQuantity = 0 // hoặc bỏ hoàn toàn field này nếu không cần
 				};
 				//xóa file ảnh cũ ngay khi update thành công
-				await _fileService.DeleteImage(product.ProductImage);
+				await _fileService.DeleteImage(oldImgPath);
 				return new ApiResponseModel<ProductDetailResponseDto>
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
