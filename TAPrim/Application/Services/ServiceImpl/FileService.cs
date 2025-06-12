@@ -40,6 +40,16 @@
 			// ✅ Chỉ trả về đường dẫn tương đối để gán vào src
 			return $"/uploads/{fileName}";
 		}
+		public async Task DeleteImage(string relativePath)
+		{
+			if (string.IsNullOrWhiteSpace(relativePath)) return;
+
+			var filePath = Path.Combine(_env.WebRootPath, relativePath.TrimStart('/'));
+			if (File.Exists(filePath))
+			{
+				File.Delete(filePath);
+			}
+		}
 
 	}
 }

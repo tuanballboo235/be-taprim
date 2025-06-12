@@ -95,7 +95,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 				CategoryName = updated.Category?.CategoryName ?? "Unknown",
 				AccountStockQuantity = 0 // hoặc bỏ hoàn toàn field này nếu không cần
 			};
-
+			//xóa file ảnh cũ ngay khi update thành công
+			await _fileService.DeleteImage(product.ProductImage);
 			return new ApiResponseModel<ProductDetailResponseDto>
 			{
 				Status = ApiResponseStatusConstant.SuccessStatus,
