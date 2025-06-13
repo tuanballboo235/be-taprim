@@ -43,13 +43,23 @@ jobs:
           echo "🛠️ Pulling latest image..."
           docker pull ${{ env.IMAGE_NAME }}:latest
 
+          echo "🗄️ Creating .env file from GitHub secrets..."
+          cat <<EOF > .env
+          ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
+          VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
+          VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
+          VietQr__DefaultAccountNo=${{ secrets.VIETQR_ACCOUNTNO }}
+          VietQr__DefaultAccountName=${{ secrets.VIETQR_ACCOUNTNAME }}
+          EOF
+
           echo "🧼 Stopping & removing old container..."
           docker stop ${{ env.CONTAINER_NAME }} || true
           docker rm ${{ env.CONTAINER_NAME }} || true
 
-          echo "🚀 Running new container..."
+          echo "🚀 Running new container with .env..."
           docker run -d \
             --name ${{ env.CONTAINER_NAME }} \
+            --env-file .env \
             -p 80:8080 \
             -e ASPNETCORE_ENVIRONMENT=Production \
             ${{ env.IMAGE_NAME }}:latest
