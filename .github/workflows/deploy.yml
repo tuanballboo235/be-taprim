@@ -48,8 +48,7 @@ jobs:
           ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
           VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
           VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
-          VietQr__DefaultAccountNo=${{ secrets.VIETQR_ACCOUNTNO }}
-          VietQr__DefaultAccountName=${{ secrets.VIETQR_ACCOUNTNAME }}
+ 
           EOF
 
           echo "🧼 Stopping & removing old container..."
