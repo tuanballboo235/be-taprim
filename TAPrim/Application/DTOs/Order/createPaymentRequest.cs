@@ -1,6 +1,6 @@
 ﻿namespace TAPrim.Application.DTOs.Payment
 {
-	public class CreateOrderRequest
+	public class createPaymentRequest
 	{
 		public int? UserId { get; set; }
 		public int ProductId { get; set; }

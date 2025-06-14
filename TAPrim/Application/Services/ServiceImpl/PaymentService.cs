@@ -39,13 +39,13 @@ namespace TAPrim.Application.Services.ServiceImpl
 		}
 
 		//hàm GenerateQrAsync
-		public async Task<ApiResponseModel<object>> GenerateQrAsync(CreateOrderRequest createOrderRequest)
+		public async Task<ApiResponseModel<object>> GenerateQrAsync(createPaymentRequest createPaymentRequest)
 		{
 			var errors = new Dictionary<string, string>();
 			try
 			{
 				// Kiểm tra nếu product ko có product account thì báo lỗi 
-				var productAccount = await _productAccountRepository.GetProductAccountByProductId(createOrderRequest.ProductId);
+				var productAccount = await _productAccountRepository.GetProductAccountByProductId(createPaymentRequest.ProductId);
 				if (productAccount == null) {
 					return new ApiResponseModel<object>
 					{
@@ -62,8 +62,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 					TransactionCode = transactionCode,
 					PaymentMethod = 1, // QR Code
 					CreateAt = DateTime.Now,
-					UserId = createOrderRequest.UserId,
-					Amount = createOrderRequest.TotalAmount,
+					UserId = createPaymentRequest.UserId,
+					Amount = createPaymentRequest.TotalAmount,
 					Status = 0 // Pending
 				};
 				await _paymentRepository.AddPaymentAsync(payment);
@@ -75,7 +75,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					accountName = _vietQrConfig.DefaultAccountName,
 					acqId = _vietQrConfig.DefaultAcqId,
 					addInfo = transactionCode,
-					amount = createOrderRequest.TotalAmount,
+					amount = createPaymentRequest.TotalAmount,
 					template = _vietQrConfig.DefaultTemplate
 				};
 

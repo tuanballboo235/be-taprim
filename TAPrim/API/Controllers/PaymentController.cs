@@ -27,7 +27,7 @@ namespace TAPrim.API.Controllers
 		}
 
 		[HttpPost("generate-vietqr")]
-		public async Task<IActionResult> GenerateQrAndCreatePayment(CreateOrderRequest request)
+		public async Task<IActionResult> GenerateQrAndCreatePayment(createPaymentRequest request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _paymentService.GenerateQrAsync(request));
 		}
