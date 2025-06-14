@@ -21,7 +21,7 @@ namespace TAPrim.API.Controllers
 		{
 			string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
             Console.WriteLine(ipAddress);
-			return ApiResponseHelper.HandleApiResponse(await _tempmailService.EmailNetflixUpdateHouseFilter());
+			return ApiResponseHelper.HandleApiResponse(await _tempmailService.EmailNetflixUpdateHouseFilter(ipAddress));
 		}
 
 		[HttpPost("get-netflix-code-sign-in")]

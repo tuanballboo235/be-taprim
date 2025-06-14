@@ -41,7 +41,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		}
 
 		// Lấy ra email netflix update house  
-		public async Task<ApiResponseModel<List<TempmailEmailItemDto>>> EmailNetflixUpdateHouseFilter()
+		public async Task<ApiResponseModel<List<TempmailEmailItemDto>>> EmailNetflixUpdateHouseFilter(string ipaddress)
 		{
 			var apiResponse = new ApiResponseModel<List<TempmailEmailItemDto>>();
 			try
@@ -72,7 +72,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 							apiResponse.Status = ApiResponseStatusConstant.SuccessStatus;
 							apiResponse.Data = filteredEmails ?? new List<TempmailEmailItemDto>();
-							apiResponse.Message = filteredEmails.Count > 0 ? "Lấy danh sách email thành công" : "Danh sách email trống";
+							apiResponse.Message = filteredEmails.Count > 0 ? "Lấy danh sách email thành công" : $"Danh sách email trống {ipaddress}";
 
 						}
 						else
