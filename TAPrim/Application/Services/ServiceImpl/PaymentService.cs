@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using TAPrim.Models;
 using TAPrim.Application.DTOs.Payment;
 using TAPrim.Shared.Helpers;
+using TAPrim.Application.DTOs.Products;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
@@ -54,26 +55,10 @@ namespace TAPrim.Application.Services.ServiceImpl
 					};
 				}
 
-				// Tạo order
-				var order = new Order
-				{
-					UserId = createOrderRequest.UserId,
-					ProductId = createOrderRequest.ProductId,
-					CouponId = createOrderRequest.CouponId,
-					TotalAmount = createOrderRequest.TotalAmount,
-					Status = OrderStatus.Deactive, // Pending
-					CreateAt = DateTime.UtcNow,
-					UpdateAt = DateTime.UtcNow,
-					RemainGetCode = 3
-				};
-
-				await _orderRepository.AddOrderAsync(order);
-
 				// Tạo payment
 				var transactionCode = await _transactionCodeHelper.GetCode();
 				var payment = new Payment
 				{
-					OrderId = order.OrderId,
 					TransactionCode = transactionCode,
 					PaymentMethod = 1, // QR Code
 					CreateAt = DateTime.Now,
@@ -173,21 +158,28 @@ namespace TAPrim.Application.Services.ServiceImpl
 		}
 
 		//hàm set product account dựa vào product Account sau khi người dùng thanh toán thành công 
-		public async Task<ApiResponseModel<object>> SetProductAccountForPaymentByTransactionCode(SePayWebhookDto data)
+		public async Task<ApiResponseModel<object>> SetProductAccountForPaymentByTransactionCode(SePayWebhookDto data, ProductResponseDto productInforResponse )
 		{
 			// replace chuỗi 
 			var transactionCode = data.Content.Replace("QR - ", "");
 			//Kiểm tra có chuyển khoản đúng số tiền và mã transaction Code ko ??
-			var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
-			if (order == null)
+			var payment = await _paymentRepository.GetPaymentByTransactionCode(transactionCode);
+			// Tạo order
+			var order = new Order
 			{
-				return new ApiResponseModel<object>()
-				{
-					Status = ApiResponseStatusConstant.FailedStatus,
-					Message = "Không tìm thấy đơn",
-					Data = null
-				};
-			}
+				UserId = productInforResponse.UserId,
+				ProductId = productInforResponse.ProductId,
+				CouponId = productInforResponse.CouponId,
+				PaymentId = payment.PaymentId,
+				TotalAmount = data.TransferAmount,
+				Status = OrderStatus.Deactive, // Pending
+				CreateAt = DateTime.UtcNow,
+				UpdateAt = DateTime.UtcNow,
+				RemainGetCode = 3
+			};
+
+			await _orderRepository.AddOrderAsync(order);
+
 
 			// Nếu khách hàng chuyển sai tiền , thì ko cho thanh toán
 			if (order.TotalAmount != data.TransferAmount)

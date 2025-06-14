@@ -29,7 +29,9 @@ public partial class Order
 
     public string? ContactInfo { get; set; }
 
-    public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+    public int PaymentId { get; set; }
+
+    public virtual Payment Payment { get; set; } = null!;
 
     public virtual Product Product { get; set; } = null!;
 

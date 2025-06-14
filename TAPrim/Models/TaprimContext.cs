@@ -31,6 +31,7 @@ public partial class TaprimContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -96,6 +97,7 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.ExpiredAt)
                 .HasColumnType("datetime")
                 .HasColumnName("expiredAt");
+            entity.Property(e => e.PaymentId).HasColumnName("paymentId");
             entity.Property(e => e.ProductAccountId).HasColumnName("productAccountId");
             entity.Property(e => e.ProductId).HasColumnName("productId");
             entity.Property(e => e.RemainGetCode).HasColumnName("remainGetCode");
@@ -107,6 +109,11 @@ public partial class TaprimContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("updateAt");
             entity.Property(e => e.UserId).HasColumnName("userId");
+
+            entity.HasOne(d => d.Payment).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.PaymentId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Order_Payment");
 
             entity.HasOne(d => d.ProductAccount).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.ProductAccountId)
@@ -132,7 +139,6 @@ public partial class TaprimContext : DbContext
                 .HasColumnType("datetime")
                 .HasColumnName("createAt");
             entity.Property(e => e.Note).HasColumnName("note");
-            entity.Property(e => e.OrderId).HasColumnName("orderId");
             entity.Property(e => e.PaidDateAt)
                 .HasColumnType("datetime")
                 .HasColumnName("paidDateAt");
@@ -143,11 +149,6 @@ public partial class TaprimContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("transactionCode");
             entity.Property(e => e.UserId).HasColumnName("userId");
-
-            entity.HasOne(d => d.Order).WithMany(p => p.Payments)
-                .HasForeignKey(d => d.OrderId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Payment__orderId_fk");
 
             entity.HasOne(d => d.User).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.UserId)
