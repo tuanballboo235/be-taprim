@@ -51,7 +51,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 					{
 						Status = ApiResponseStatusConstant.FailedStatus,
 						Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098 ",
-						
 					};
 				}
 

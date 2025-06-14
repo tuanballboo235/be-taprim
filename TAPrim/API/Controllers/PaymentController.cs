@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application.DTOs;
 using TAPrim.Application.DTOs.Payment;
+using TAPrim.Application.DTOs.Products;
 using TAPrim.Application.Services;
 using TAPrim.Common.Helpers;
 using TAPrim.Infrastructure.Repositories;
@@ -19,12 +20,12 @@ namespace TAPrim.API.Controllers
 		{
 			_paymentService = paymentService;	
 		}
-		[HttpPost("sepay-webhook")]
-		public async Task<IActionResult> ReceiveAsync([FromBody] SePayWebhookDto data)
-		{
+		//[HttpPost("sepay-webhook")]
+		//public async Task<IActionResult> ReceiveAsync([FromBody] SePayWebhookDto data, [FromBody] ProductResponseDto productResponse)
+		//{
 
-			return ApiResponseHelper.HandleApiResponse(await _paymentService.SetProductAccountForPaymentByTransactionCode(data));
-		}
+		//	return ApiResponseHelper.HandleApiResponse(await _paymentService.SetProductAccountForPaymentByTransactionCode(data, productResponse));
+		//}
 
 		[HttpPost("generate-vietqr")]
 		public async Task<IActionResult> GenerateQrAndCreatePayment(createPaymentRequest request)

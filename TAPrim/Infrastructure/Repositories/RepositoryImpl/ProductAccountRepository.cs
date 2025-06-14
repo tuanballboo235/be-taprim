@@ -109,28 +109,29 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 		public async Task<ProductAccountResponseDto?> GetProductAccountByPaymentTransactionCode(string transactionCode)
 		{
-			// 1. Lấy ra payment
-			var payment = await _context.Payments
-				.Include(x => x.Order)
-				.Where(x => x.TransactionCode == transactionCode)
-				.FirstAsync();
+			//// 1. Lấy ra payment
+			//var payment = await _context.Payments
+			//	.Where(x => x.TransactionCode == transactionCode)
+			//	.FirstAsync();
 
-			// 2. Tìm ProductAccount (filter first!)
-			var productAccount = await _context.ProductAccounts
-				.Where(x => x.ProductAccountId == payment.Order.ProductAccountId)
-				.FirstOrDefaultAsync();
+			//// 2. Tìm ProductAccount (filter first!)
+			//var productAccount = await _context.Orders.Include(x=>x.Payment)
+			//	.Where(x => x.ProductAccountId == x.Payment.TransactionCode)
+			//	.FirstOrDefaultAsync();
 
-			if (productAccount == null)
-				return null;
+			//if (productAccount == null)
+			//	return null;
 
-			// 3. Chuyển sang DTO
-			var responseDto = new ProductAccountResponseDto
-			{
-				AccountData = productAccount.AccountData,
-				// Map other properties here as needed
-			};
+			//// 3. Chuyển sang DTO
+			//var responseDto = new ProductAccountResponseDto
+			//{
+			//	AccountData = productAccount.AccountData,
+			//	// Map other properties here as needed
+			//};
 
-			return responseDto;
+			//return responseDto;
+
+			return null;
 		}
 
 	}

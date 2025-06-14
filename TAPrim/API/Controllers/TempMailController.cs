@@ -19,6 +19,8 @@ namespace TAPrim.API.Controllers
 		[HttpGet("get-netflix-update-family")]
 		public async Task<IActionResult> GetNetflixMail()
 		{
+			string ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            Console.WriteLine(ipAddress);
 			return ApiResponseHelper.HandleApiResponse(await _tempmailService.EmailNetflixUpdateHouseFilter());
 		}
 
