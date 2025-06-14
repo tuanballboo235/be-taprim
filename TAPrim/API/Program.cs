@@ -5,26 +5,57 @@ using TAPrim.Application.Services.ServiceImpl;
 using TAPrim.Application.Services;
 using TAPrim.Application.DTOs;
 using TAPrim.Shared.Helpers;
+using DotNetEnv;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+	Args = args,
+	EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"
+});
 
-// ✅ Lắng nghe đúng cổng Docker expose
+// ✅ Lắng nghe đúng cổng khi chạy trong Docker production
 if (builder.Environment.IsProduction())
 {
 	builder.WebHost.UseUrls("http://0.0.0.0:8080");
 }
+/* Cấu hình env
+ */
+
+// Load cấu hình
+builder.Configuration
+	.SetBasePath(Directory.GetCurrentDirectory())
+	.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+	.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
+	.AddEnvironmentVariables(); // load biến từ system hoặc từ .env đã Load()
+
+// Nếu cần, vẫn có thể load .env (nếu không inject từ system env)
+Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+
+//==========================================
 
 
-// Thêm các dịch vụ vào container.
+// ✅ Đăng ký dịch vụ & middleware
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // ✅ Cấu hình DbContext
 builder.Services.AddDbContext<TaprimContext>(options =>
-	options.UseSqlServer(builder.Configuration.GetConnectionString("MyCnn")));
+	options.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionStrings__MyCnn")));
 
-// ✅ Đăng ký dịch vụ tự động qua reflection
+builder.Services.Configure<VietQrDto>(
+	builder.Configuration.GetSection("VietQr")
+);
+// ✅ Đăng ký config section VietQr
+builder.Services.Configure<VietQrDto>(options =>
+{
+	options.ClientId = Environment.GetEnvironmentVariable("VietQr__ClientId");
+	options.ApiKey = Environment.GetEnvironmentVariable("VietQr__ApiKey");
+});
+
+
+
+// ✅ Đăng ký dịch vụ qua reflection
 var assembly = Assembly.GetExecutingAssembly();
 foreach (var type in assembly.GetTypes())
 {
@@ -39,43 +70,39 @@ foreach (var type in assembly.GetTypes())
 }
 
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<TransactionCodeHelper>();
 
-// ✅ CORS chỉ bật trong dev
+// ✅ CORS - chỉ dùng khi dev hoặc cần allow FE IP cụ thể
 builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowFrontend", policy =>
 	{
-		policy
-			.WithOrigins("http://localhost:5173", "http://103.238.235.227:8080") // 👈 sửa theo IP React app
+		policy.WithOrigins(
+				"http://localhost:5173",
+				"http://103.238.235.227:8080"
+			)
 			.AllowAnyHeader()
 			.AllowAnyMethod();
 	});
 });
 
-
-// ✅ Đăng ký config và helpers
-builder.Services.Configure<VietQrDto>(builder.Configuration.GetSection("VietQr"));
-builder.Services.AddScoped<TransactionCodeHelper>();
-
 var app = builder.Build();
 
-// ✅ Tự động migrate DB nếu cần
+// ✅ Auto migrate DB nếu cần
 using (var scope = app.Services.CreateScope())
 {
 	var db = scope.ServiceProvider.GetRequiredService<TaprimContext>();
-	db.Database.Migrate(); // hoặc db.EnsureCreated() nếu không dùng migration
+	db.Database.Migrate(); // hoặc EnsureCreated()
 }
-app.UseStaticFiles();
 
-// ✅ Middleware pipeline
+app.UseStaticFiles();
 app.UseRouting();
 
-// ✅ Luôn bật Swagger ở mọi môi trường
+// ✅ Swagger (có thể ẩn nếu cần)
 app.UseSwagger();
 app.UseSwaggerUI();
 
-app.UseCors("AllowFrontend"); // 👈 không cần if
-
+app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 
