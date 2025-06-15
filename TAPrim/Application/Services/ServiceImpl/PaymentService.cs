@@ -22,6 +22,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		private readonly TransactionCodeHelper _transactionCodeHelper;
 		private readonly IProductAccountRepository _productAccountRepository;
 		private readonly ICouponRepository _couponRepository;
+		private readonly IProductRepository _productRepository;
 
 
 		public PaymentService(HttpClient httpClient,
@@ -30,7 +31,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 			IOrderRepository orderRepository,
 			TransactionCodeHelper transactionCodeHelper,
 			IProductAccountRepository productAccountRepository,
-			ICouponRepository couponRepository
+			ICouponRepository couponRepository,
+			IProductRepository productRepository
 			)
 		{
 			_httpClient = httpClient;
@@ -40,23 +42,40 @@ namespace TAPrim.Application.Services.ServiceImpl
 			_transactionCodeHelper = transactionCodeHelper;
 			_productAccountRepository = productAccountRepository;
 			_couponRepository = couponRepository;
+			_productRepository = productRepository;	
 		}
 
 		//hàm GenerateQrAsync
-		public async Task<ApiResponseModel<object>> GenerateQrAsync(createPaymentRequest createPaymentRequest)
+		public async Task<ApiResponseModel<object>> GenerateQrAsync(CreatePaymentRequest createPaymentRequest)
 		{
 			var errors = new Dictionary<string, string>();
 			try
 			{
 				// Kiểm tra nếu product ko có product account thì báo lỗi 
 				var productAccount = await _productAccountRepository.GetProductAccountByProductId(createPaymentRequest.ProductId);
-				if (productAccount == null) {
+				if (productAccount == null)
+				{
 					return new ApiResponseModel<object>
 					{
 						Status = ApiResponseStatusConstant.FailedStatus,
 						Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098 ",
 					};
 				}
+
+				// Tính toán amount + coupon
+
+				dynamic couponValue = null;
+				decimal totalAmount = 0;
+				// Xử lí giá đơn hàng dựa vào coupon
+				if (createPaymentRequest.CouponId != null)
+				{
+					//lấy ra giá trị 
+					couponValue = (await _couponRepository.FindById(createPaymentRequest.CouponId))?.DiscountPercent;
+
+					if (couponValue == null) totalAmount = createPaymentRequest.TotalAmount; //nếu ko có couponId
+					else totalAmount = (createPaymentRequest.TotalAmount * couponValue) / 100; // nếu có couponid
+				}
+
 
 				// Tạo payment
 				var transactionCode = await _transactionCodeHelper.GetCode();
@@ -66,21 +85,10 @@ namespace TAPrim.Application.Services.ServiceImpl
 					PaymentMethod = 1, // QR Code
 					CreateAt = DateTime.Now,
 					UserId = createPaymentRequest.UserId,
-					Amount = createPaymentRequest.TotalAmount,
+					Amount = totalAmount,
 					Status = 0 // Pending
 				};
 				await _paymentRepository.AddPaymentAsync(payment);
-
-				dynamic couponValue = null;
-				dynamic totalAmount = null;
-				// Xử lí giá đơn hàng dựa vào coupon
-				if (createPaymentRequest.CouponId != null){
-					//lấy ra giá trị 
-					 couponValue = (await _couponRepository.FindById(createPaymentRequest.CouponId))?.DiscountPercent;
-
-					if (couponValue == null) totalAmount = createPaymentRequest.TotalAmount; //nếu ko có couponId
-					else totalAmount = createPaymentRequest.TotalAmount * (couponValue /100); // nếu có couponid
-				}
 
 				// Tạo order tạm
 				var order = new Order
@@ -89,9 +97,12 @@ namespace TAPrim.Application.Services.ServiceImpl
 					PaymentId = payment.PaymentId,
 					CreateAt = DateTime.Now,
 					Status = OrderStatus.Deactive,//Not Active
-					TotalAmount = totalAmount
+					CouponId = createPaymentRequest.CouponId,
+					TotalAmount = totalAmount,
+					ContactInfo = createPaymentRequest.EmailOrder,
+					ClientNote = createPaymentRequest.ClientNote,
 				};
-
+				await _orderRepository.AddOrderAsync(order);
 				//khởi tạo object để có thể gene ra vietqr
 				var payload = new
 				{
@@ -99,7 +110,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					accountName = _vietQrConfig.DefaultAccountName,
 					acqId = _vietQrConfig.DefaultAcqId,
 					addInfo = transactionCode,
-					amount = createPaymentRequest.TotalAmount,
+					amount = totalAmount,
 					template = _vietQrConfig.DefaultTemplate
 				};
 
@@ -184,67 +195,92 @@ namespace TAPrim.Application.Services.ServiceImpl
 		//hàm set product account dựa vào product Account sau khi người dùng thanh toán thành công 
 		public async Task<ApiResponseModel<object>> SetProductAccountForPaymentByTransactionCode(SePayWebhookDto data)
 		{
-			// replace chuỗi 
-			var transactionCode = data.Content.Replace("QR - ", "");
-			//Kiểm tra có chuyển khoản đúng số tiền và mã transaction Code ko ??
-			var payment = await _paymentRepository.GetPaymentByTransactionCode(transactionCode);
-			// Tạo order
-			var order = new Order
+			try
 			{
-				PaymentId = payment.PaymentId,
-				TotalAmount = data.TransferAmount,
-				Status = OrderStatus.Deactive, // Pending
-				CreateAt = DateTime.UtcNow,
-				UpdateAt = DateTime.UtcNow,
-				RemainGetCode = 3
-			};
+				// replace chuỗi 
+				var transactionCode = data.Content.Replace("QR - ", "");
 
-			await _orderRepository.AddOrderAsync(order);
+				var payment = await _paymentRepository.GetPaymentByTransactionCode(transactionCode);
 
-			// Nếu khách hàng chuyển sai tiền , thì ko cho thanh toán
-			if (order.TotalAmount != data.TransferAmount)
+				//Cập nhật lại trạng thái payment 
+				payment.Status = 1;
+				payment.PaidDateAt = DateTime.Parse(data.TransactionDate);
+				payment.Status = PaymentConstatnt.Paid;
+
+				await _paymentRepository.SaveChange();
+
+			// cập nhật order
+				var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
+
+				if (order == null)
+				{
+					return new ApiResponseModel<object>()
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Đơn hàng không tồn tại",
+					};
+				}
+				// Nếu khách hàng chuyển sai tiền , thì ko cho thanh toán
+				if (order.TotalAmount != data.TransferAmount)
+				{
+					return new ApiResponseModel<object>()
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Bạn đã chuyển khoản sai giá trị đơn hàng, vui lòng liên hệ zalo: 0344665098 để được hỗ trợ",
+						Data = order
+					};
+				}
+
+
+				var productAccount = await _productAccountRepository.GetProductAccountByProductId(order.ProductId);
+				//kiểm tra còn tài khoản ko 
+				if (productAccount == null)
+				{
+					return new ApiResponseModel<object>
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
+
+					};
+				}
+				else
+				{
+					//Nếu lượt bán > 1 thì giảm lượt bán xuống
+					if (productAccount.SellCount > 1)
+					{
+						productAccount.SellCount -= 1;
+					}
+					else //còn ko thì cập nhật trạng thái thành 1, là đã bán
+					{
+						productAccount.Status = ProductAccountStatusConstant.Unavailable;
+					}
+
+				}
+
+				//lấy ra product
+				var dayAccount = (await _productRepository.GetProductByIdAsync(order.ProductId))?.DurationDay;
+				//sau khi thanh toán thành công thì set cho order tk 
+				order.ProductAccountId = productAccount?.ProductAccountId;
+				order.Status = OrderStatus.Active;
+				order.RemainGetCode = 3;
+				order.ExpiredAt = DateTime.Now.AddDays(dayAccount ?? 0);
+
+				await _orderRepository.SaveChange();
+				return new ApiResponseModel<object>()
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Message = "Lấy tài khoản thành công",
+				};
+			}
+			catch (Exception ex)
 			{
 				return new ApiResponseModel<object>()
 				{
 					Status = ApiResponseStatusConstant.FailedStatus,
-					Message = "Bạn đã chuyển khoan sai giá trị đơn hàng, vui lòng liên hệ zalo: 0344665098 để được hỗ trợ",
-					Data = order
+					Message = "Lấy tài khoản thành công",
 				};
-			}
-
-
-				var productAccount = await _productAccountRepository.GetProductAccountByProductId(order.ProductId);
-			//kiểm tra còn tài khoản ko 
-			if (productAccount == null)
-			{
-				return new ApiResponseModel<object>
-				{
-					Status = ApiResponseStatusConstant.FailedStatus,
-					Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098 ",
-
-				};
-			}
-			else
-			{
-				//Nếu lượt bán > 1 thì giảm lượt bán xuống
-				if (productAccount.SellCount > 1)
-				{
-					productAccount.SellCount -= 1;
-				}
-				else //còn ko thì cập nhật trạng thái thành 1, là đã bán
-				{
-					productAccount.Status = ProductAccountStatusConstant.Unavailable;
-				}
 
 			}
-			//sau khi thanh toán thành công thì set cho order tk 
-			order.ProductAccountId = productAccount?.ProductAccountId;
-			await _orderRepository.SaveChange();
-			return new ApiResponseModel<object>()
-			{
-				Status = ApiResponseStatusConstant.SuccessStatus,
-				Message = "Lấy tài khoản thành công",
-			};
 		}
 	}
 }

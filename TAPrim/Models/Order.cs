@@ -29,6 +29,8 @@ public partial class Order
 
     public decimal? TotalAmount { get; set; }
 
+    public string? ClientNote { get; set; }
+
     public virtual Payment Payment { get; set; } = null!;
 
     public virtual Product Product { get; set; } = null!;

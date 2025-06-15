@@ -11,5 +11,6 @@
 		public string? Description { get; set; }
 		public string? ProductCode { get; set; }
 		public IFormFile ProductImage { get; set; } = null!;
+		public int? DurationDay { get; set; }
 	}
 }

@@ -89,6 +89,7 @@ public partial class TaprimContext : DbContext
             entity.ToTable("Order");
 
             entity.Property(e => e.OrderId).HasColumnName("orderId");
+            entity.Property(e => e.ClientNote).HasColumnName("clientNote");
             entity.Property(e => e.ContactInfo)
                 .HasMaxLength(200)
                 .IsUnicode(false)

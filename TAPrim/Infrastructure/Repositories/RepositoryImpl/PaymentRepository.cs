@@ -26,5 +26,10 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		{
 			return await _context.Payments.AnyAsync(x => x.TransactionCode == transactionCode);
 		}
+
+		public async Task SaveChange()
+		{
+			await _context.SaveChangesAsync();
+		}
 	}
 }
