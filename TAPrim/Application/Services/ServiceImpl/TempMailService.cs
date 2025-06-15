@@ -121,6 +121,9 @@ namespace TAPrim.Application.Services.ServiceImpl
 				return apiResponse;
 			}
 
+			//lấy ra productAccount để so sánh với email trả về
+			var productAccount = await _productAccountRepository.GetProductAccountByPaymentTransactionCode(transactionCode);
+
 			// Kiểm tra xem có đc lấy code Chatgpt ko 
 			if (!await IsAllowGetNetflixMail(order, apiResponse))
 			{

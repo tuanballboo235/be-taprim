@@ -20,12 +20,12 @@ namespace TAPrim.API.Controllers
 		{
 			_paymentService = paymentService;	
 		}
-		//[HttpPost("sepay-webhook")]
-		//public async Task<IActionResult> ReceiveAsync([FromBody] SePayWebhookDto data, [FromBody] ProductResponseDto productResponse)
-		//{
+		[HttpPost("sepay-webhook")]
+		public async Task<IActionResult> ReceiveAsync([FromBody] SePayWebhookDto data)
+		{
 
-		//	return ApiResponseHelper.HandleApiResponse(await _paymentService.SetProductAccountForPaymentByTransactionCode(data, productResponse));
-		//}
+			return ApiResponseHelper.HandleApiResponse(await _paymentService.SetProductAccountForPaymentByTransactionCode(data));
+		}
 
 		[HttpPost("generate-vietqr")]
 		public async Task<IActionResult> GenerateQrAndCreatePayment(createPaymentRequest request)

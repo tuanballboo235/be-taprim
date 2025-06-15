@@ -157,7 +157,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		}
 
 		//hàm set product account dựa vào product Account sau khi người dùng thanh toán thành công 
-		public async Task<ApiResponseModel<object>> SetProductAccountForPaymentByTransactionCode(SePayWebhookDto data, ProductResponseDto productInforResponse )
+		public async Task<ApiResponseModel<object>> SetProductAccountForPaymentByTransactionCode(SePayWebhookDto data)
 		{
 			// replace chuỗi 
 			var transactionCode = data.Content.Replace("QR - ", "");
