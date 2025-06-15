@@ -21,6 +21,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		private readonly IOrderRepository _orderRepository;
 		private readonly TransactionCodeHelper _transactionCodeHelper;
 		private readonly IProductAccountRepository _productAccountRepository;
+		private readonly ICouponRepository _couponRepository;
 
 
 		public PaymentService(HttpClient httpClient,
@@ -28,7 +29,9 @@ namespace TAPrim.Application.Services.ServiceImpl
 			IPaymentRepository paymentRepository,
 			IOrderRepository orderRepository,
 			TransactionCodeHelper transactionCodeHelper,
-			IProductAccountRepository productAccountRepository)
+			IProductAccountRepository productAccountRepository,
+			ICouponRepository couponRepository
+			)
 		{
 			_httpClient = httpClient;
 			_vietQrConfig = options.Value;
@@ -36,6 +39,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 			_orderRepository = orderRepository;
 			_transactionCodeHelper = transactionCodeHelper;
 			_productAccountRepository = productAccountRepository;
+			_couponRepository = couponRepository;
 		}
 
 		//hàm GenerateQrAsync
@@ -66,6 +70,27 @@ namespace TAPrim.Application.Services.ServiceImpl
 					Status = 0 // Pending
 				};
 				await _paymentRepository.AddPaymentAsync(payment);
+
+				dynamic couponValue = null;
+				dynamic totalAmount = null;
+				// Xử lí giá đơn hàng dựa vào coupon
+				if (createPaymentRequest.CouponId != null){
+					//lấy ra giá trị 
+					 couponValue = (await _couponRepository.FindById(createPaymentRequest.CouponId))?.DiscountPercent;
+
+					if (couponValue == null) totalAmount = createPaymentRequest.TotalAmount; //nếu ko có couponId
+					else totalAmount = createPaymentRequest.TotalAmount * (couponValue /100); // nếu có couponid
+				}
+
+				// Tạo order tạm
+				var order = new Order
+				{
+					ProductId = createPaymentRequest.ProductId,
+					PaymentId = payment.PaymentId,
+					CreateAt = DateTime.Now,
+					Status = OrderStatus.Deactive,//Not Active
+					TotalAmount = totalAmount
+				};
 
 				//khởi tạo object để có thể gene ra vietqr
 				var payload = new
@@ -166,9 +191,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 			// Tạo order
 			var order = new Order
 			{
-				UserId = productInforResponse.UserId,
-				ProductId = productInforResponse.ProductId,
-				CouponId = productInforResponse.CouponId,
 				PaymentId = payment.PaymentId,
 				TotalAmount = data.TransferAmount,
 				Status = OrderStatus.Deactive, // Pending
@@ -178,7 +200,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 			};
 
 			await _orderRepository.AddOrderAsync(order);
-
 
 			// Nếu khách hàng chuyển sai tiền , thì ko cho thanh toán
 			if (order.TotalAmount != data.TransferAmount)

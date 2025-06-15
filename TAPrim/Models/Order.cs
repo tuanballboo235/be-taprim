@@ -7,10 +7,6 @@ public partial class Order
 {
     public int OrderId { get; set; }
 
-    public int? UserId { get; set; }
-
-    public decimal? TotalAmount { get; set; }
-
     public int? CouponId { get; set; }
 
     public int ProductId { get; set; }
@@ -30,6 +26,8 @@ public partial class Order
     public string? ContactInfo { get; set; }
 
     public int PaymentId { get; set; }
+
+    public decimal? TotalAmount { get; set; }
 
     public virtual Payment Payment { get; set; } = null!;
 

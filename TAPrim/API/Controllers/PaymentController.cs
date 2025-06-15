@@ -23,7 +23,6 @@ namespace TAPrim.API.Controllers
 		[HttpPost("sepay-webhook")]
 		public async Task<IActionResult> ReceiveAsync([FromBody] SePayWebhookDto data)
 		{
-
 			return ApiResponseHelper.HandleApiResponse(await _paymentService.SetProductAccountForPaymentByTransactionCode(data));
 		}
 
