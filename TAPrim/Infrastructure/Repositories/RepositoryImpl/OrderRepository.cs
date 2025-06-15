@@ -19,11 +19,10 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		//hàm tìm kiếm Order theo Transaction Code 
 		public async Task<Order?> FindByPaymentTransactionCodeAsync(string transactionCode)
 		{
-			//return await _context.Payments
-			//					 .Where(p => p.TransactionCode == transactionCode)
-			//					 .Select(p => p.Order)
-			//					 .FirstOrDefaultAsync();
-			return null;
+			return await _context.Orders.Include(p => p.Payment)
+								 .Where(p => p.Payment.TransactionCode == transactionCode)
+								 .FirstOrDefaultAsync();
+			
 		}
 
 		public async Task<Order?> FindByProductAccountId(int productAccountId)

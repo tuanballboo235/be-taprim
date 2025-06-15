@@ -1,6 +1,11 @@
 
 dotnet ef dbcontext scaffold "server =103.238.235.227; database =Taprim;uid=sa;pwd=Tuananh235;TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -o Models -f  
 
+
+----------------
+update
+Update Models
+dotnet ef dbcontext scaffold "server =103.238.235.227; database = Taprim;uid=sa;pwd=Tuananh235;TrustServerCertificate=true" Microsoft.EntityFrameworkCore.SqlServer -o Models -f 
 ----------------------
 
 var builder = new ConfigurationBuilder()
