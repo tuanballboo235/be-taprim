@@ -6,7 +6,7 @@ on:
       - master
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     env:
@@ -26,7 +26,7 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Docker image
+    - name: Build and Push Docker image
       uses: docker/build-push-action@v4
       with:
         context: .
@@ -40,28 +40,30 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
-          echo "🛠️ Pulling latest image..."
+          set -e
+          cd ~/taprim || exit 1
+
+          echo "📁 Kiểm tra docker-compose.yml..."
+          [ -f docker-compose.yml ] && echo "✅ FOUND docker-compose.yml" || (echo "❌ MISSING docker-compose.yml" && exit 1)
+
+          echo "📄 Ghi file .env từ secrets"
+          cat > .env <<EOF
+ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
+ConnectionStrings__Redis=${{ secrets.REDIS }}
+VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
+VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
+EOF
+
+          echo "📦 Pull image mới nhất"
           docker pull ${{ env.IMAGE_NAME }}:latest
 
-          echo "🗄️ Creating .env file from GitHub secrets..."
-          cat <<EOF > .env
-          ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
-          VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
-          VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
- 
-          EOF
+          echo "🧼 Dừng & remove container cũ"
+          docker-compose down -v --remove-orphans
 
-          echo "🧼 Stopping & removing old container..."
-          docker stop ${{ env.CONTAINER_NAME }} || true
-          docker rm ${{ env.CONTAINER_NAME }} || true
+          echo "🚀 Khởi chạy lại toàn bộ container"
+          docker-compose up -d --force-recreate
 
-          echo "🚀 Running new container with .env..."
-          docker run -d \
-            --name ${{ env.CONTAINER_NAME }} \
-            --env-file .env \
-            -p 80:8080 \
-            -e ASPNETCORE_ENVIRONMENT=Production \
-            ${{ env.IMAGE_NAME }}:latest
+          echo "📋 Trạng thái container hiện tại:"
+          docker ps
 
-          echo "🧹 Cleaning up unused Docker images..."
-          docker image prune -f
+          echo "✅ Deploy thành công!"
