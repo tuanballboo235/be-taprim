@@ -42,44 +42,50 @@ jobs:
         script: |
           set -e
 
-          echo "📁 Clone project nếu chưa có ~/taprim"
-          if [ ! -d ~/taprim ]; then
+          echo "🔧 Cài git nếu chưa có"
+          if ! command -v git &> /dev/null; then
+            sudo apt update && sudo apt install git -y
+          fi
+
+          echo "📁 Kiểm tra ~/taprim"
+          if [ ! -d "$HOME/taprim" ]; then
             echo "🧲 Cloning repo qua SSH..."
             GIT_SSH_COMMAND='ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=no' \
-            git clone git@github.com:${{ github.repository }}.git ~/taprim
+              git clone -b master git@github.com:${{ github.repository }}.git ~/taprim
           else
-            echo "📂 Đã có ~/taprim → pull latest..."
-            cd ~/taprim && \
+            echo "📂 Đã có ~/taprim → pull latest"
+            cd ~/taprim
             GIT_SSH_COMMAND='ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=no' git pull
           fi
 
-          cd ~/taprim
+          echo "📁 Di chuyển vào thư mục docker-compose"
+          cd ~/taprim/TAPrim/TAPrim
 
-          echo "🔍 Kiểm tra docker-compose.yml..."
-          if [ ! -f docker-compose.yml ]; then
-            echo "❌ Không tìm thấy docker-compose.yml!"
+          echo "🔍 Kiểm tra docker-compose.yml"
+          if [ ! -f "docker-compose.yml" ]; then
+            echo "❌ Không tìm thấy docker-compose.yml trong TAPrim/TAPrim!"
+            ls -la
             exit 1
           fi
-          echo "✅ docker-compose.yml FOUND"
 
-          echo "📄 Ghi file .env từ GitHub Secrets"
-          cat > .env <<EOF
-          ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
-          ConnectionStrings__Redis=${{ secrets.REDIS }}
-          VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
-          VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
-          EOF
+          echo "📄 Ghi file .env"
+          cat <<EOF > .env
+ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
+ConnectionStrings__Redis=${{ secrets.REDIS }}
+VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
+VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
+EOF
 
-          echo "📦 Pull image mới nhất"
+          echo "📦 Pull Docker image mới"
           docker pull ${{ env.IMAGE_NAME }}:latest
 
-          echo "🧼 Dừng & remove container cũ (nếu có)"
+          echo "🧼 Dừng & xóa container cũ (nếu có)"
           docker-compose down -v --remove-orphans || true
 
-          echo "🚀 Khởi động lại container"
+          echo "🚀 Khởi chạy lại container"
           docker-compose up -d --force-recreate
 
           echo "📋 Trạng thái container hiện tại:"
           docker ps -a
 
-          echo "✅ Deploy hoàn tất!"
+          echo "✅ Deploy thành công!"
