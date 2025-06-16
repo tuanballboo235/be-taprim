@@ -1,59 +1,33 @@
-name: CI/CD Deploy to VPS
+- name: Deploy to VPS via SSH
+  uses: appleboy/ssh-action@v0.1.8
+  with:
+    host: ${{ secrets.VPS_HOST }}
+    username: ${{ secrets.VPS_USER }}
+    key: ${{ secrets.VPS_SSH_KEY }}
+    script: |
+      cd ~/taprim
 
-on:
-  push:
-    branches:
-      - master
+      echo "🧾 Danh sách file hiện tại:"
+      ls -la
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+      echo "📦 Pull image mới nhất"
+      docker pull ${{ env.IMAGE_NAME }}:latest
 
-    env:
-      IMAGE_NAME: tuanballboo/taprim
-      CONTAINER_NAME: taprim
+      echo "📄 Ghi file .env"
+      cat <<EOF > .env
+      ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
+      ConnectionStrings__Redis=${{ secrets.REDIS }}
+      VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
+      VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
+      EOF
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      echo "🔍 Kiểm tra docker-compose.yml có tồn tại không:"
+      [ -f docker-compose.yml ] && echo "✅ FOUND docker-compose.yml" || (echo "❌ MISSING docker-compose.yml" && exit 1)
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
+      echo "🚀 Chạy docker-compose up"
+      docker-compose down -v --remove-orphans
+      docker-compose pull
+      docker-compose up -d --force-recreate
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-
-    - name: Build and Push Docker image
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        push: true
-        tags: ${{ env.IMAGE_NAME }}:latest
-
-    - name: Deploy to VPS via SSH
-      uses: appleboy/ssh-action@v0.1.8
-      with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USER }}
-        key: ${{ secrets.VPS_SSH_KEY }}
-        script: |
-          cd ~/taprim
-          echo "📦 Pull image"
-          docker pull ${{ env.IMAGE_NAME }}:latest
-
-          echo "📄 Write .env file"
-          cat <<EOF > .env
-          ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
-          ConnectionStrings__Redis=${{ secrets.REDIS }}
-          VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
-          VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
-          EOF
-
-          echo "🛠️ docker-compose up"
-          docker-compose down
-          docker-compose up -d --force-recreate
-
-          echo "✅ Done!"
+      echo "📋 Trạng thái container:"
+      docker ps
