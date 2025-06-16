@@ -58,32 +58,32 @@ jobs:
             GIT_SSH_COMMAND='ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=no' git pull
           fi
 
-          echo "📁 Di chuyển vào thư mục docker-compose"
-          cd ~/taprim/TAPrim/TAPrim
+          echo "📁 Di chuyển vào thư mục chứa docker-compose.yaml"
+          cd ~/taprim/TAPrim
 
-          echo "🔍 Kiểm tra docker-compose.yml"
-          if [ ! -f "docker-compose.yml" ]; then
-            echo "❌ Không tìm thấy docker-compose.yml trong TAPrim/TAPrim!"
+          echo "🔍 Kiểm tra docker-compose.yaml"
+          if [ ! -f "docker-compose.yaml" ]; then
+            echo "❌ Không tìm thấy docker-compose.yaml trong TAPrim!"
             ls -la
             exit 1
           fi
 
           echo "📄 Ghi file .env"
           cat <<EOF > .env
-          ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
-          ConnectionStrings__Redis=${{ secrets.REDIS }}
-          VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
-          VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
-          EOF
+ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
+ConnectionStrings__Redis=${{ secrets.REDIS }}
+VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
+VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
+EOF
 
           echo "📦 Pull Docker image mới"
           docker pull ${{ env.IMAGE_NAME }}:latest
 
           echo "🧼 Dừng & xóa container cũ (nếu có)"
-          docker-compose down -v --remove-orphans || true
+          docker-compose -f docker-compose.yaml down -v --remove-orphans || true
 
           echo "🚀 Khởi chạy lại container"
-          docker-compose up -d --force-recreate
+          docker-compose -f docker-compose.yaml up -d --force-recreate
 
           echo "📋 Trạng thái container hiện tại:"
           docker ps -a
