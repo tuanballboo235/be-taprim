@@ -42,8 +42,18 @@ jobs:
         script: |
           set -e
 
-          echo "📁 Di chuyển vào thư mục project"
-          cd ~/taprim || { echo "❌ Thư mục không tồn tại!"; exit 1; }
+          echo "📁 Clone project nếu chưa có ~/taprim"
+          if [ ! -d ~/taprim ]; then
+            echo "🧲 Cloning repo qua SSH..."
+            GIT_SSH_COMMAND='ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=no' \
+            git clone git@github.com:${{ github.repository }}.git ~/taprim
+          else
+            echo "📂 Đã có ~/taprim → pull latest..."
+            cd ~/taprim && \
+            GIT_SSH_COMMAND='ssh -i ~/.ssh/id_deploy -o StrictHostKeyChecking=no' git pull
+          fi
+
+          cd ~/taprim
 
           echo "🔍 Kiểm tra docker-compose.yml..."
           if [ ! -f docker-compose.yml ]; then
@@ -69,7 +79,7 @@ jobs:
           echo "🚀 Khởi động lại container"
           docker-compose up -d --force-recreate
 
-          echo "📋 Kiểm tra trạng thái các container:"
+          echo "📋 Trạng thái container hiện tại:"
           docker ps -a
 
           echo "✅ Deploy hoàn tất!"
