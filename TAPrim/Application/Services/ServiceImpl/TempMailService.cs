@@ -8,6 +8,7 @@ using TAPrim.Shared.Constants;
 using TAPrim.Shared.Helpers;
 using System.Transactions;
 using TAPrim.Models;
+using System.Net.Http.Headers;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
@@ -21,6 +22,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		private readonly ICategoryRepository _categoryRepository;
 		private readonly TransactionCodeHelper _transactionCodeHelper;
 		private readonly IProductAccountRepository _productAccountRepository;
+		private readonly INetflixAccessLimiterMemoryService _inboundAccessLimiterRedisService;
 		public TempMailService(HttpClient httpClient,
 		IOptions<VietQrDto> options,
 		IPaymentRepository paymentRepository,
@@ -28,7 +30,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 		TransactionCodeHelper transactionCodeHelper,
 		IProductAccountRepository productAccountRepository,
 		ICategoryRepository categoryRepository,
-		IProductRepository productRepository)
+		IProductRepository productRepository,
+		INetflixAccessLimiterMemoryService inboundAccessLimiterRedisService)
 		{
 			_httpClient = httpClient;
 			_vietQrConfig = options.Value;
@@ -38,6 +41,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 			_productAccountRepository = productAccountRepository;
 			_categoryRepository = categoryRepository;
 			_productRepository = productRepository;
+			_inboundAccessLimiterRedisService = inboundAccessLimiterRedisService;
 		}
 
 		// Lấy ra email netflix update house  
@@ -109,89 +113,77 @@ namespace TAPrim.Application.Services.ServiceImpl
 			return apiResponse;
 		}
 
-		//lấy mã đăng nhập netflix
 		public async Task<ApiResponseModel<List<TempmailEmailItemDto>>> GetNetflixCodeLoginEmailFilter(string transactionCode)
 		{
 			var apiResponse = new ApiResponseModel<List<TempmailEmailItemDto>>();
 
-			//lấy ra order theo payment transaction Code
+			// Bị giới hạn số lần truy cập
+			if (!await _inboundAccessLimiterRedisService.IsAllowedAsync(transactionCode))
+			{
+				apiResponse.Status = "Failed";
+				apiResponse.Message = "Bạn đã vượt quá số lượt truy cập cho phép.";
+				return apiResponse;
+			}
+
+			// Validate order
 			var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
-			if (!await ValidateOrder(order, apiResponse))
+			if (!await ValidateOrder(order, apiResponse)) return apiResponse;
+
+			// Kiểm tra quyền
+			if (!await IsAllowGetNetflixMail(order, apiResponse)) return apiResponse;
+
+			// Nếu đã cache mail → không gọi lại TempMail
+			var cachedEmails = await _inboundAccessLimiterRedisService.GetCachedEmailsAsync(transactionCode);
+			if (cachedEmails != null)
 			{
+				apiResponse.Status = "Success";
+				apiResponse.Data = cachedEmails;
+				apiResponse.Message = "Dữ liệu được lấy từ cache.";
 				return apiResponse;
 			}
 
-			//lấy ra productAccount để so sánh với email trả về
-			var productAccount = await _productAccountRepository.GetProductAccountByPaymentTransactionCode(transactionCode);
-
-			// Kiểm tra xem có đc lấy code Chatgpt ko 
-			if (!await IsAllowGetNetflixMail(order, apiResponse))
-			{
-				return apiResponse;
-			}
+			// Gọi TempMail
 			try
 			{
-				// URL chuẩn
 				var url = $"https://tempmail.id.vn/api/email/310619";
 				_httpClient.DefaultRequestHeaders.Authorization =
-				new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", "vQAtLsNbO4vmwVJO91iTiHeQfVFDznm0GGBxaUyq374d6c34");
+					new AuthenticationHeaderValue("Bearer", "vQAtLsNbO4vmwVJO91iTiHeQfVFDznm0GGBxaUyq374d6c34");
+
 				var response = await _httpClient.GetAsync(url);
-
-				// Thêm header Authorization
-
-				if (response.IsSuccessStatusCode)
+				if (!response.IsSuccessStatusCode)
 				{
-					var data = await response.Content.ReadAsStringAsync();
-
-					try
-					{
-
-						var result = JsonConvert.DeserializeObject<TempmailApiResponseDto<TempmailDataDto>>(data);
-
-						if (result != null && result.Success && result.Data != null && result.Data.Items != null)
-						{
-							var filteredEmails = result.Data.Items
-								.Where(email =>
-									email.Subject != null && email.Subject.Contains(NetflixConstant.NetflixCodeLogin))
-								.ToList();
-
-							apiResponse.Status = ApiResponseStatusConstant.SuccessStatus;
-							apiResponse.Data = filteredEmails ?? new List<TempmailEmailItemDto>();
-							apiResponse.Message = filteredEmails.Count > 0 ? "Lấy danh sách email thành công" : "Danh sách email trống";
-						}
-						else
-						{
-							apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
-							apiResponse.Message = result?.Message ?? "No data found.";
-						}
-
-
-					}
-					catch (System.Text.Json.JsonException ex)
-					{
-						apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
-						apiResponse.Message = $"JSON deserialization error: {ex.Message}";
-					}
+					apiResponse.Status = "Failed";
+					apiResponse.Message = $"Lỗi khi gọi TempMail: {response.ReasonPhrase}";
+					return apiResponse;
 				}
-				else
-				{
-					apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
-					apiResponse.Message = $"Error: {response.ReasonPhrase}";
-				}
-			}
-			catch (HttpRequestException ex)
-			{
-				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
-				apiResponse.Message = $"HttpRequestException: {ex.Message}";
+
+				var data = await response.Content.ReadAsStringAsync();
+				var result = JsonConvert.DeserializeObject<TempmailApiResponseDto<TempmailDataDto>>(data);
+
+				var filteredEmails = result?.Data?.Items?
+					.Where(x => x.Subject?.Contains(NetflixConstant.NetflixCodeLogin) == true)
+					.OrderByDescending(x => x.CreatedAt)
+					.Take(2)
+					.ToList();
+
+				// Cache dữ liệu & tăng lượt gọi
+				await _inboundAccessLimiterRedisService.CacheEmailsAsync(transactionCode, filteredEmails);
+				await _inboundAccessLimiterRedisService.RegisterRequestAsync(transactionCode);
+
+				apiResponse.Status = "Success";
+				apiResponse.Data = filteredEmails ?? new List<TempmailEmailItemDto>();
+				apiResponse.Message = filteredEmails?.Count > 0 ? "Lấy danh sách thành công" : "Không có mã nào.";
 			}
 			catch (Exception ex)
 			{
-				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
-				apiResponse.Message = $"Unexpected error: {ex.Message}";
+				apiResponse.Status = "Failed";
+				apiResponse.Message = $"Lỗi hệ thống: {ex.Message}";
 			}
 
 			return apiResponse;
 		}
+
+
 
 		//lấy mã xác minh chatgpt
 		public async Task<ApiResponseModel<List<TempmailEmailItemDto>>> GetChatgptVerificationEmailFilter(string transactionCode)

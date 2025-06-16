@@ -1,8 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using TAPrim.Models;
-using TAPrim.Application.Services.ServiceImpl;
-using TAPrim.Application.Services;
 using TAPrim.Application.DTOs;
 using TAPrim.Shared.Helpers;
 using DotNetEnv;
@@ -20,6 +18,8 @@ if (builder.Environment.IsProduction())
 }
 /* Cấu hình env
  */
+// Nếu cần, vẫn có thể load .env (nếu không inject từ system env)
+Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 
 // Load cấu hình
 builder.Configuration
@@ -28,8 +28,8 @@ builder.Configuration
 	.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
 	.AddEnvironmentVariables(); // load biến từ system hoặc từ .env đã Load()
 
-// Nếu cần, vẫn có thể load .env (nếu không inject từ system env)
-Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
+Console.WriteLine("From ENV: " + Environment.GetEnvironmentVariable("ConnectionStrings__Redis"));
+Console.WriteLine("From Configuration: " + builder.Configuration["ConnectionStrings__Redis"]);
 
 //==========================================
 
@@ -52,7 +52,14 @@ builder.Services.Configure<VietQrDto>(options =>
 	options.ClientId = Environment.GetEnvironmentVariable("VietQr__ClientId");
 	options.ApiKey = Environment.GetEnvironmentVariable("VietQr__ApiKey");
 });
+builder.Services.AddMemoryCache();
 
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+	options.Configuration = Environment.GetEnvironmentVariable("ConnectionStrings__Redis"); // ← THAY ĐOẠN NÀY
+	options.InstanceName = "NetflixLimiter:";
+});
+Console.WriteLine("Redis config: " + builder.Configuration["ConnectionStrings__Redis"]);
 
 
 // ✅ Đăng ký dịch vụ qua reflection

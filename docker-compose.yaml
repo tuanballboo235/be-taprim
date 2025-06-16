@@ -2,16 +2,32 @@ version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: tuanballboo/taprim:latest
+    container_name: taprim
+    restart: always
     ports:
-      - "8080:80"
+      - "80:8080"
     env_file:
       - .env
+    depends_on:
+      - redis
+    networks:
+      - app_net
+
+  redis:
+    image: redis:7.2
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
     networks:
       - app_net
 
 networks:
   app_net:
+    external: true
     name: app_net
+
+volumes:
+  redis-data:
