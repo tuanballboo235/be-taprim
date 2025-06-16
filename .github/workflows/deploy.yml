@@ -78,10 +78,13 @@ jobs:
 
           echo "📦 Pull Docker image mới"
           docker pull ${{ env.IMAGE_NAME }}:latest
-
+          
           echo "🧼 Dừng & xóa container cũ (nếu có)"
           docker-compose -f docker-compose.yaml down -v --remove-orphans || true
-
+          
+          echo "🧹 Remove container 'taprim' nếu bị giữ lại ngoài docker-compose"
+          docker rm -f taprim || true
+          
           echo "🚀 Khởi chạy lại container"
           docker-compose -f docker-compose.yaml up -d --force-recreate
 
