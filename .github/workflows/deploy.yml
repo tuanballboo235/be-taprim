@@ -14,26 +14,26 @@ jobs:
       CONTAINER_NAME: taprim
 
     steps:
-    - name: Checkout code
+    - name: 🛒 Checkout source
       uses: actions/checkout@v3
 
-    - name: Set up Docker Buildx
+    - name: 🧱 Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
 
-    - name: Login to Docker Hub
+    - name: 🔐 Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and Push Docker image
+    - name: 📦 Build and push Docker image
       uses: docker/build-push-action@v4
       with:
         context: .
         push: true
         tags: ${{ env.IMAGE_NAME }}:latest
 
-    - name: Deploy to VPS via SSH
+    - name: 🚀 Deploy to VPS via SSH
       uses: appleboy/ssh-action@v0.1.8
       with:
         host: ${{ secrets.VPS_HOST }}
@@ -41,29 +41,35 @@ jobs:
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
           set -e
-          cd ~/taprim || exit 1
 
-          echo "📁 Kiểm tra docker-compose.yml..."
-          [ -f docker-compose.yml ] && echo "✅ FOUND docker-compose.yml" || (echo "❌ MISSING docker-compose.yml" && exit 1)
+          echo "📁 Di chuyển vào thư mục project"
+          cd ~/taprim || { echo "❌ Thư mục không tồn tại!"; exit 1; }
 
-          echo "📄 Ghi file .env từ secrets"
+          echo "🔍 Kiểm tra docker-compose.yml..."
+          if [ ! -f docker-compose.yml ]; then
+            echo "❌ Không tìm thấy docker-compose.yml!"
+            exit 1
+          fi
+          echo "✅ docker-compose.yml FOUND"
+
+          echo "📄 Ghi file .env từ GitHub Secrets"
           cat > .env <<EOF
-ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
-ConnectionStrings__Redis=${{ secrets.REDIS }}
-VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
-VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
-EOF
+          ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
+          ConnectionStrings__Redis=${{ secrets.REDIS }}
+          VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
+          VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
+          EOF
 
           echo "📦 Pull image mới nhất"
           docker pull ${{ env.IMAGE_NAME }}:latest
 
-          echo "🧼 Dừng & remove container cũ"
-          docker-compose down -v --remove-orphans
+          echo "🧼 Dừng & remove container cũ (nếu có)"
+          docker-compose down -v --remove-orphans || true
 
-          echo "🚀 Khởi chạy lại toàn bộ container"
+          echo "🚀 Khởi động lại container"
           docker-compose up -d --force-recreate
 
-          echo "📋 Trạng thái container hiện tại:"
-          docker ps
+          echo "📋 Kiểm tra trạng thái các container:"
+          docker ps -a
 
-          echo "✅ Deploy thành công!"
+          echo "✅ Deploy hoàn tất!"
