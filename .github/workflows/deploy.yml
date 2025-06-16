@@ -70,11 +70,11 @@ jobs:
 
           echo "📄 Ghi file .env"
           cat <<EOF > .env
-ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
-ConnectionStrings__Redis=${{ secrets.REDIS }}
-VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
-VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
-EOF
+          ConnectionStrings__MyCnn=${{ secrets.MYCNN }}
+          ConnectionStrings__Redis=${{ secrets.REDIS }}
+          VietQr__ClientId=${{ secrets.VIETQR_CLIENTID }}
+          VietQr__ApiKey=${{ secrets.VIETQR_APIKEY }}
+          EOF
 
           echo "📦 Pull Docker image mới"
           docker pull ${{ env.IMAGE_NAME }}:latest
