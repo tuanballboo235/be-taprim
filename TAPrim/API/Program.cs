@@ -28,9 +28,6 @@ builder.Configuration
 	.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
 	.AddEnvironmentVariables(); // load biến từ system hoặc từ .env đã Load()
 
-Console.WriteLine("From ENV: " + Environment.GetEnvironmentVariable("ConnectionStrings__Redis"));
-Console.WriteLine("From Configuration: " + builder.Configuration["ConnectionStrings__Redis"]);
-
 //==========================================
 
 

@@ -7,6 +7,12 @@ services:
     restart: always
     ports:
       - "80:8080"
+    environment:
+      ConnectionStrings__MyCnn=Server=103.238.235.227;Database=taprim;User Id=sa;Password=Tuananh235;TrustServerCertificate=True;
+      ConnectionStrings__Redis=redis:6379
+      VietQr__ClientId=7e60dc5f-96e7-4901-a513-db4e4dbcd8c4
+      VietQr__ApiKey=a29b57bb-c706-4383-8f29-25a122c888ef
+
     env_file:
       - .env
     depends_on:

@@ -13,6 +13,7 @@ services:
       - redis
     networks:
       - app_net
+   
 
   redis:
     image: redis:7.2
@@ -26,7 +27,6 @@ services:
 
 networks:
   app_net:
-    external: true
     name: app_net
 
 volumes:
