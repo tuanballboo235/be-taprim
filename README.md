@@ -1,6 +1,6 @@
 # 🛍️ TaPrim – Online Account Selling Website 
 
-# Website : taprim.com
+## Website : taprim.com
 
 ## 📌 Project Description
 
@@ -22,14 +22,14 @@
 
 ## 🧰 Tech Stack
 
-| Layer       | Technology                       |
-|-------------|----------------------------------|
-| Frontend    | React, Tailwind                  |
-| Backend     | ASP.NET Core / Node.js / Laravel |
-| Database    | SQL Server / MySQL / PostgreSQL  |
-| Cache       | Redis (for session-limiting and temp email caching) |
-| CI/CD       | GitHub Actions, Docker           |
-| Hosting     | VPS / Render / Firebase / Azure  |
+| Layer       |                   Technology                       |
+|-------------|----------------------------------------------------|
+| Frontend    | React, Tailwind                                    |
+| Backend     | ASP.NET Core API                                   |
+| Database    | SQL Server                                         |
+| Cache       | Redis (for session-limiting and temp email caching)|
+| CI/CD       | GitHub Actions, Docker                             |
+| Hosting     | Ubuntu Server                                      |
 
 ---
 
