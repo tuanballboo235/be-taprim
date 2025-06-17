@@ -10,6 +10,7 @@ using TAPrim.Models;
 using TAPrim.Application.DTOs.Payment;
 using TAPrim.Shared.Helpers;
 using TAPrim.Application.DTOs.Products;
+using System.Transactions;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
@@ -151,6 +152,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 						Data = new
 						{
 							Data = payload,
+							TransactionCode = transactionCode,
 							QrCode = qrDataUrl
 						}
 					};
