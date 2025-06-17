@@ -27,7 +27,7 @@ public class NetflixAccessLimiterRedisService : INetflixAccessLimiterMemoryServi
 	public async Task RegisterRequestAsync(string transactionCode)
 	{
 		var sessionKey = $"limit:session_count:{transactionCode}";
-		var countString = await _redis.GetStringAsync(sessionKey);
+		var countString = await _redis.GetStringAsync(sessionKey); 
 		var count = string.IsNullOrEmpty(countString) ? 0 : int.Parse(countString);
 		count++;
 
