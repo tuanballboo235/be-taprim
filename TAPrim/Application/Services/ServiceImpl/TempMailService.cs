@@ -185,9 +185,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 			return apiResponse;
 		}
 
-
-
-
 		//lấy mã xác minh chatgpt
 		public async Task<ApiResponseModel<List<TempmailEmailItemDto>>> GetChatgptVerificationEmailFilter(string transactionCode)
 		{
