@@ -1,4 +1,5 @@
-﻿using TAPrim.Application.DTOs;
+﻿using Azure.Core;
+using TAPrim.Application.DTOs;
 using TAPrim.Application.DTOs.Order;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Shared.Constants;
@@ -17,7 +18,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 			try
 			{
 				var result = await _orderRepository.FindByProductAccountId(productAccountId);
-				if (result == null) {
+				if (result == null)
+				{
 					return new ApiResponseModel<object>
 					{
 						Status = ApiResponseStatusConstant.FailedStatus,
@@ -42,9 +44,59 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 		}
 
-		public async Task<ApiResponseModel<object>> UpdateOrder(UpdateOrderRequestDto orderUpdateRequest)
+
+
+		public async Task<ApiResponseModel<object>> UpdateOrderAsync(string transactionCode, UpdateOrderRequestDto orderUpdateRequest)
 		{
-			return null;
+			try
+			{
+				var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
+				if (order == null) return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Không tìm thấy đơn"
+				};
+
+				// Ánh xạ dữ liệu từ DTO vào Entity
+				order.ProductAccountId = orderUpdateRequest.ProductAccountId;
+				order.Status = orderUpdateRequest.Status;
+				order.RemainGetCode = orderUpdateRequest.RemainCode ?? order.RemainGetCode;
+				order.ExpiredAt = orderUpdateRequest.ExpiredAt ?? order.ExpiredAt;
+				order.ContactInfo = orderUpdateRequest.ContactInfo;
+				order.TotalAmount = orderUpdateRequest.TotalAmount;
+
+				await _orderRepository.UpdateOrderAsync(order);
+				var result = new OrderResponseDto
+				{
+					OrderId = order.OrderId,
+					CouponId = order.CouponId,
+					ProductId = order.ProductId,
+					ProductAccountId = order.ProductAccountId,
+					Status = order.Status,
+					CreateAt = order.CreateAt,
+					UpdateAt = order.UpdateAt,
+					RemainGetCode = order.RemainGetCode,
+					ExpiredAt = order.ExpiredAt,
+					ContactInfo = order.ContactInfo,
+					PaymentId = order.PaymentId,
+					TotalAmount = order.TotalAmount,
+					ClientNote = order.ClientNote
+				};
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Message = "Cập nhật đơn hàng thành công",
+					Data = result
+				};
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = ex.Message
+				};
+			}
 		}
 	}
 }

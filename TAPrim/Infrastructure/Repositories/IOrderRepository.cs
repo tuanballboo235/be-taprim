@@ -1,4 +1,5 @@
-﻿using TAPrim.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using TAPrim.Models;
 
 namespace TAPrim.Infrastructure.Repositories
 {
@@ -7,6 +8,7 @@ namespace TAPrim.Infrastructure.Repositories
 		Task AddOrderAsync(Order orders);
 		Task<Order?> FindByPaymentTransactionCodeAsync(string transactionCode);
 		Task<Order?> FindByProductAccountId(int productAccountId);
+		Task<bool> UpdateOrderAsync(Order order);
 		Task SaveChange();
 	}
 }

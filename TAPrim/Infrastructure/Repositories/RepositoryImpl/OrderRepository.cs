@@ -36,5 +36,11 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		{
 			await _context.SaveChangesAsync();
 		}
+
+		public async Task<bool> UpdateOrderAsync(Order order)
+		{
+			_context.Orders.Update(order);
+			return await _context.SaveChangesAsync() > 0;
+		}
 	}
 }

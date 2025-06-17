@@ -12,7 +12,7 @@ namespace TAPrim.API.Controllers
 	public class OrderController : ControllerBase
 	{
 		private readonly IOrderService _orderService;
-		OrderController(IOrderService orderService) => _orderService = orderService;
+		public OrderController(IOrderService orderService) => _orderService = orderService;
 		
 		[HttpPost("get-order-by-product-account-id")]
 		public async Task<IActionResult> GetOrderByProductAccountId([FromBody] OrderByProductAcountRequestDto request)
@@ -20,11 +20,11 @@ namespace TAPrim.API.Controllers
 			return ApiResponseHelper.HandleApiResponse(await _orderService.GetOrderByProductAccount(request.ProductAccountId));
 		}
 
-		[HttpPost("update-order")]
-		public async Task<IActionResult> UpdateOrder([FromBody] OrderByProductAcountRequestDto request)
+		[HttpPut("{transactionCode}")]
+		public async Task<IActionResult> UpdateOrder(string transactionCode, [FromBody] UpdateOrderRequestDto request)
 		{
-			int a = 0;
-			return Ok();
+			return ApiResponseHelper.HandleApiResponse(await _orderService.UpdateOrderAsync(transactionCode, request));
+
 		}
 	}
 }
