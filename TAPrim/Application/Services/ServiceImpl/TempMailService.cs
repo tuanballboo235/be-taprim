@@ -171,7 +171,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				// Cache dữ liệu mới và reset lại lượt
 				await _inboundAccessLimiterRedisService.CacheEmailsAsync(transactionCode, filteredEmails);
 				await _inboundAccessLimiterRedisService.RegisterRequestAsync(transactionCode); // lượt đầu tiên sau cache
-
+				 
 				apiResponse.Status = "Success";
 				apiResponse.Data = filteredEmails ?? new List<TempmailEmailItemDto>();
 				apiResponse.Message = filteredEmails?.Count > 0 ? "Lấy danh sách thành công" : "Không có mã nào.";
