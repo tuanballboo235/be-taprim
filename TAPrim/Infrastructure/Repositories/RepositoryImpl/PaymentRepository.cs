@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TAPrim.Application.DTOs.Payment;
 using TAPrim.Models;
 
 namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
@@ -26,7 +27,41 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		{
 			return await _context.Payments.AnyAsync(x => x.TransactionCode == transactionCode);
 		}
+		public async Task<List<PaymentDetailsDto>> GetPaymentsAsync(PaymentFilterDto filter)
+		{
+			var query = _context.Payments.AsQueryable();
 
+			if (!string.IsNullOrEmpty(filter.TransactionCode))
+				query = query.Where(p => p.TransactionCode.Contains(filter.TransactionCode));
+
+			if (filter.UserId.HasValue)
+				query = query.Where(p => p.UserId == filter.UserId);
+
+			if (filter.PaymentMethod.HasValue)
+				query = query.Where(p => p.PaymentMethod == filter.PaymentMethod);
+
+			if (filter.Status.HasValue)
+				query = query.Where(p => p.Status == filter.Status);
+
+			if (filter.PaidAt.HasValue)
+				query = query.Where(p => p.PaidDateAt >= filter.PaidAt);
+
+			if (filter.Amount.HasValue)
+				query = query.Where(p => p.Amount <= filter.Amount);
+
+			return await query.Select(p => new PaymentDetailsDto
+			{
+				PaymentId = p.PaymentId,
+				TransactionCode = p.TransactionCode,
+				PaymentMethod = p.PaymentMethod,
+				PaidDateAt = p.PaidDateAt,
+				CreateAt = p.CreateAt,
+				UserId = p.UserId,
+				Amount = p.Amount,
+				Note = p.Note,
+				Status = p.Status
+			}).ToListAsync();
+		}
 		public async Task SaveChange()
 		{
 			await _context.SaveChangesAsync();

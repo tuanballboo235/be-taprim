@@ -1,4 +1,5 @@
-﻿using TAPrim.Models;
+﻿using TAPrim.Application.DTOs.Payment;
+using TAPrim.Models;
 
 namespace TAPrim.Infrastructure.Repositories
 {
@@ -7,6 +8,8 @@ namespace TAPrim.Infrastructure.Repositories
 		Task AddPaymentAsync(Payment payment);
 		Task<Payment?> GetPaymentByTransactionCode(string transactionCode);
 		Task<bool> IsExistedTransactionCode(string transactionCode);
+		Task<List<PaymentDetailsDto>> GetPaymentsAsync(PaymentFilterDto filter);
+
 		Task SaveChange();
 	}
 }

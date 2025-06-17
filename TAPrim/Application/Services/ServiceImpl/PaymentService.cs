@@ -43,7 +43,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 			_transactionCodeHelper = transactionCodeHelper;
 			_productAccountRepository = productAccountRepository;
 			_couponRepository = couponRepository;
-			_productRepository = productRepository;	
+			_productRepository = productRepository;
 		}
 
 		//hàm GenerateQrAsync
@@ -211,7 +211,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				await _paymentRepository.SaveChange();
 
-			// cập nhật order
+				// cập nhật order
 				var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
 
 				if (order == null)
@@ -282,6 +282,27 @@ namespace TAPrim.Application.Services.ServiceImpl
 					Message = "Lấy tài khoản thành công",
 				};
 
+			}
+		}
+		public async Task<ApiResponseModel<object>> GetPaymentsAsync(PaymentFilterDto filter)
+		{
+			try
+			{
+				return new ApiResponseModel<object>()
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Message = "Lấy danh sách thành công",
+					Data = await _paymentRepository.GetPaymentsAsync(filter)
+				};
+
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<object>()
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Lấy danh sách thất bại",
+				};
 			}
 		}
 	}

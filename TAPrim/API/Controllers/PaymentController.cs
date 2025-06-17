@@ -1,4 +1,5 @@
 ﻿using Azure;
+using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application.DTOs;
@@ -18,7 +19,7 @@ namespace TAPrim.API.Controllers
 		private readonly IPaymentService _paymentService;
 		public PaymentController(IPaymentService paymentService)
 		{
-			_paymentService = paymentService;	
+			_paymentService = paymentService;
 		}
 		[HttpPost("sepay-webhook")]
 		public async Task<IActionResult> ReceiveAsync([FromBody] SePayWebhookDto data)
@@ -30,6 +31,13 @@ namespace TAPrim.API.Controllers
 		public async Task<IActionResult> GenerateQrAndCreatePayment(CreatePaymentRequest request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _paymentService.GenerateQrAsync(request));
+		}
+
+		[HttpGet("filter-payments")]
+		public async Task<IActionResult> GetFilteredPayments([FromQuery] PaymentFilterDto filter)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _paymentService.GetPaymentsAsync(filter));
+
 		}
 	}
 }
