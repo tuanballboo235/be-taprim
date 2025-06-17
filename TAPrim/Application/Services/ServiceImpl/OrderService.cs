@@ -1,4 +1,5 @@
 ﻿using TAPrim.Application.DTOs;
+using TAPrim.Application.DTOs.Order;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Shared.Constants;
 
@@ -39,6 +40,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 					Message = ex.Message
 				};
 			}
+		}
+
+		public async Task<ApiResponseModel<object>> UpdateOrder(UpdateOrderRequestDto orderUpdateRequest)
+		{
+			return null;
 		}
 	}
 }

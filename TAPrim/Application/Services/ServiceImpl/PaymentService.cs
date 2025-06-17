@@ -65,7 +65,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				// Tính toán amount + coupon
 
 				dynamic couponValue = null;
-				decimal totalAmount = 0;
+				decimal totalAmount = createPaymentRequest.TotalAmount;
 				// Xử lí giá đơn hàng dựa vào coupon
 				if (createPaymentRequest.CouponId != null)
 				{
