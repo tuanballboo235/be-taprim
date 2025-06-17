@@ -58,12 +58,12 @@ namespace TAPrim.Application.Services.ServiceImpl
 				};
 
 				// Ánh xạ dữ liệu từ DTO vào Entity
-				order.ProductAccountId = orderUpdateRequest.ProductAccountId;
-				order.Status = orderUpdateRequest.Status;
+				order.ProductAccountId = orderUpdateRequest.ProductAccountId ?? order.ProductAccountId;
+				order.Status = orderUpdateRequest.Status ?? order.Status;
 				order.RemainGetCode = orderUpdateRequest.RemainCode ?? order.RemainGetCode;
 				order.ExpiredAt = orderUpdateRequest.ExpiredAt ?? order.ExpiredAt;
-				order.ContactInfo = orderUpdateRequest.ContactInfo;
-				order.TotalAmount = orderUpdateRequest.TotalAmount;
+				order.ContactInfo = orderUpdateRequest.ContactInfo ?? order.ContactInfo;
+				order.TotalAmount = orderUpdateRequest.TotalAmount?? order.TotalAmount;
 
 				await _orderRepository.UpdateOrderAsync(order);
 				var result = new OrderResponseDto
