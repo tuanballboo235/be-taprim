@@ -121,6 +121,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 			var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
 			if (!await ValidateOrder(order, apiResponse)) return apiResponse;
 
+			//Lấy ra productAccount để so sánh với subject mail trr về ở dưới
+			var productAccount = await _productAccountRepository.GetProductAccountByProductId(order.ProductId);
 			// Kiểm tra quyền truy cập
 			if (!await IsAllowGetNetflixMail(order, apiResponse)) return apiResponse;
 
@@ -155,11 +157,13 @@ namespace TAPrim.Application.Services.ServiceImpl
 					return apiResponse;
 				}
 
+				
 				var data = await response.Content.ReadAsStringAsync();
 				var result = JsonConvert.DeserializeObject<TempmailApiResponseDto<TempmailDataDto>>(data);
 
 				var filteredEmails = result?.Data?.Items?
-					.Where(x => x.Subject?.Contains(NetflixConstant.NetflixCodeLogin) == true)
+					// kiểm tra là mail nhận code netflix, và người nhận phải là account của orderID đó thì mới nhận đc code
+					.Where(x => x.Subject?.Contains(NetflixConstant.NetflixCodeLogin) == true && x.To.Contains(productAccount.AccountData)).Distinct()
 					.OrderByDescending(x => x.CreatedAt)
 					.Take(2)
 					.ToList();
