@@ -163,7 +163,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				var filteredEmails = result?.Data?.Items?
 					// kiểm tra là mail nhận code netflix, và người nhận phải là account của orderID đó thì mới nhận đc code
-					.Where(x => x.Subject?.Contains(NetflixConstant.NetflixCodeLogin) == true && x.To.Contains(productAccount.AccountData)).Distinct()
+					.Where(x => x.Subject?.Contains(NetflixConstant.NetflixCodeLogin) == true && productAccount.AccountData.Contains(x.To))
 					.OrderByDescending(x => x.CreatedAt)
 					.Take(2)
 					.ToList();
