@@ -117,32 +117,30 @@ namespace TAPrim.Application.Services.ServiceImpl
 		{
 			var apiResponse = new ApiResponseModel<List<TempmailEmailItemDto>>();
 
-			// Bị giới hạn số lần truy cập
-			if (!await _inboundAccessLimiterRedisService.IsAllowedAsync(transactionCode))
-			{
-				apiResponse.Status = "Failed";
-				apiResponse.Message = "Bạn đã vượt quá số lượt truy cập cho phép.";
-				return apiResponse;
-			}
-
-			// Validate order
+			// Kiểm tra đơn hàng
 			var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
 			if (!await ValidateOrder(order, apiResponse)) return apiResponse;
 
-			// Kiểm tra quyền
+			// Kiểm tra quyền truy cập
 			if (!await IsAllowGetNetflixMail(order, apiResponse)) return apiResponse;
 
-			// Nếu đã cache mail → không gọi lại TempMail
-			var cachedEmails = await _inboundAccessLimiterRedisService.GetCachedEmailsAsync(transactionCode);
-			if (cachedEmails != null)
+			// Nếu cache còn hợp lệ (dưới 2 phút) và chưa vượt quá 2 lượt thì trả cache
+			if (await _inboundAccessLimiterRedisService.IsAllowedAsync(transactionCode))
 			{
-				apiResponse.Status = "Success";
-				apiResponse.Data = cachedEmails;
-				apiResponse.Message = "Dữ liệu được lấy từ cache.";
-				return apiResponse;
+				var cachedEmails = await _inboundAccessLimiterRedisService.GetCachedEmailsAsync(transactionCode);
+				if (cachedEmails != null)
+				{
+					// Tăng lượt gọi trong phiên cache hiện tại
+					await _inboundAccessLimiterRedisService.RegisterRequestAsync(transactionCode);
+
+					apiResponse.Status = "Success";
+					apiResponse.Data = cachedEmails;
+					apiResponse.Message = "Dữ liệu được lấy từ cache.";
+					return apiResponse;
+				}
 			}
 
-			// Gọi TempMail
+			// Nếu vượt quá số lần cho phép hoặc cache hết hạn => gọi TempMail mới
 			try
 			{
 				var url = $"https://tempmail.id.vn/api/email/310619";
@@ -166,9 +164,9 @@ namespace TAPrim.Application.Services.ServiceImpl
 					.Take(2)
 					.ToList();
 
-				// Cache dữ liệu & tăng lượt gọi
+				// Cache dữ liệu mới và reset lại lượt
 				await _inboundAccessLimiterRedisService.CacheEmailsAsync(transactionCode, filteredEmails);
-				await _inboundAccessLimiterRedisService.RegisterRequestAsync(transactionCode);
+				await _inboundAccessLimiterRedisService.RegisterRequestAsync(transactionCode); // lượt đầu tiên sau cache
 
 				apiResponse.Status = "Success";
 				apiResponse.Data = filteredEmails ?? new List<TempmailEmailItemDto>();
@@ -182,6 +180,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 			return apiResponse;
 		}
+
 
 
 

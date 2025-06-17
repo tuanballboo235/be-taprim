@@ -7,7 +7,7 @@ public class NetflixAccessLimiterRedisService : INetflixAccessLimiterMemoryServi
 {
 	private readonly IDistributedCache _redis;
 	private readonly TimeSpan _mailCacheTtl = TimeSpan.FromMinutes(5);
-	private const int MaxTotalAccess = 2;
+	private const int MaxSessionAccess = 5;
 
 	public NetflixAccessLimiterRedisService(IDistributedCache redis)
 	{
@@ -16,33 +16,28 @@ public class NetflixAccessLimiterRedisService : INetflixAccessLimiterMemoryServi
 
 	public async Task<bool> IsAllowedAsync(string transactionCode)
 	{
-		var countKey = $"limit:count:{transactionCode}";
-		var countString = await _redis.GetStringAsync(countKey);
+		var sessionKey = $"limit:session_count:{transactionCode}";
+		var countString = await _redis.GetStringAsync(sessionKey);
 		var count = string.IsNullOrEmpty(countString) ? 0 : int.Parse(countString);
 
-		return count < MaxTotalAccess;
+		// Chỉ cho phép tối đa 2 lần truy cập cho mỗi lần cache
+		return count < MaxSessionAccess;
 	}
 
 	public async Task RegisterRequestAsync(string transactionCode)
 	{
-		var countKey = $"limit:count:{transactionCode}";
-		var countString = await _redis.GetStringAsync(countKey);
+		var sessionKey = $"limit:session_count:{transactionCode}";
+		var countString = await _redis.GetStringAsync(sessionKey);
 		var count = string.IsNullOrEmpty(countString) ? 0 : int.Parse(countString);
 		count++;
 
+		// Thời gian sống cho lượt truy cập này giống TTL của cache
 		var options = new DistributedCacheEntryOptions
 		{
-			AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(7) // giữ trong Redis ít nhất 7 ngày
+			AbsoluteExpirationRelativeToNow = _mailCacheTtl
 		};
 
-		await _redis.SetStringAsync(countKey, count.ToString(), options);
-
-		// Lưu thời gian truy cập đầu tiên (chỉ lưu nếu chưa có)
-		var timeKey = $"limit:first_access:{transactionCode}";
-		if (string.IsNullOrEmpty(await _redis.GetStringAsync(timeKey)))
-		{
-			await _redis.SetStringAsync(timeKey, DateTime.UtcNow.ToString("O"), options);
-		}
+		await _redis.SetStringAsync(sessionKey, count.ToString(), options);
 	}
 
 	public async Task<DateTime?> GetFirstAccessTimeAsync(string transactionCode)
@@ -55,14 +50,30 @@ public class NetflixAccessLimiterRedisService : INetflixAccessLimiterMemoryServi
 	public async Task CacheEmailsAsync(string transactionCode, List<TempmailEmailItemDto> emails)
 	{
 		var data = JsonConvert.SerializeObject(emails);
-		await _redis.SetStringAsync($"cached_email:{transactionCode}", data, new DistributedCacheEntryOptions
+		var options = new DistributedCacheEntryOptions
 		{
 			AbsoluteExpirationRelativeToNow = _mailCacheTtl
-		});
+		};
+
+		// Lưu nội dung email
+		await _redis.SetStringAsync($"cached_email:{transactionCode}", data, options);
+
+		// Lưu thời gian bắt đầu cache
+		await _redis.SetStringAsync($"cached_email_time:{transactionCode}", DateTime.UtcNow.ToString("O"), options);
+
+		// Reset lại số lượt truy cập của phiên cache này
+		await _redis.RemoveAsync($"limit:session_count:{transactionCode}");
 	}
 
 	public async Task<List<TempmailEmailItemDto>> GetCachedEmailsAsync(string transactionCode)
 	{
+		// Kiểm tra thời gian cache còn hợp lệ không
+		var timeStr = await _redis.GetStringAsync($"cached_email_time:{transactionCode}");
+		if (!DateTime.TryParse(timeStr, out var cachedAt)) return null;
+
+		if ((DateTime.UtcNow - cachedAt) > TimeSpan.FromMinutes(2))
+			return null;
+
 		var data = await _redis.GetStringAsync($"cached_email:{transactionCode}");
 		if (string.IsNullOrEmpty(data)) return null;
 

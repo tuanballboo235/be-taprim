@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 #Ev
 .env
+
+#docker-file
+.docker-compose.yaml
