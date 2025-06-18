@@ -1,6 +1,6 @@
 ﻿using OtpNet;
-using TAPrim.Application.DTOs;
 using TAPrim.Application.DTOs.Chatgpt;
+using TAPrim.Application.DTOs.Common;
 using TAPrim.Shared.Constants;
 
 namespace TAPrim.Application.Services

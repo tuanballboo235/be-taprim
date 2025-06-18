@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using System.Net.Http;
 using Newtonsoft.Json;
-using TAPrim.Application.DTOs;
 using TAPrim.Application.DTOs.Tempmail;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Shared.Constants;
@@ -9,10 +8,11 @@ using TAPrim.Shared.Helpers;
 using System.Transactions;
 using TAPrim.Models;
 using System.Net.Http.Headers;
+using TAPrim.Application.DTOs.Common;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
-	public class TempMailService : ITempmailService
+    public class TempMailService : ITempmailService
 	{
 		private readonly HttpClient _httpClient;
 		private readonly VietQrDto _vietQrConfig;

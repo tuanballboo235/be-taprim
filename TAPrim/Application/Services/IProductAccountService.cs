@@ -1,4 +1,4 @@
-﻿using TAPrim.Application.DTOs;
+﻿using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Models;
 

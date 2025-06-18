@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Text;
-using TAPrim.Application.DTOs;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Shared.Constants;
 using Azure.Core;
@@ -11,10 +10,11 @@ using TAPrim.Application.DTOs.Payment;
 using TAPrim.Shared.Helpers;
 using TAPrim.Application.DTOs.Products;
 using System.Transactions;
+using TAPrim.Application.DTOs.Common;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
-	public class PaymentService : IPaymentService
+    public class PaymentService : IPaymentService
 	{
 		private readonly HttpClient _httpClient;
 		private readonly VietQrDto _vietQrConfig;

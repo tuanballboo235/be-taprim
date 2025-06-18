@@ -1,9 +1,9 @@
 ﻿using TAPrim.Application.DTOs.Tempmail;
-using TAPrim.Application.DTOs;
+using TAPrim.Application.DTOs.Common;
 
 namespace TAPrim.Application.Services
 {
-	public interface ITempmailService
+    public interface ITempmailService
 	{
 		Task<ApiResponseModel<List<TempmailEmailItemDto>>> EmailNetflixUpdateHouseFilter(string ipaddress);
 		Task<ApiResponseModel<List<TempmailEmailItemDto>>> GetNetflixCodeLoginEmailFilter(string transactionCode);

@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using TAPrim.Models;
-using TAPrim.Application.DTOs;
 using TAPrim.Shared.Helpers;
 using DotNetEnv;
+using TAPrim.Application.DTOs.Common;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {

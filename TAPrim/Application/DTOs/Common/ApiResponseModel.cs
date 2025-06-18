@@ -1,6 +1,6 @@
 ﻿using TAPrim.Shared.Constants;
 
-namespace TAPrim.Application.DTOs
+namespace TAPrim.Application.DTOs.Common
 {
     public class ApiResponseModel<T>
     {

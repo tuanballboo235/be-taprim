@@ -1,12 +1,12 @@
 ﻿using Azure.Core;
-using TAPrim.Application.DTOs;
+using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.Order;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Shared.Constants;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
-	public class OrderService : IOrderService
+    public class OrderService : IOrderService
 	{
 		private readonly IOrderRepository _orderRepository;
 		public OrderService(IOrderRepository orderRepository)

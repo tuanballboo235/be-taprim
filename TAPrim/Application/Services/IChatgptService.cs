@@ -1,6 +1,6 @@
 ﻿using TAPrim.Application.DTOs.Netflix;
-using TAPrim.Application.DTOs;
 using TAPrim.Application.DTOs.Chatgpt;
+using TAPrim.Application.DTOs.Common;
 
 namespace TAPrim.Application.Services
 {

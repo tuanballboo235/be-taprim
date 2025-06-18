@@ -1,4 +1,4 @@
-﻿using TAPrim.Application.DTOs;
+﻿using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Models;
@@ -6,7 +6,7 @@ using TAPrim.Shared.Constants;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
-	public class ProductAccountService : IProductAccountService
+    public class ProductAccountService : IProductAccountService
 	{
 		private readonly IProductAccountRepository _productAccountRepository;
 

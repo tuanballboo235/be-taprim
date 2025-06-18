@@ -1,5 +1,5 @@
 ﻿using Azure;
-using TAPrim.Application.DTOs;
+using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.Products;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Infrastructure.Repositories.RepositoryImpl;

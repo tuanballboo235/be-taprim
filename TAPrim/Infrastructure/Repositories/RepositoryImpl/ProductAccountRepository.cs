@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using TAPrim.Application.DTOs;
+using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Models;
 using TAPrim.Shared.Constants;
 
 namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 {
-	public class ProductAccountRepository : IProductAccountRepository
+    public class ProductAccountRepository : IProductAccountRepository
 	{
 		private readonly TaprimContext _context;
 

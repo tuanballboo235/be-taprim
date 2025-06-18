@@ -2,7 +2,7 @@
 using Azure.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TAPrim.Application.DTOs;
+using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.Payment;
 using TAPrim.Application.DTOs.Products;
 using TAPrim.Application.Services;
@@ -12,7 +12,7 @@ using TAPrim.Shared.Constants;
 
 namespace TAPrim.API.Controllers
 {
-	[Route("api/[controller]")]
+    [Route("api/[controller]")]
 	[ApiController]
 	public class PaymentController : ControllerBase
 	{

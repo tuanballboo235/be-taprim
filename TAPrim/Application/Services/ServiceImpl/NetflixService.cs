@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Net.WebSockets;
 using System.Text.Json;
-using TAPrim.Application.DTOs;
+using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.Netflix;
 using TAPrim.Shared.Constants;
 
