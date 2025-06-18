@@ -4,6 +4,7 @@ using TAPrim.Models;
 using TAPrim.Shared.Helpers;
 using DotNetEnv;
 using TAPrim.Application.DTOs.Common;
+using BasketballAcademyManagementSystemAPI.Common.Helpers;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -72,6 +73,7 @@ foreach (var type in assembly.GetTypes())
 		}
 	}
 }
+builder.Services.AddScoped<EmailHelper>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<TransactionCodeHelper>();
