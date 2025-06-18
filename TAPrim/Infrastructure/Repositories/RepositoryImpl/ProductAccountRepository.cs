@@ -23,7 +23,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		public async Task<ProductAccount?> GetProductAccountByIdAsync(int productAccountId)
 		{
 			return await _context.ProductAccounts.FindAsync(productAccountId);
-		}>
+		}
 
 		public async Task AddProductAccountAsync(ProductAccount account)
 		{

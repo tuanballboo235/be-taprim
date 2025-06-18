@@ -18,7 +18,7 @@ namespace TAPrim.API.Controllers
 		}
 
 		[HttpPost("add-product-account/{productId}")]
-		public async Task<IActionResult> CreateProductAccount(int productId, [FromBody] CreateProductAccountDto request)
+		public async Task<IActionResult> CreateProductAccount(int productId,[FromBody] CreateProductAccountDto request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productAccountService.CreateProductAccountAsync(productId, request));
 		}

@@ -8,7 +8,8 @@
 		public DateTime? DateChangePass { get; set; }
 
 		public int? SellCount { get; set; }
-
-		public int Status { get; set; }
+        public DateTime SellDateFrom { get; set; }
+        public DateTime SellDateTo { get; set; }
+        public int Status { get; set; }
 	}
 }

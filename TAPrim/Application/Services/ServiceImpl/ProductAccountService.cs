@@ -18,43 +18,58 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 		public async Task<ApiResponseModel<ProductAccountResponseDto>> CreateProductAccountAsync(int productId, CreateProductAccountDto dto)
 		{
-			var product = await _productAccountRepository.GetProductByIdAsync(productId);
-			if (product == null)
-				throw new Exception("Product not found");
-
-			// B1: Tạo entity thực
-			var productAccount = new ProductAccount
+			try
 			{
-				ProductId = productId,
-				AccountData = dto.AccountData,
-				UsernameProductAccount = dto.UsernameProductAccount,
-				PasswordProductAccount = dto.PasswordProductAccount,
-				DateChangePass = dto.DateChangePass,
-				SellCount = dto.SellCount,
-				Status = dto.Status
-			};
+				var product = await _productAccountRepository.GetProductByIdAsync(productId);
+				if (product == null)
+					throw new Exception("Product not found");
 
-			// B2: Lưu vào DB
-			await _productAccountRepository.AddProductAccountAsync(productAccount);
+				// B1: Tạo entity thực
+				var productAccount = new ProductAccount
+				{
 
-			// B3: Map sang DTO để trả về
-			var responseDto = new ProductAccountResponseDto
+					ProductId = productId,
+					AccountData = dto.AccountData,
+					UsernameProductAccount = dto.UsernameProductAccount,
+					PasswordProductAccount = dto.PasswordProductAccount,
+					DateChangePass = dto.DateChangePass,
+					SellCount = dto.SellCount,
+					SellFrom = dto.SellDateFrom,
+					SellTo = dto.SellDateTo,
+					Status = dto.Status
+				};
+
+				// B2: Lưu vào DB
+				await _productAccountRepository.AddProductAccountAsync(productAccount);
+
+				// B3: Map sang DTO để trả về
+				var responseDto = new ProductAccountResponseDto
+				{
+					ProductId = productAccount.ProductId,
+					AccountData = productAccount.AccountData,
+					UsernameProductAccount = productAccount.UsernameProductAccount,
+					Status = productAccount.Status,
+					DateChangePass = productAccount.DateChangePass,
+					SellCount = productAccount.SellCount,
+				};
+
+				// B4: Trả response
+				return new ApiResponseModel<ProductAccountResponseDto>
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Data = responseDto
+				};
+			}catch (Exception ex)
 			{
-				ProductId = productAccount.ProductId,
-				AccountData = productAccount.AccountData,
-				UsernameProductAccount = productAccount.UsernameProductAccount,
-				Status = productAccount.Status,
-				DateChangePass = productAccount.DateChangePass,
-				SellCount = productAccount.SellCount,
-			};
-
-			// B4: Trả response
-			return new ApiResponseModel<ProductAccountResponseDto>
-			{
-				Status = ApiResponseStatusConstant.SuccessStatus,
-				Data = responseDto
-			};
+				return new ApiResponseModel<ProductAccountResponseDto>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = ex.Message
+				};
+			}	
+			
 		}
+
 		public async Task<ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>> GetProductAccountsAsync(ProductAccountQueryDto query)
 		{
 			var result = await _productAccountRepository.GetFilteredProductAccountsAsync(query);
@@ -86,6 +101,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				}
 			};
 		}
+
 		public async Task<ApiResponseModel<object>> GetProductAccountsByTransactionCodeAsync(string transactionCode)
 		{
 			try
@@ -134,7 +150,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				return new ApiResponseModel<object>()
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
-					Message = "Lấy thông tin tài khoản thành công"
+					Message = "Lấy thông tin tài khoản thành công",
 					Data = new ProductAccountResponseDto
 					{
 						ProductAccountId = productAccount.ProductAccountId,
