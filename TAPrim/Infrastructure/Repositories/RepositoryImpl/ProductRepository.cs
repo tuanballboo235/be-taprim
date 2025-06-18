@@ -38,30 +38,16 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 									 CategoryId=x.Category.CategoryId,
 									 ProductCode=x.ProductCode,
 									 Description=x.Description,
+									 Status=x.Status,
 									 ProductImage=x.ProductImage
-								 })
+								 }).Where(x=>x.Status==1)
 								 .ToListAsync();
 		}
 
-		public async Task<Product> UpdateProductAsync(Product updated)
+		public async Task<bool> UpdateProductAsync(Product updated)
 		{
-			var existing = await _context.Products.FindAsync(updated.ProductId);
-			if (existing == null)
-				throw new Exception("Product not found");
-
-			// Cập nhật thông tin cơ bản
-			existing.ProductName = updated.ProductName;
-			existing.DiscountPercentDisplay = updated.DiscountPercentDisplay;
-			existing.Price = updated.Price;
-			existing.Status = updated.Status;
-			existing.CategoryId = updated.CategoryId;
-			existing.AttentionNote = updated.AttentionNote;
-			existing.Description = updated.Description;
-			existing.ProductCode = updated.ProductCode;
-			existing.ProductImage = updated.ProductImage;
-
-			await _context.SaveChangesAsync();
-			return existing;
+			 _context.Products.Update(updated);	
+			return await _context.SaveChangesAsync() > 0;
 		}
 
 

@@ -51,11 +51,11 @@ namespace TAPrim.Application.Services.ServiceImpl
             };
         }
 
-		public async Task<ApiResponseModel<ProductDetailResponseDto>> UpdateProductAsync(UpdateProductRequest dto)
+		public async Task<ApiResponseModel<ProductDetailResponseDto>> UpdateProductAsync(int productId ,UpdateProductRequest dto)
 		{
 			try
 			{
-				var product = await _productRepo.GetProductByIdAsync(dto.ProductId);
+				var product = await _productRepo.GetProductByIdAsync(productId);
 				if (product == null)
 				{
 					return new ApiResponseModel<ProductDetailResponseDto>
@@ -74,30 +74,30 @@ namespace TAPrim.Application.Services.ServiceImpl
 				}
 
 				// Gán lại thông tin
-				product.ProductName = dto.ProductName;
+				product.ProductName = dto.ProductName ?? product.ProductName;
 				product.DiscountPercentDisplay = dto.DiscountPercentDisplay;
 				product.Price = dto.Price ?? product.Price;
 				product.Status = dto.Status ?? product.Status;
 				product.CategoryId = dto.CategoryId ?? product.CategoryId;
-				product.AttentionNote = dto.AttentionNote;
-				product.Description = dto.Description;
-				product.ProductCode = dto.ProductCode;
-				product.ProductImage = imagePath;
+				product.AttentionNote = dto.AttentionNote?? product.AttentionNote;
+				product.Description = dto.Description ?? product.Description;
+				product.ProductCode = dto.ProductCode ?? product.ProductCode;
+				product.ProductImage = imagePath ?? product.ProductImage;
 
 				var updated = await _productRepo.UpdateProductAsync(product);
 
 				var response = new ProductDetailResponseDto
 				{
-					ProductId = updated.ProductId,
-					ProductName = updated.ProductName,
-					Price = updated.Price,
-					DiscountPercentDisplay = updated.DiscountPercentDisplay,
-					AttentionNote = updated.AttentionNote,
-					Description = updated.Description,
-					ProductImage = updated.ProductImage,
-					ProductCode = updated.ProductCode,
-					CategoryId = updated.CategoryId,
-					CategoryName = updated.Category?.CategoryName ?? "Unknown",
+					ProductId = product.ProductId,
+					ProductName = product.ProductName,
+					Price = product.Price,
+					DiscountPercentDisplay = product.DiscountPercentDisplay,
+					AttentionNote = product.AttentionNote,
+					Description = product.Description,
+					ProductImage = product.ProductImage,
+					ProductCode = product.ProductCode,
+					CategoryId = product.CategoryId,
+					CategoryName = product.Category?.CategoryName ?? "Unknown",
 					AccountStockQuantity = 0 // hoặc bỏ hoàn toàn field này nếu không cần
 				};
 				//xóa file ảnh cũ ngay khi update thành công

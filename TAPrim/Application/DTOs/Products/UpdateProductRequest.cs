@@ -2,7 +2,6 @@
 {
 	public class UpdateProductRequest
 	{
-		public int ProductId { get; set; }
 		public string? ProductName { get; set; }
 		public int? DiscountPercentDisplay { get; set; }
 		public double? Price { get; set; }

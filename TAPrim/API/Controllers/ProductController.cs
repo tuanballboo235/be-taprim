@@ -29,10 +29,10 @@ namespace TAPrim.API.Controllers
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productService.GetProductDetailAsync(productId));
 		}
-		[HttpPut("update-product")]
-		public async Task<IActionResult> UpdateProduct([FromForm] UpdateProductRequest request)
+		[HttpPut("update-product/{productId}")]
+		public async Task<IActionResult> UpdateProduct(int productId, [FromForm] UpdateProductRequest request)
 		{
-			return ApiResponseHelper.HandleApiResponse(await _productService.UpdateProductAsync(request));
+			return ApiResponseHelper.HandleApiResponse(await _productService.UpdateProductAsync(productId,request));
 		}
 
 		[HttpGet("list-products")]
