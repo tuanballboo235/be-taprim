@@ -1,30 +1,40 @@
-﻿using TAPrim.Infrastructure.Repositories;
+﻿using BasketballAcademyManagementSystemAPI.Common.Helpers;
+using TAPrim.Infrastructure.Repositories;
+using TAPrim.Shared.Constants;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
 	public class SendMailService:ISendMailService
 	{
 		private readonly ISendMailRepository  _sendMailRepository;
-		public SendMailService(ISendMailRepository sendMailRepository)
+		private readonly EmailHelper _emailHelper;
+		public SendMailService(ISendMailRepository sendMailRepository, EmailHelper emailHelper)
 		{
 			_sendMailRepository = sendMailRepository;
+			_emailHelper = emailHelper;
 		}
 
-		public Task SendMailByMailTemplateIdAsync(string mailTemplateId, string email, string urlToPage, dynamic data)
+		public async Task SendMailByMailTemplateIdAsync(string mailTemplateId, string email, dynamic data)
 		{
-			var mailTemplate = await _mailTemplateRepository.GetByIdAsync(mailTemplateId);
+
+			var mailTemplate = await _sendMailRepository.GetByIdAsync(mailTemplateId);
 			if (mailTemplate != null)
 			{
+				//replace default email section
+				mailTemplate.Content = mailTemplate.Content
+					.Replace("{{FACEBOOK_PAGE_URL}}", MailTemplateConstant.FacebookPageURL);
+				//replace theo từng email
 				switch (mailTemplateId)
 				{
 					//sửa nội dung approve manager registration
-					case string id when id == MailTemplateConstant.ApproveManagerRegistration:
+					case string id when id == MailTemplateConstant.PaymentSucess:
 						mailTemplate.Content = mailTemplate.Content
-							.Replace("{{USER_NAME}}", data?.Fullname ?? "Bạn")
-							.Replace("{{ROLE_CODE}}", data?.RoleCode ?? "Học Viên")
-							.Replace("{{URL_GO_TO_PAGE}}", urlToPage);
+							.Replace("{{PAYMENT_TRANSACTION_CODE}}", data?.TransactionCode ?? "N/A")
+							.Replace("{{TRANSACTION_DATE}}", data?.TransactionDate ?? "N/A")
+							.Replace("{{TRANSACTION_STATUS}}", data?.Status ?? "N/A")
+							.Replace("{{ORDER_TRACKING_URL}}", "http://103.238.235.227:8080/");
 						break;
-				
+
 					case null:
 						throw new ArgumentNullException(nameof(mailTemplateId), "mailTemplateId cannot be null.");
 

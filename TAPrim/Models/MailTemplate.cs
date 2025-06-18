@@ -5,7 +5,7 @@ namespace TAPrim.Models;
 
 public partial class MailTemplate
 {
-    public int MailTemplateId { get; set; }
+    public string MailTemplateId { get; set; } = null!;
 
     public string TemplateTitle { get; set; } = null!;
 

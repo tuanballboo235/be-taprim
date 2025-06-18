@@ -33,7 +33,6 @@ public partial class TaprimContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -87,6 +86,9 @@ public partial class TaprimContext : DbContext
 
             entity.ToTable("MailTemplate");
 
+            entity.Property(e => e.MailTemplateId)
+                .HasMaxLength(100)
+                .IsUnicode(false);
             entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.TemplateTitle).HasMaxLength(255);
             entity.Property(e => e.UpdatedAt).HasColumnType("datetime");

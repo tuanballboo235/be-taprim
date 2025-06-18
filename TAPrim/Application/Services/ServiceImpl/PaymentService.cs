@@ -24,7 +24,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		private readonly IProductAccountRepository _productAccountRepository;
 		private readonly ICouponRepository _couponRepository;
 		private readonly IProductRepository _productRepository;
-
+		private readonly ISendMailService _sendMailService;
 
 		public PaymentService(HttpClient httpClient,
 			IOptions<VietQrDto> options,
@@ -33,7 +33,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 			TransactionCodeHelper transactionCodeHelper,
 			IProductAccountRepository productAccountRepository,
 			ICouponRepository couponRepository,
-			IProductRepository productRepository
+			IProductRepository productRepository,
+			ISendMailService sendMailService
 			)
 		{
 			_httpClient = httpClient;
@@ -44,6 +45,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 			_productAccountRepository = productAccountRepository;
 			_couponRepository = couponRepository;
 			_productRepository = productRepository;
+			_sendMailService = sendMailService;
 		}
 
 		//hàm GenerateQrAsync
@@ -288,6 +290,14 @@ namespace TAPrim.Application.Services.ServiceImpl
 				order.ExpiredAt = DateTime.Now.AddDays(dayAccount ?? 0);
 
 				await _orderRepository.SaveChange();
+
+				//gửi email thông báo tới khách hàng
+				await _sendMailService.SendMailByMailTemplateIdAsync(MailTemplateConstant.PaymentSucess, order.ContactInfo, new
+				{
+					TransactionCode = transactionCode,
+					TransactionDate = DateTime.Parse(data.TransactionDate),
+					Status = PaymentConstatnt.Paid
+				});
 				return new ApiResponseModel<object>()
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,

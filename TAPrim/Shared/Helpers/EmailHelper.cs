@@ -1,5 +1,6 @@
 ﻿using System.Net.Mail;
 using System.Net;
+using TAPrim.Application.DTOs.Common;
 
 namespace BasketballAcademyManagementSystemAPI.Common.Helpers
 {
