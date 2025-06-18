@@ -82,7 +82,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				product.AttentionNote = dto.AttentionNote?? product.AttentionNote;
 				product.Description = dto.Description ?? product.Description;
 				product.ProductCode = dto.ProductCode ?? product.ProductCode;
-				product.ProductImage = imagePath ?? product.ProductImage;
+				product.ProductImage = imagePath;  // nếu như ko truyền ảnh thì sẽ giữ nguyên ảnh gốc, còn truyền ảnh thì cũng đã cập nhật vào biến imgPath và gắn r
 
 				var updated = await _productRepo.UpdateProductAsync(product);
 
