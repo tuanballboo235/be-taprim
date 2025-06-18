@@ -13,5 +13,6 @@ namespace TAPrim.Application.Services
 		Task<ApiResponseModel<object>> GenerateQrAsync(CreatePaymentRequest createOrderRequest);
 		Task<ApiResponseModel<object>> SetProductAccountForPaymentByTransactionCode(SePayWebhookDto data);
 		Task<ApiResponseModel<object>> GetPaymentsAsync(PaymentFilterDto filter);
+		Task<ApiResponseModel<object>> TestEmail();
 	}
 }

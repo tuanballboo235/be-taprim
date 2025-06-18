@@ -39,5 +39,13 @@ namespace TAPrim.API.Controllers
 			return ApiResponseHelper.HandleApiResponse(await _paymentService.GetPaymentsAsync(filter));
 
 		}
+
+
+		[HttpGet("test-send-mails")]
+		public async Task<IActionResult> TestSendMail()
+		{
+			return ApiResponseHelper.HandleApiResponse(await _paymentService.TestEmail());
+
+		}
 	}
 }

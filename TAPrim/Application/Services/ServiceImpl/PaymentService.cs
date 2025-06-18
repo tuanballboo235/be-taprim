@@ -11,6 +11,7 @@ using TAPrim.Shared.Helpers;
 using TAPrim.Application.DTOs.Products;
 using System.Transactions;
 using TAPrim.Application.DTOs.Common;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
@@ -47,7 +48,21 @@ namespace TAPrim.Application.Services.ServiceImpl
 			_productRepository = productRepository;
 			_sendMailService = sendMailService;
 		}
-
+		public async Task<ApiResponseModel<object>> TestEmail()
+		{
+			//gửi email thông báo tới khách hàng
+			await _sendMailService.SendMailByMailTemplateIdAsync(MailTemplateConstant.PaymentSucess, "tuanballboo6@gmail.com", new
+			{
+				TransactionCode = "1234",
+				TransactionDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm"),
+				Status = PaymentConstatnt.Paid == 1 ? "Đã thanh toán" : "Chưa thanh toán"
+			});
+			return new ApiResponseModel<object>()
+			{
+				Status = ApiResponseStatusConstant.SuccessStatus,
+				Message = "Lấy tài khoản thành công",
+			};
+		}
 		//hàm GenerateQrAsync
 		public async Task<ApiResponseModel<object>> GenerateQrAsync(CreatePaymentRequest createPaymentRequest)
 		{
@@ -292,11 +307,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 				await _orderRepository.SaveChange();
 
 				//gửi email thông báo tới khách hàng
-				await _sendMailService.SendMailByMailTemplateIdAsync(MailTemplateConstant.PaymentSucess, order.ContactInfo, new
+				await _sendMailService.SendMailByMailTemplateIdAsync(MailTemplateConstant.PaymentSucess, "tuanballboo@gmail.com", new
 				{
 					TransactionCode = transactionCode,
-					TransactionDate = DateTime.Parse(data.TransactionDate),
-					Status = PaymentConstatnt.Paid
+					TransactionDate = DateTime.Parse(data.TransactionDate).ToString("yyyy-MM-dd HH:mm"),
+					Status = PaymentConstatnt.Paid == 1 ? "Đã thanh toán" : "Chưa thanh toán"
 				});
 				return new ApiResponseModel<object>()
 				{
