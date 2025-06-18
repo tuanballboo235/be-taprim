@@ -307,7 +307,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				await _orderRepository.SaveChange();
 
 				//gửi email thông báo tới khách hàng
-				await _sendMailService.SendMailByMailTemplateIdAsync(MailTemplateConstant.PaymentSucess, "tuanballboo@gmail.com", new
+				await _sendMailService.SendMailByMailTemplateIdAsync(MailTemplateConstant.PaymentSucess,order.ContactInfo, new
 				{
 					TransactionCode = transactionCode,
 					TransactionDate = DateTime.Parse(data.TransactionDate).ToString("yyyy-MM-dd HH:mm"),
