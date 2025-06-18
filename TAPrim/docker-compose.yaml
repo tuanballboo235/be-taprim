@@ -11,6 +11,8 @@ services:
       - .env
     depends_on:
       - redis
+    volumes:
+      - /var/taprim/images:/app/wwwroot/uploads
     networks:
       - app_net
 
