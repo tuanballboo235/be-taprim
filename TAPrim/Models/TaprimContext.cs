@@ -19,6 +19,8 @@ public partial class TaprimContext : DbContext
 
     public virtual DbSet<Coupon> Coupons { get; set; }
 
+    public virtual DbSet<MailTemplate> MailTemplates { get; set; }
+
     public virtual DbSet<Order> Orders { get; set; }
 
     public virtual DbSet<Payment> Payments { get; set; }
@@ -31,9 +33,6 @@ public partial class TaprimContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("server =103.238.235.227; database = Taprim;uid=sa;pwd=Tuananh235;TrustServerCertificate=true");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -80,6 +79,17 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.ValidUntil)
                 .HasColumnType("datetime")
                 .HasColumnName("validUntil");
+        });
+
+        modelBuilder.Entity<MailTemplate>(entity =>
+        {
+            entity.HasKey(e => e.MailTemplateId).HasName("MailTemplate_pk");
+
+            entity.ToTable("MailTemplate");
+
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.TemplateTitle).HasMaxLength(255);
+            entity.Property(e => e.UpdatedAt).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Order>(entity =>

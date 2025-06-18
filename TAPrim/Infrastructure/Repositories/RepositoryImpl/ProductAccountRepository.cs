@@ -105,11 +105,11 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			return totalSellCount;
 		}
 
-		public async Task<ProductAccount?> GetProductAccountByProductId(int productId)
+		public async Task<List<ProductAccount>> GetListProductAccountByProductId(int productId)
 		{
 			return await _context.ProductAccounts.Where(x => x.ProductId == productId &&
-														x.Status != ProductAccountStatusConstant.Unavailable
-														).FirstOrDefaultAsync();
+														x.Status != ProductAccountStatusConstant.Unavailable 
+														).ToListAsync();
 		}
 
 		public async Task<ProductAccountResponseDto?> GetProductAccountByPaymentTransactionCode(string transactionCode)
@@ -143,5 +143,9 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 		}
 
+		public async Task<ProductAccount?> GetProductAccountByProductId(int productId)
+		{
+			return await _context.ProductAccounts.Where(x => x.ProductId == productId).FirstOrDefaultAsync();
+		}
 	}
 }

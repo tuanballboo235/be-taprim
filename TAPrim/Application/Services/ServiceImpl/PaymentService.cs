@@ -53,7 +53,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 			try
 			{
 				// Kiểm tra nếu product ko có product account thì báo lỗi 
-				var productAccount = await _productAccountRepository.GetProductAccountByProductId(createPaymentRequest.ProductId);
+				var productAccount = await _productAccountRepository.GetListProductAccountByProductId(createPaymentRequest.ProductId);
 				if (productAccount == null)
 				{
 					return new ApiResponseModel<object>
@@ -234,35 +234,55 @@ namespace TAPrim.Application.Services.ServiceImpl
 				}
 
 
-				var productAccount = await _productAccountRepository.GetProductAccountByProductId(order.ProductId);
+				//Lấy ra danh sách account
+				var productAccountList = await _productAccountRepository.GetListProductAccountByProductId(order.ProductId);
 				//kiểm tra còn tài khoản ko 
-				if (productAccount == null)
-				{
+				if (productAccountList.Count() < 0) {
 					return new ApiResponseModel<object>
 					{
 						Status = ApiResponseStatusConstant.FailedStatus,
 						Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
 
 					};
+
 				}
 				else
 				{
-					//Nếu lượt bán > 1 thì giảm lượt bán xuống
-					if (productAccount.SellCount > 1)
+					foreach (var account in productAccountList)
 					{
-						productAccount.SellCount -= 1;
-					}
-					else //còn ko thì cập nhật trạng thái thành 1, là đã bán
-					{
-						productAccount.Status = ProductAccountStatusConstant.Unavailable;
+						if ( // ko thỏa mãn productAccount
+							(DateTime.Now < account.SellFrom || DateTime.Now > account.SellTo) ||
+							account.Status == ProductAccountStatusConstant.Unavailable)
+						{
+							return new ApiResponseModel<object>
+							{
+								Status = ApiResponseStatusConstant.FailedStatus,
+								Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
+
+							};
+						}
+						else
+						{
+
+							//Nếu lượt bán > 1 thì giảm lượt bán xuống
+							if (account.SellCount > 0)
+							{
+								account.SellCount -= 1;
+							}
+							else //còn ko thì cập nhật trạng thái thành 0, là đã bán
+							{
+								account.Status = ProductAccountStatusConstant.Unavailable;
+							}
+							//sau khi thanh toán thành công thì set cho order tk 
+							order.ProductAccountId = account?.ProductAccountId;
+						}
 					}
 
 				}
 
 				//lấy ra product
 				var dayAccount = (await _productRepository.GetProductByIdAsync(order.ProductId))?.DurationDay;
-				//sau khi thanh toán thành công thì set cho order tk 
-				order.ProductAccountId = productAccount?.ProductAccountId;
+				
 				order.Status = OrderStatus.Active;
 				order.RemainGetCode = 3;
 				order.ExpiredAt = DateTime.Now.AddDays(dayAccount ?? 0);

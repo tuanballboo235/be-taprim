@@ -67,7 +67,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 					Message = ex.Message
 				};
 			}	
-			
 		}
 
 		public async Task<ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>> GetProductAccountsAsync(ProductAccountQueryDto query)
@@ -106,7 +105,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 		{
 			try
 			{
-
 				return new ApiResponseModel<object>()
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
@@ -171,8 +169,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 					Message = "Đã có lỗi xảy ra"
 				};
 			}
-
-			
 		}
 	}
 }
