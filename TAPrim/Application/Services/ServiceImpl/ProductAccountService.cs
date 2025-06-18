@@ -107,11 +107,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 				};
 			}
 		}
-		public async Task<ApiResponseModel<object>> UpdateProductAccount(string productAccountId, UpdateProductProductAccountRequest request)
+		public async Task<ApiResponseModel<object>> UpdateProductAccount(int productAccountId, UpdateProductProductAccountRequest request)
 		{
 			try
 			{
-				var productAccount = await _productAccountRepository.G(productAccountId);
+				var productAccount = await _productAccountRepository.GetProductAccountByIdAsync(productAccountId);
 				if (productAccount == null)
 				{
 					return new ApiResponseModel<object>()
@@ -120,19 +120,32 @@ namespace TAPrim.Application.Services.ServiceImpl
 						Message = "Không tìm thấy tài khoản sản phẩm"
 					};
 				}
-				productAccount.AccountData = request.AccountData;
-				productAccount.Status = request.Status;
-				productAccount.DateChangePass = request.DateChangePass;
-				productAccount.SellCount = request.SellCount;
-				productAccount.UsernameProductAccount = request.UsernameProductAccount;
-				productAccount.PasswordProductAccount = request.PasswordProductAccount;
-				productAccount.
-				await _productAccountRepository.UpdateProductAccountAsync(productAccount);
+				productAccount.AccountData = request.AccountData ?? productAccount.AccountData;
+				productAccount.Status = request.Status ?? productAccount.Status;
+				productAccount.DateChangePass = request.DateChangePass ?? productAccount.DateChangePass;
+				productAccount.UsernameProductAccount = request.UsernameProductAccount ?? productAccount.UsernameProductAccount;
+				productAccount.PasswordProductAccount = request.PasswordProductAccount ?? productAccount.PasswordProductAccount ;
+				productAccount.SellFrom = request.SellFrom ?? productAccount.SellFrom;
+				productAccount.SellTo = request.SellTo ?? productAccount.SellTo;
+				productAccount.SellCount = request.SellCount ?? productAccount.SellCount;
+
+				await _productAccountRepository.UpdateProductAccount(productAccount);
 
 				return new ApiResponseModel<object>()
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
 					Message = "Lấy thông tin tài khoản thành công"
+					Data = new ProductAccountResponseDto
+					{
+						ProductAccountId = productAccount.ProductAccountId,
+						ProductId = productAccount.ProductId,
+						AccountData = productAccount.AccountData,
+						UsernameProductAccount = productAccount.UsernameProductAccount,
+						PasswordProductAccount = productAccount.PasswordProductAccount,
+						Status = productAccount.Status,
+						DateChangePass = productAccount.DateChangePass,
+						SellCount = productAccount.SellCount,
+					}
 				};
 			}
 			catch (Exception ex) {

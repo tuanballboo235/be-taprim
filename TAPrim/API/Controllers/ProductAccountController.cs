@@ -36,9 +36,9 @@ namespace TAPrim.API.Controllers
 		}
 
 		[HttpPut("update-product-account/{productAccountId}")]
-		public async Task<IActionResult> UpdateProductAccount([FromBody] GetProductAccountByTransactionCodeRequestDto request)
+		public async Task<IActionResult> UpdateProductAccount(int productAccountId,[FromBody] UpdateProductProductAccountRequest request)
 		{
-			return ApiResponseHelper.HandleApiResponse(await _productAccountService.GetProductAccountsByTransactionCodeAsync(request.TransactionCode));
+			return ApiResponseHelper.HandleApiResponse(await _productAccountService.UpdateProductAccount(productAccountId, request));
 		}
 
 

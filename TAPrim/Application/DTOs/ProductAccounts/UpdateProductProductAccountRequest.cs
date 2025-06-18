@@ -4,7 +4,7 @@ namespace TAPrim.Application.DTOs.ProductAccounts
 {
 	public class UpdateProductProductAccountRequest
 	{
-		public int ProductId { get; set; }
+		public int? ProductId { get; set; }
 
 		public string? AccountData { get; set; }
 
@@ -12,7 +12,7 @@ namespace TAPrim.Application.DTOs.ProductAccounts
 
 		public string? PasswordProductAccount { get; set; }
 
-		public int Status { get; set; }
+		public int? Status { get; set; }
 
 		public DateTime? DateChangePass { get; set; }
 
