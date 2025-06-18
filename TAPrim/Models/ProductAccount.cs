@@ -23,6 +23,10 @@ public partial class ProductAccount
 
     public string? Note { get; set; }
 
+    public DateTime? SellFrom { get; set; }
+
+    public DateTime? SellTo { get; set; }
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual Product Product { get; set; } = null!;

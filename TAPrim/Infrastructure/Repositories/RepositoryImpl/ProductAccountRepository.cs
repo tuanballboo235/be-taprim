@@ -20,6 +20,11 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			return await _context.Products.FindAsync(productId);
 		}
 
+		public async Task<ProductAccount?> GetProductAccountByIdAsync(int productAccountId)
+		{
+			return await _context.ProductAccounts.FindAsync(productAccountId);
+		}>
+
 		public async Task AddProductAccountAsync(ProductAccount account)
 		{
 			_context.ProductAccounts.Add(account);
@@ -107,11 +112,9 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 														).FirstOrDefaultAsync();
 		}
 
-		
-
 		public async Task<ProductAccountResponseDto?> GetProductAccountByPaymentTransactionCode(string transactionCode)
 		{
-			
+
 			// 2. Tìm order 
 			var order = await _context.Orders.Include(x => x.Payment)
 				.Where(x => x.Payment.TransactionCode == transactionCode)
@@ -130,6 +133,13 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			};
 
 			return responseDto;
+		}
+
+		public async Task<bool> UpdateProductAccount(ProductAccount productAccount)
+		{
+
+			_context.ProductAccounts.Update(productAccount);
+			return await _context.SaveChangesAsync() > 0;
 
 		}
 

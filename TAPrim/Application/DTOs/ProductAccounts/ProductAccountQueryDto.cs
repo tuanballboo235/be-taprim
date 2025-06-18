@@ -2,6 +2,7 @@
 {
 	public class ProductAccountQueryDto
 	{
+
 		public int ProductId { get; set; }
 
 		public string? Username { get; set; }

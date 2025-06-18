@@ -31,6 +31,10 @@ public partial class TaprimContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("server =103.238.235.227; database = Taprim;uid=sa;pwd=Tuananh235;TrustServerCertificate=true");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -202,6 +206,12 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.PasswordProductAccount).HasColumnName("passwordProductAccount");
             entity.Property(e => e.ProductId).HasColumnName("productId");
             entity.Property(e => e.SellCount).HasColumnName("sellCount");
+            entity.Property(e => e.SellFrom)
+                .HasColumnType("datetime")
+                .HasColumnName("sellFrom");
+            entity.Property(e => e.SellTo)
+                .HasColumnType("datetime")
+                .HasColumnName("sellTo");
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.UsernameProductAccount).HasColumnName("usernameProductAccount");
 
