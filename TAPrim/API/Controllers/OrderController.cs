@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.InteropServices;
 using TAPrim.Application.DTOs.Order;
+using TAPrim.Application.DTOs.Payment;
 using TAPrim.Application.Services;
 using TAPrim.Common.Helpers;
 
@@ -26,5 +27,14 @@ namespace TAPrim.API.Controllers
 			return ApiResponseHelper.HandleApiResponse(await _orderService.UpdateOrderAsync(transactionCode, request));
 
 		}
+
+		[HttpPut("get-order-detail-by-transaction-code")]
+		public async Task<IActionResult> UpdateOrder([FromBody] TransactionCodeRequestDto request)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _orderService.GetOrderDetailsByTransactionCode(request.TransactionCode));
+
+		}
+
+
 	}
 }

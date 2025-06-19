@@ -7,5 +7,6 @@ namespace TAPrim.Application.Services
 	{
 		Task<ApiResponseModel<object>> GetOrderByProductAccount(int productAccount);
 		Task<ApiResponseModel<object>> UpdateOrderAsync(string transactionCode, UpdateOrderRequestDto orderUpdateRequest);
+		Task<ApiResponseModel<object>> GetOrderDetailsByTransactionCode(string transactionCode);
 	}
 }

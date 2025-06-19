@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.Order;
 using TAPrim.Infrastructure.Repositories;
@@ -70,15 +71,19 @@ namespace TAPrim.Application.Services.ServiceImpl
 				{
 					OrderId = order.OrderId,
 					CouponId = order.CouponId,
+					CouponCode = order.Coupon.CouponCode ?? "N/A",
+					CouponDiscountPersent = order.Coupon.DiscountPercent,
 					ProductId = order.ProductId,
+					ProductName = order.Product.ProductName,
 					ProductAccountId = order.ProductAccountId,
+					ProductAccountData = order.ProductAccount.AccountData ?? "N/A",
 					Status = order.Status,
 					CreateAt = order.CreateAt,
-					UpdateAt = order.UpdateAt,
 					RemainGetCode = order.RemainGetCode,
 					ExpiredAt = order.ExpiredAt,
+					PaymentTransactionCode = order.Payment.TransactionCode,
 					ContactInfo = order.ContactInfo,
-					PaymentId = order.PaymentId,
+					PaidAt = order.Payment.PaidDateAt,
 					TotalAmount = order.TotalAmount,
 					ClientNote = order.ClientNote
 				};
@@ -88,6 +93,36 @@ namespace TAPrim.Application.Services.ServiceImpl
 					Message = "Cập nhật đơn hàng thành công",
 					Data = result
 				};
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = ex.Message
+				};
+			}
+		}
+		public async Task<ApiResponseModel<object>> GetOrderDetailsByTransactionCode(string transactionCode)
+		{
+			try {
+				var order = await _orderRepository.GetOrderDetailsById((await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode)).OrderId);
+				if (order == null) 
+				{
+					return new ApiResponseModel<object>()
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Không tìm thấy đơn"
+					};
+				
+				}else
+				{
+					return new ApiResponseModel<object>
+					{
+						Status = ApiResponseStatusConstant.SuccessStatus,
+						Data = order
+					};
+				}
 			}
 			catch (Exception ex)
 			{
