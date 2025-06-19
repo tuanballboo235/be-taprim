@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TAPrim.Application.DTOs.Order;
 using TAPrim.Models;
 
 namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
@@ -30,6 +31,37 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			return await _context.Orders
 								 .Where(o => o.ProductAccountId == productAccountId)
 								 .FirstOrDefaultAsync();
+		}
+
+		public async Task<OrderResponseDto?> GetOrderDetailsById(int orderId)
+		{
+			return await _context.Orders
+				.Include(x=>x.Payment)
+				.Include(x=>x.Coupon)
+				.Include(x=>x.Product)
+				.Include(x=>x.ProductAccount)
+				.Where(x=>x.OrderId == orderId)
+				.Select(x=> new OrderResponseDto
+				{
+					OrderId = x.OrderId,
+					CouponId = x.CouponId,
+					CouponCode = x.Coupon.CouponCode ??"N/A",
+					CouponDiscountPersent = x.Coupon.DiscountPercent,
+					ProductId = x.ProductId,
+					ProductName = x.Product.ProductName,
+					ProductAccountId = x.ProductAccountId,
+					ProductAccountData = x.ProductAccount.AccountData ?? "N/A",
+					Status = x.Status,	
+					CreateAt = x.CreateAt,
+					RemainGetCode = x.RemainGetCode,
+					ExpiredAt = x.ExpiredAt,
+					PaymentTransactionCode = x.Payment.TransactionCode,
+					ContactInfo = x.ContactInfo,
+					PaidAt = x.Payment.PaidDateAt,
+					TotalAmount = x.TotalAmount,
+					ClientNote = x.ClientNote
+				})
+				.FirstOrDefaultAsync();
 		}
 
 		public async Task SaveChange()

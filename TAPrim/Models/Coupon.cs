@@ -20,4 +20,6 @@ public partial class Coupon
     public int? CreateAt { get; set; }
 
     public int RemainTurn { get; set; }
+
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

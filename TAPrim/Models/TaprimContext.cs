@@ -33,6 +33,7 @@ public partial class TaprimContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -124,6 +125,10 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.UpdateAt)
                 .HasColumnType("datetime")
                 .HasColumnName("updateAt");
+
+            entity.HasOne(d => d.Coupon).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.CouponId)
+                .HasConstraintName("FK_Order_Coupon");
 
             entity.HasOne(d => d.Payment).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.PaymentId)
