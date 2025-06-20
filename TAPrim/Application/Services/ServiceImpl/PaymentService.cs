@@ -221,12 +221,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				var payment = await _paymentRepository.GetPaymentByTransactionCode(transactionCode);
 
-				//Cập nhật lại trạng thái payment 
-				payment.Status = PaymentConstatnt.Paid	;
-				payment.PaidDateAt = DateTime.Parse(data.TransactionDate);
-				payment.Status = PaymentConstatnt.Paid;
-
-				await _paymentRepository.SaveChange();
 
 				// cập nhật order
 				var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
@@ -246,15 +240,20 @@ namespace TAPrim.Application.Services.ServiceImpl
 					{
 						Status = ApiResponseStatusConstant.FailedStatus,
 						Message = "Bạn đã chuyển khoản sai giá trị đơn hàng, vui lòng liên hệ zalo: 0344665098 để được hỗ trợ",
-						Data = order
 					};
 				}
 
+				//Cập nhật lại trạng thái payment 
+				payment.Status = PaymentConstatnt.Paid;
+				payment.PaidDateAt = DateTime.Parse(data.TransactionDate);
+				payment.Status = PaymentConstatnt.Paid;
+
+				await _paymentRepository.SaveChange();
 
 				//Lấy ra danh sách account
 				var productAccountList = await _productAccountRepository.GetListProductAccountByProductId(order.ProductId);
 				//kiểm tra còn tài khoản ko 
-				if (productAccountList.Count() < 0) {
+				if (productAccountList.Count() <= 0) {
 					return new ApiResponseModel<object>
 					{
 						Status = ApiResponseStatusConstant.FailedStatus,
@@ -268,17 +267,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 					foreach (var account in productAccountList)
 					{
 						if ( // ko thỏa mãn productAccount
-							(DateTime.Now < account.SellFrom || DateTime.Now > account.SellTo) ||
-							account.Status == ProductAccountStatusConstant.Unavailable)
-						{
-							return new ApiResponseModel<object>
-							{
-								Status = ApiResponseStatusConstant.FailedStatus,
-								Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
-
-							};
-						}
-						else
+							(DateTime.Now > account.SellFrom && DateTime.Now < account.SellTo) &&
+							account.Status == ProductAccountStatusConstant.Available && account.SellCount > 0)
 						{
 
 							//Nếu lượt bán > 1 thì giảm lượt bán xuống
@@ -292,12 +282,22 @@ namespace TAPrim.Application.Services.ServiceImpl
 							}
 							//sau khi thanh toán thành công thì set cho order tk 
 							order.ProductAccountId = account?.ProductAccountId;
+							
+						}
+						else
+						{
+							return new ApiResponseModel<object>
+							{
+								Status = ApiResponseStatusConstant.FailedStatus,
+								Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
+
+							};
 						}
 					}
 
 				}
 
-				//lấy ra product
+				//lấy ra hạn product
 				var dayAccount = (await _productRepository.GetProductByIdAsync(order.ProductId))?.DurationDay;
 				
 				order.Status = OrderStatus.Active;
