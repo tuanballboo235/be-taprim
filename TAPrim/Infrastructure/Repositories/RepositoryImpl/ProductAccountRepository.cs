@@ -143,9 +143,9 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 		}
 
-		public async Task<ProductAccount?> GetProductAccountByProductId(int productId)
+		public async Task<List<ProductAccount?>> GetProductAccountByProductId(int productId)
 		{
-			return await _context.ProductAccounts.Where(x => x.ProductId == productId).FirstOrDefaultAsync();
+			return await _context.ProductAccounts.Where(x => x.ProductId == productId).ToListAsync();
 		}
 	}
 }

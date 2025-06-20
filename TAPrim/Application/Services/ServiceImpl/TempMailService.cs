@@ -122,7 +122,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 			if (!await ValidateOrder(order, apiResponse)) return apiResponse;
 
 			//Lấy ra productAccount để so sánh với subject mail trr về ở dưới
-			var productAccount = await _productAccountRepository.GetProductAccountByProductId(order.ProductId);
+			var productAccount = await _productAccountRepository.GetProductAccountByPaymentTransactionCode(transactionCode);
 			// Kiểm tra quyền truy cập
 			if (!await IsAllowGetNetflixMail(order, apiResponse)) return apiResponse;
 

@@ -152,9 +152,28 @@ namespace TAPrim.Application.Services.ServiceImpl
 				Data = dto
 			};
 		}
+
+		private async Task<int> CalculateProductAccountQuantity(int productId)
+		{
+			int AccountStockQuantity = 0;	
+			int SellCountTotal = 0;
+			
+			var productAccount = await _productAccountRepository.GetProductAccountByProductId(productId);
+
+			foreach (var account in productAccount) { 
+			
+				SellCountTotal += account.SellCount.Value;
+			}
+			return SellCountTotal;
+		}
 		public async Task<List<ProductDetailResponseDto>> GetProductListAsync()
 		{
-			return await _productRepo.GetAllAsync();
+			var products = await _productRepo.GetAllAsync();
+			foreach(var product in products)
+			{
+				product.AccountStockQuantity = await CalculateProductAccountQuantity(product.ProductId);
+			}
+			return products;
 		}
 	}
 }

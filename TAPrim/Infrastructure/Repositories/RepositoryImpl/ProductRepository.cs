@@ -28,6 +28,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 		public async Task<List<ProductDetailResponseDto>> GetAllAsync()
 		{
+
 			return await _context.Products
 								 .Include(p => p.Category).Select(x=>new ProductDetailResponseDto
 								 {
@@ -39,7 +40,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 									 ProductCode=x.ProductCode,
 									 Description=x.Description,
 									 Status=x.Status,
-									 ProductImage=x.ProductImage
+									 ProductImage=x.ProductImage,
 								 }).Where(x=>x.Status==1)
 								 .ToListAsync();
 		}
