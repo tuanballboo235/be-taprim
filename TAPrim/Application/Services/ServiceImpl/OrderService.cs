@@ -67,31 +67,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 				order.TotalAmount = orderUpdateRequest.TotalAmount?? order.TotalAmount;
 
 				await _orderRepository.UpdateOrderAsync(order);
-				var result = new OrderResponseDto
-				{
-					OrderId = order.OrderId,
-					CouponId = order.CouponId,
-					CouponCode = order.Coupon.CouponCode ?? "N/A",
-					CouponDiscountPersent = order.Coupon.DiscountPercent,
-					ProductId = order.ProductId,
-					ProductName = order.Product.ProductName,
-					ProductAccountId = order.ProductAccountId,
-					ProductAccountData = order.ProductAccount.AccountData ?? "N/A",
-					Status = order.Status,
-					CreateAt = order.CreateAt,
-					RemainGetCode = order.RemainGetCode,
-					ExpiredAt = order.ExpiredAt,
-					PaymentTransactionCode = order.Payment.TransactionCode,
-					ContactInfo = order.ContactInfo,
-					PaidAt = order.Payment.PaidDateAt,
-					TotalAmount = order.TotalAmount,
-					ClientNote = order.ClientNote
-				};
+			
 				return new ApiResponseModel<object>
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
 					Message = "Cập nhật đơn hàng thành công",
-					Data = result
 				};
 			}
 			catch (Exception ex)
