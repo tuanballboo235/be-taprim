@@ -222,7 +222,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				var payment = await _paymentRepository.GetPaymentByTransactionCode(transactionCode);
 
 				//Cập nhật lại trạng thái payment 
-				payment.Status = 1;
+				payment.Status = PaymentConstatnt.Paid	;
 				payment.PaidDateAt = DateTime.Parse(data.TransactionDate);
 				payment.Status = PaymentConstatnt.Paid;
 
