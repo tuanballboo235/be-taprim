@@ -282,7 +282,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 							}
 							//sau khi thanh toán thành công thì set cho order tk 
 							order.ProductAccountId = account?.ProductAccountId;
-							continue;
+							break; // ✅ DỪNG vòng lặp, không xét tiếp sản phẩm thứ 2
+
 						}
 						else
 						{
