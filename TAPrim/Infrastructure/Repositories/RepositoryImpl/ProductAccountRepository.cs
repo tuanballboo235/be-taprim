@@ -108,7 +108,8 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		public async Task<List<ProductAccount>> GetListProductAccountByProductId(int productId)
 		{
 			var productAccountList = await _context.ProductAccounts.Where(x => x.ProductId == productId &&
-														x.Status != ProductAccountStatusConstant.Unavailable
+														x.Status != ProductAccountStatusConstant.Unavailable && // lấy ra account đc kích hoạt
+														x.SellCount >0 // lấy ra lượt bán > 0
 														).ToListAsync();
 			return productAccountList;
 		}
