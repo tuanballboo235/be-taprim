@@ -19,28 +19,37 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
             _context.Products.Add(product);
             await _context.SaveChangesAsync();
         }
-		public async Task<Product?> GetProductByIdAsync(int id)
+		public async Task<ProductDetailResponseDto?> GetProductByIdAsync(int id)
 		{
-			return await _context.Products
-				.Include(p => p.Category)
-				.FirstOrDefaultAsync(p => p.ProductId == id);
+			return await _context.ProductOptions.Include(x => x.Product)
+							 .ThenInclude(p => p.Category).Select(x => new ProductDetailResponseDto
+							 {
+								 ProductId = x.Product.ProductId,
+								 ProductName = x.Product.ProductName ?? "N/A",
+								 Price = x.Price,
+								 CategoryName = x.Product.Category.CategoryName,
+								 CategoryId = x.Product.Category.CategoryId,
+								 Description = x.Product.Description,
+								 Status = x.Product.Status,
+								 ProductImage = x.Product.ProductImage,
+							 }).Where(x => x.Status == 1)
+							 .FirstOrDefaultAsync(x => x.ProductId == id);
 		}
 
 		public async Task<List<ProductDetailResponseDto>> GetAllAsync()
 		{
 
-			return await _context.Products
-								 .Include(p => p.Category).Select(x=>new ProductDetailResponseDto
+			return await _context.ProductOptions.Include(x => x.Product)
+								 .ThenInclude(p => p.Category).Select(x=>new ProductDetailResponseDto
 								 {
-									 ProductId=x.ProductId,
-									 ProductName=x.ProductName,
+									 ProductId=x.Product.ProductId,
+									 ProductName=x.Product.ProductName ?? "N/A",
 									 Price=x.Price,
-									 CategoryName=x.Category.CategoryName,
-									 CategoryId=x.Category.CategoryId,
-									 ProductCode=x.ProductCode,
-									 Description=x.Description,
-									 Status=x.Status,
-									 ProductImage=x.ProductImage,
+									 CategoryName=x.Product.Category.CategoryName,
+									 CategoryId=x.Product.Category.CategoryId,
+									 Description=x.Product.Description,
+									 Status=x.Product.Status,
+									 ProductImage=x.Product.ProductImage,
 								 }).Where(x=>x.Status==1)
 								 .ToListAsync();
 		}

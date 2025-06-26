@@ -32,18 +32,31 @@ namespace TAPrim.Application.Services.ServiceImpl
             var product = new Product
             {
                 ProductName = dto.ProductName,
-                DiscountPercentDisplay = dto.DiscountPercentDisplay,
-                Price = dto.Price,
                 Status = dto.Status,
                 CategoryId = dto.CategoryId,
-                AttentionNote = dto.AttentionNote,
                 Description = dto.Description,
-                ProductCode = dto.ProductCode,
-                ProductImage = imagePath
+                ProductImage = imagePath,
+				CreateAt = DateTime.Now,
             };
 
             await _productRepo.AddProductAsync(product);
-            return new ApiResponseModel<Product>()
+
+			var productOption = new ProductOption
+			{
+				ProductId = product.ProductId,
+				DurationValue = dto.DiscountPercentDisplay,
+				Price = dto.Price,
+				Status = dto.Status,
+				CategoryId = dto.CategoryId,
+				AttentionNote = dto.AttentionNote,
+				Description = dto.Description,
+				ProductCode = dto.ProductCode,
+				ProductImage = imagePath
+			};
+			await _productRepo.AddProductAsync(product);
+
+
+			return new ApiResponseModel<Product>()
             {
                 Data = product,
                 Status = ApiResponseStatusConstant.SuccessStatus,

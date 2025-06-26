@@ -355,8 +355,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		private async Task<bool> IsAllowGetNetflixMail(Order order, ApiResponseModel<List<TempmailEmailItemDto>> apiResponse)
 		{
 			var product = await _productRepository.GetProductByIdAsync(order.ProductId);
-			var category = await _categoryRepository.GetCategoryWithParentAsync(product.CategoryId);
-			if (category.CategoryName != CategoryConstant.NetflixCategory)
+			if (!product.ProductName.ToLower().Contains( CategoryConstant.NetflixCategory.ToLower()))
 			{
 				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
 				apiResponse.Message = "Đơn hàng không có quyền lấy mã mail Netflix.";

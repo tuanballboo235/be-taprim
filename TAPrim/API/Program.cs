@@ -31,6 +31,7 @@ builder.Configuration
 
 //==========================================
 
+builder.Services.AddAutoMapper(typeof(Program));
 
 // ✅ Đăng ký dịch vụ & middleware
 builder.Services.AddControllers();
