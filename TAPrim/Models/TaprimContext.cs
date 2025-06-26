@@ -29,10 +29,15 @@ public partial class TaprimContext : DbContext
 
     public virtual DbSet<ProductAccount> ProductAccounts { get; set; }
 
+    public virtual DbSet<ProductOption> ProductOptions { get; set; }
+
     public virtual DbSet<TempMailEmailStore> TempMailEmailStores { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("server =103.238.235.227; database = Taprim;uid=sa;pwd=Tuananh235;TrustServerCertificate=true");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -46,6 +51,9 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.CategoryName)
                 .HasMaxLength(100)
                 .HasColumnName("categoryName");
+            entity.Property(e => e.CategoryType)
+                .HasMaxLength(50)
+                .HasColumnName("categoryType");
             entity.Property(e => e.CreateAt)
                 .HasColumnType("datetime")
                 .HasColumnName("createAt");
@@ -182,18 +190,11 @@ public partial class TaprimContext : DbContext
             entity.ToTable("Product");
 
             entity.Property(e => e.ProductId).HasColumnName("productId");
-            entity.Property(e => e.AttentionNote).HasColumnName("attentionNote");
             entity.Property(e => e.CategoryId).HasColumnName("categoryId");
-            entity.Property(e => e.Description)
-                .HasMaxLength(1)
-                .HasColumnName("description");
-            entity.Property(e => e.DiscountPercentDisplay).HasColumnName("discountPercentDisplay");
-            entity.Property(e => e.DurationDay).HasColumnName("durationDay");
-            entity.Property(e => e.Price).HasColumnName("price");
-            entity.Property(e => e.ProductCode)
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("productCode");
+            entity.Property(e => e.CreateAt)
+                .HasColumnType("datetime")
+                .HasColumnName("createAt");
+            entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.ProductImage)
                 .IsUnicode(false)
                 .HasColumnName("productImage");
@@ -236,6 +237,34 @@ public partial class TaprimContext : DbContext
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("ProductAccount_Product__fk");
+        });
+
+        modelBuilder.Entity<ProductOption>(entity =>
+        {
+            entity.HasKey(e => e.ProductOptionId).HasName("ProductOption_pk");
+
+            entity.ToTable("ProductOption");
+
+            entity.Property(e => e.ProductOptionId).HasColumnName("productOptionId");
+            entity.Property(e => e.DiscountPercent).HasColumnName("discountPercent");
+            entity.Property(e => e.DurationUnit)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("durationUnit");
+            entity.Property(e => e.DurationValue).HasColumnName("durationValue");
+            entity.Property(e => e.Label)
+                .HasMaxLength(100)
+                .HasColumnName("label ");
+            entity.Property(e => e.Price)
+                .HasColumnType("numeric(29, 6)")
+                .HasColumnName("price");
+            entity.Property(e => e.ProductGuide).HasColumnName("productGuide");
+            entity.Property(e => e.ProductId).HasColumnName("productId");
+            entity.Property(e => e.Quantity).HasColumnName("quantity ");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.ProductOptions)
+                .HasForeignKey(d => d.ProductId)
+                .HasConstraintName("ProductOption___fk");
         });
 
         modelBuilder.Entity<TempMailEmailStore>(entity =>

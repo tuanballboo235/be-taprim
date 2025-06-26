@@ -13,6 +13,8 @@ public partial class Category
 
     public DateTime? CreateAt { get; set; }
 
+    public string? CategoryType { get; set; }
+
     public virtual ICollection<Category> InverseParent { get; set; } = new List<Category>();
 
     public virtual Category? Parent { get; set; }
