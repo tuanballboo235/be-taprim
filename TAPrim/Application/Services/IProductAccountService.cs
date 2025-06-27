@@ -6,7 +6,7 @@ namespace TAPrim.Application.Services
 {
     public interface IProductAccountService
     {
-        Task<ApiResponseModel<ProductAccountResponseDto>> CreateProductAccountAsync(int productId, CreateProductAccountDto dto);
+        Task<ApiResponseModel<ProductAccountResponseDto>> AddProductAccountAsync(int productOptionId, CreateProductAccountDto dto);
         Task<ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>> GetProductAccountsAsync(ProductAccountQueryDto query);
         Task<ApiResponseModel<object>> GetProductAccountsByTransactionCodeAsync(string transactionCode);
         Task<ApiResponseModel<object>> UpdateProductAccount(int productAccountId, UpdateProductProductAccountRequest request);

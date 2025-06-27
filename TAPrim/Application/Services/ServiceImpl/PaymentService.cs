@@ -70,7 +70,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 			try
 			{
 				// Kiểm tra nếu product ko có product account thì báo lỗi 
-				var productAccount = await _productAccountRepository.GetListProductAccountByProductId(createPaymentRequest.ProductId);
+				var productAccount = await _productAccountRepository.GetListProductAccountByProductOptionId(createPaymentRequest.ProductId);
 				if (productAccount == null)
 				{
 					return new ApiResponseModel<object>
@@ -251,7 +251,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				await _paymentRepository.SaveChange();
 
 				//Lấy ra danh sách account
-				var productAccountList = await _productAccountRepository.GetListProductAccountByProductId(order.ProductId);
+				var productAccountList = await _productAccountRepository.GetListProductAccountByProductOptionId(order.ProductId);
 				//kiểm tra còn tài khoản ko 
 				if (productAccountList.Count() <= 0) {
 					return new ApiResponseModel<object>
@@ -298,12 +298,12 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				}
 
-				//lấy ra hạn product
-				var dayAccount = (await _productRepository.GetProductDtoByIdAsync(order.ProductId))?.DurationDay;
+				//lấy ra hạn product theo productDurationValue và productUnit
+				var dayAccount = 30;
 				
 				order.Status = OrderStatus.Active;
 				order.RemainGetCode = 3;
-				order.ExpiredAt = DateTime.Now.AddDays(dayAccount ?? 0);
+				order.ExpiredAt = DateTime.Now.AddDays(dayAccount);
 
 				await _orderRepository.SaveChange();
 

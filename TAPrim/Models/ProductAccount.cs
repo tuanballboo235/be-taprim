@@ -7,7 +7,7 @@ public partial class ProductAccount
 {
     public int ProductAccountId { get; set; }
 
-    public int ProductId { get; set; }
+    public int ProductOptionId { get; set; }
 
     public string? AccountData { get; set; }
 
@@ -29,5 +29,5 @@ public partial class ProductAccount
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
-    public virtual Product Product { get; set; } = null!;
+    public virtual ProductOption ProductOption { get; set; } = null!;
 }

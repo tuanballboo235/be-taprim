@@ -16,11 +16,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 		}
 
 
-		public async Task<ApiResponseModel<ProductAccountResponseDto>> CreateProductAccountAsync(int productId, CreateProductAccountDto dto)
+		public async Task<ApiResponseModel<ProductAccountResponseDto>> AddProductAccountAsync(int productOptionId, CreateProductAccountDto dto)
 		{
 			try
 			{
-				var product = await _productAccountRepository.GetProductByIdAsync(productId);
+				var product = await _productAccountRepository.GetProductByIdAsync(productOptionId);
 				if (product == null)
 					throw new Exception("Product not found");
 
@@ -28,7 +28,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				var productAccount = new ProductAccount
 				{
 
-					ProductId = productId,
+					ProductOptionId = productOptionId,
 					AccountData = dto.AccountData,
 					UsernameProductAccount = dto.UsernameProductAccount,
 					PasswordProductAccount = dto.PasswordProductAccount,
@@ -45,7 +45,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				// B3: Map sang DTO để trả về
 				var responseDto = new ProductAccountResponseDto
 				{
-					ProductId = productAccount.ProductId,
+					ProductOptionId = productAccount.ProductOptionId,
 					AccountData = productAccount.AccountData,
 					UsernameProductAccount = productAccount.UsernameProductAccount,
 					Status = productAccount.Status,
@@ -76,7 +76,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 			var mapped = result.Items.Select(pa => new ProductAccountResponseDto
 			{
 				ProductAccountId = pa.ProductAccountId,
-				ProductId = pa.ProductId,
+				ProductOptionId = pa.ProductOptionId,
 				AccountData = pa.AccountData,
 				UsernameProductAccount = pa.UsernameProductAccount,
 				PasswordProductAccount = pa.PasswordProductAccount,
@@ -152,7 +152,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					Data = new ProductAccountResponseDto
 					{
 						ProductAccountId = productAccount.ProductAccountId,
-						ProductId = productAccount.ProductId,
+						ProductOptionId = productAccount.ProductOptionId,
 						AccountData = productAccount.AccountData,
 						UsernameProductAccount = productAccount.UsernameProductAccount,
 						PasswordProductAccount = productAccount.PasswordProductAccount,

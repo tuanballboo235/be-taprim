@@ -3,7 +3,7 @@
 	public class ProductAccountQueryDto
 	{
 
-		public int ProductId { get; set; }
+		public int ProductOptionId { get; set; }
 
 		public string? Username { get; set; }
 		public int? Status { get; set; }

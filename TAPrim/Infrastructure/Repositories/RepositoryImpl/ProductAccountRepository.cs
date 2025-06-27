@@ -42,9 +42,9 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				PageSize = 100000
 			};
 
-			if (query.ProductId > 0)
+			if (query.ProductOptionId > 0)
 			{
-				q = q.Where(pa => pa.ProductId == query.ProductId);
+				q = q.Where(pa => pa.ProductOptionId == query.ProductOptionId);
 			}
 
 			if (!string.IsNullOrEmpty(query.Username))
@@ -97,17 +97,17 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		}
 
 		//lấy ra số lượng product Account dựa vào productId
-		public async Task<int> GetQuantityStockProductAccountByProductId(int productId)
+		public async Task<int> GetQuantityStockProductAccountByProductOptionId(int ProductOptionId)
 		{
 			int totalSellCount = await _context.ProductAccounts
-								.Where(x => x.ProductId == productId)
+								.Where(x => x.ProductOptionId == ProductOptionId)
 								.SumAsync(x => x.SellCount ?? 0);
 			return totalSellCount;
 		}
 
-		public async Task<List<ProductAccount>> GetListProductAccountByProductId(int productId)
+		public async Task<List<ProductAccount>> GetListProductAccountByProductOptionId(int productId)
 		{
-			var productAccountList = await _context.ProductAccounts.Where(x => x.ProductId == productId &&
+			var productAccountList = await _context.ProductAccounts.Where(x => x.ProductOptionId == productId &&
 														x.Status != ProductAccountStatusConstant.Unavailable && // lấy ra account đc kích hoạt
 														x.SellCount >0 // lấy ra lượt bán > 0
 														).ToListAsync();
@@ -145,9 +145,12 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 		}
 
-		public async Task<List<ProductAccount?>> GetProductAccountByProductId(int productId)
+		public async Task<int> GetTotalSellCountByProductOptionIdAsync(int productOptionId)
 		{
-			return await _context.ProductAccounts.Where(x => x.ProductId == productId).ToListAsync();
+			return await _context.ProductAccounts
+				.Where(pa => pa.ProductOptionId == productOptionId)
+				.SumAsync(pa => pa.SellCount ?? 0); // đề phòng sellCount null
 		}
+
 	}
 }

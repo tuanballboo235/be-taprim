@@ -52,8 +52,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				{
 					ProductId = p.ProductId,
 					ProductName = p.ProductName,
-					Price = p.ProductOptions.FirstOrDefault().Price, // nếu chỉ lấy option đầu tiên
-					Label = p.ProductOptions.FirstOrDefault().Label,
+				
 					CategoryName = p.Category.CategoryName,
 					CategoryId = p.Category.CategoryId,
 					Description = p.Description,
@@ -67,17 +66,17 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		public async Task<List<ProductDetailResponseDto>> GetAllAsync()
 		{
 
-			return await _context.ProductOptions.Include(x => x.Product)
-								 .ThenInclude(p => p.Category).Select(x=>new ProductDetailResponseDto
+			return await _context.Products
+								 .Include(p => p.Category).Select(x=>new ProductDetailResponseDto
 								 {
-									 ProductId=x.Product.ProductId,
-									 ProductName=x.Product.ProductName ?? "N/A",
-									 Price=x.Price,
-									 CategoryName=x.Product.Category.CategoryName,
-									 CategoryId=x.Product.Category.CategoryId,
-									 Description=x.Product.Description,
-									 Status=x.Product.Status,
-									 ProductImage=x.Product.ProductImage,
+									 ProductId=x.ProductId,
+									 ProductName=x.ProductName ?? "N/A",
+									 Status = x.Status,
+									 CategoryId=x.CategoryId,
+									 CategoryName=x.Category.CategoryName ?? "N/A",
+									 Description = x.Description,
+									 ProductImage=x.ProductImage
+
 								 }).Where(x=>x.Status==1)
 								 .ToListAsync();
 		}

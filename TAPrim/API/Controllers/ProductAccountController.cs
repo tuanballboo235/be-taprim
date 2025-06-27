@@ -17,10 +17,10 @@ namespace TAPrim.API.Controllers
 			_productAccountService = productAccountService;	
 		}
 
-		[HttpPost("add-product-account/{productId}")]
-		public async Task<IActionResult> CreateProductAccount(int productId,[FromBody] CreateProductAccountDto request)
+		[HttpPost("add-product-account/{productOptionId}")]
+		public async Task<IActionResult> CreateProductAccount(int productOptionId, [FromBody] CreateProductAccountDto request)
 		{
-			return ApiResponseHelper.HandleApiResponse(await _productAccountService.CreateProductAccountAsync(productId, request));
+			return ApiResponseHelper.HandleApiResponse(await _productAccountService.AddProductAccountAsync(productOptionId, request));
 		}
 
 		[HttpGet("get-product-account")]

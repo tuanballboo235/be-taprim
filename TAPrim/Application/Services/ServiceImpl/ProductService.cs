@@ -131,7 +131,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		public async Task<ApiResponseModel<ProductDetailResponseDto>> GetProductDetailAsync(int productId)
 		{
 			var product = await _productRepo.GetProductDtoByIdAsync(productId);
-			var StockAccounts = await _productAccountRepository.GetQuantityStockProductAccountByProductId(productId);
+			var StockAccounts = await _productAccountRepository.GetQuantityStockProductAccountByProductOptionId(productId);
 			if (product == null)
 			{
 				return new ApiResponseModel<ProductDetailResponseDto>
@@ -145,15 +145,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 			{
 				ProductId = product.ProductId,
 				ProductName = product.ProductName,
-				Price = product.Price,
-				DiscountPercentDisplay = product.DiscountPercentDisplay,
-				AttentionNote = product.AttentionNote,
+
 				Description = product.Description?.ToString(), // nếu là int bạn cần xử lý riêng
 				ProductImage = product.ProductImage,
-				ProductCode = product.ProductCode,
 				CategoryId = product.CategoryId,
 				CategoryName = product.CategoryName,
-				AccountStockQuantity = StockAccounts
 			};
 
 			return new ApiResponseModel<ProductDetailResponseDto>
@@ -163,27 +159,38 @@ namespace TAPrim.Application.Services.ServiceImpl
 			};
 		}
 
-		private async Task<int> CalculateProductAccountQuantity(int productId)
+		public async Task<ApiResponseModel<List<ProductDetailResponseDto>>> GetProductListAsync()
 		{
-			int AccountStockQuantity = 0;
-			int SellCountTotal = 0;
-
-			var productAccount = await _productAccountRepository.GetProductAccountByProductId(productId);
-
-			foreach (var account in productAccount)
+			try
 			{
+				var products = await _productRepo.GetAllAsync();
 
-				SellCountTotal += account.SellCount.Value;
+				return new ApiResponseModel<List<ProductDetailResponseDto>>
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Data = products
+				};
 			}
-			return SellCountTotal;
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<List<ProductDetailResponseDto>>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+				};
+
+			}
+
 		}
-		public async Task<List<ProductDetailResponseDto>> GetProductListAsync()
+		//Hàm tính tổng tất cả sellCount của 1 productOption theo productOptionId
+		private async Task<int> CalculateProductAccountQuantityForAProductOption(int productOptionId)
+		{
+			var productAccount = await _productAccountRepository.GetTotalSellCountByProductOptionIdAsync(productOptionId);
+			return productAccount;
+		}
+		public async Task<List<ProductDetailResponseDto>> GetProductOptionList()
 		{
 			var products = await _productRepo.GetAllAsync();
-			foreach (var product in products)
-			{
-				product.AccountStockQuantity = await CalculateProductAccountQuantity(product.ProductId);
-			}
+
 			return products;
 		}
 	}
