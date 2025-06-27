@@ -16,7 +16,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		}
 
 
-		public async Task<ApiResponseModel<ProductAccountResponseDto>> AddProductAccountAsync(int productOptionId, CreateProductAccountDto dto)
+		public async Task<ApiResponseModel<ProductAccountResponseDto>> AddProductAccountAsync(int productOptionId, List<CreateProductAccountDto> dto)
 		{
 			try
 			{
@@ -24,40 +24,33 @@ namespace TAPrim.Application.Services.ServiceImpl
 				if (product == null)
 					throw new Exception("Product not found");
 
-				// B1: Tạo entity thực
-				var productAccount = new ProductAccount
+				foreach (var item in dto)
 				{
+					// B1: Tạo entity thực
+					var productAccount = new ProductAccount
+					{
 
-					ProductOptionId = productOptionId,
-					AccountData = dto.AccountData,
-					UsernameProductAccount = dto.UsernameProductAccount,
-					PasswordProductAccount = dto.PasswordProductAccount,
-					DateChangePass = dto.DateChangePass,
-					SellCount = dto.SellCount,
-					SellFrom = dto.SellDateFrom,
-					SellTo = dto.SellDateTo,
-					Status = dto.Status
-				};
+						ProductOptionId = productOptionId,
+						AccountData = item.AccountData,
+						UsernameProductAccount = item.UsernameProductAccount,
+						PasswordProductAccount = item.PasswordProductAccount,
+						DateChangePass = item.DateChangePass,
+						SellCount = item.SellCount,
+						SellFrom = item.SellDateFrom,
+						SellTo = item.SellDateTo,
+						Status = item.Status
+					};
 
-				// B2: Lưu vào DB
-				await _productAccountRepository.AddProductAccountAsync(productAccount);
+					// B2: Lưu vào DB
+					await _productAccountRepository.AddProductAccountAsync(productAccount);
+				}
+				
 
-				// B3: Map sang DTO để trả về
-				var responseDto = new ProductAccountResponseDto
-				{
-					ProductOptionId = productAccount.ProductOptionId,
-					AccountData = productAccount.AccountData,
-					UsernameProductAccount = productAccount.UsernameProductAccount,
-					Status = productAccount.Status,
-					DateChangePass = productAccount.DateChangePass,
-					SellCount = productAccount.SellCount,
-				};
-
+				
 				// B4: Trả response
 				return new ApiResponseModel<ProductAccountResponseDto>
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
-					Data = responseDto
 				};
 			}catch (Exception ex)
 			{
