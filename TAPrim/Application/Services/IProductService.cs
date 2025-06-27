@@ -1,4 +1,5 @@
 ﻿using TAPrim.Application.DTOs.Common;
+using TAPrim.Application.DTOs.ProductOption;
 using TAPrim.Application.DTOs.Products;
 using TAPrim.Models;
 
@@ -11,5 +12,6 @@ namespace TAPrim.Application.Services
 		Task<List<ProductDetailResponseDto>> GetProductOptionList();
 		Task<ApiResponseModel<ProductDetailResponseDto>> UpdateProductAsync(int productId, UpdateProductRequest dto);
 		Task<ApiResponseModel<List<ProductDetailResponseDto>>> GetProductListAsync();
+		Task<ApiResponseModel<object>> GetProductOptionDataByProductId(int productId);
 	}
 }

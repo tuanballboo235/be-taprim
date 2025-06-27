@@ -40,6 +40,19 @@ namespace TAPrim.API.Controllers
 		{
 			var products = await _productService.GetProductListAsync();
 			return Ok(products);
-		} 
+		}
+
+		[HttpGet("list-product-option-by-productId/{productId}")]
+		public async Task<IActionResult> GetProductOptionByProductId(int productId)
+		{
+			var products = await _productService.GetProductOptionDataByProductId(productId);
+			return Ok(products);
+		}
+
+		//public async Task<IActionResult> GetProductOptionByProductIdList()
+		//{
+		//	var products = await _productService.GetProductListAsync();
+		//	return Ok(products);
+		//}
 	}
 }

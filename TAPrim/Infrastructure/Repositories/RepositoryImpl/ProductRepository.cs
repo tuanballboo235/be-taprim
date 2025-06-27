@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
+using TAPrim.Application.DTOs.ProductOption;
 using TAPrim.Application.DTOs.Products;
 using TAPrim.Models;
 
@@ -85,5 +86,23 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		{
 			throw new NotImplementedException();
 		}
+
+		public async Task<List<ProductOptionResponseDto>> GetProductOptionByProductId(int productId)
+		{
+			return await _context.ProductOptions.Select(x=> new ProductOptionResponseDto
+			{
+				ProductOptionId=x.ProductOptionId,
+				ProductId=x.ProductId,
+				DurationUnit=x.DurationUnit,
+				DurationValue=x.DurationValue,
+				Price=x.Price,
+				Quantity=x.Quantity,
+				Label=x.Label,
+				DiscountPercent=x.DiscountPercent,
+				ProductGuide = x.ProductGuide
+			}).Where(x=>x.ProductId==productId).ToListAsync();
+		}
+
+
 	}
 }

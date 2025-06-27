@@ -1,5 +1,6 @@
 ﻿using Azure;
 using TAPrim.Application.DTOs.Common;
+using TAPrim.Application.DTOs.ProductOption;
 using TAPrim.Application.DTOs.Products;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Infrastructure.Repositories.RepositoryImpl;
@@ -35,7 +36,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				{
 					ProductName = dto.ProductName,
 					Status = dto.Status,
-					CategoryId = dto.CategoryId,
+					CategoryId = dto.CategoryId.Value,
 					Description = dto.Description,
 					ProductImage = imagePath,
 					CreateAt = DateTime.Now,
@@ -192,6 +193,26 @@ namespace TAPrim.Application.Services.ServiceImpl
 			var products = await _productRepo.GetAllAsync();
 
 			return products;
+		}
+
+		public async Task<ApiResponseModel<object>> GetProductOptionDataByProductId(int productId)
+		{
+			try
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Data = await _productRepo.GetProductOptionByProductId(productId)
+				};
+
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+				};
+			}
 		}
 	}
 }

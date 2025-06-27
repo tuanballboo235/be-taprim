@@ -1,4 +1,5 @@
-﻿using TAPrim.Application.DTOs.Products;
+﻿using TAPrim.Application.DTOs.ProductOption;
+using TAPrim.Application.DTOs.Products;
 using TAPrim.Models;
 
 namespace TAPrim.Infrastructure.Repositories
@@ -14,7 +15,7 @@ namespace TAPrim.Infrastructure.Repositories
 		Task<ProductDetailResponseDto?> GetProductDtoByIdAsync(int id);
 		Task<Product?> GetProductById(int id);
 		Task<List<ProductDetailResponseDto>> GetAllAsync();
-	
+		Task<List<ProductOptionResponseDto>> GetProductOptionByProductId(int productId);
 
 	}
 }

@@ -51,6 +51,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				return new ApiResponseModel<ProductAccountResponseDto>
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
+
 				};
 			}catch (Exception ex)
 			{
