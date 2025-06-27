@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TAPrim.Application.DTOs.Category;
 using TAPrim.Models;
 
 namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
@@ -27,6 +28,22 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 			return category;
 		}
-
+		public  List<CategoryTreeDto> BuildCategoryTree(List<Category> flatCategories, int? parentId = null)
+		{
+			return flatCategories
+				.Where(c => c.ParentId == parentId)
+				.Select(c => new CategoryTreeDto
+				{
+					CategoryId = c.CategoryId,
+					CategoryName = c.CategoryName,
+					CategoryType = c.CategoryType,
+					Children =  BuildCategoryTree(flatCategories, c.CategoryId)
+				})
+				.ToList();
+		}
+		public  List<Category> GetAllCategories()
+		{
+			return  _context.Categories.ToList();
+		}
 	}
 }

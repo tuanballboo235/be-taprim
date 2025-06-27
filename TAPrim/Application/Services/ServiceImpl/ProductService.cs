@@ -36,7 +36,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				{
 					ProductName = dto.ProductName,
 					Status = dto.Status,
-					CategoryId = dto.CategoryId.Value,
+					CategoryId = dto.CategoryId,
 					Description = dto.Description,
 					ProductImage = imagePath,
 					CreateAt = DateTime.Now,
@@ -44,19 +44,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				await _productRepo.AddProductAsync(product);
 
-				//var productOption = new ProductOption
-				//{
-				//	ProductId = product.ProductId,
-				//	DurationValue = dto.DurationValue,
-				//	DurationUnit = dto.DurationUnit,
-				//	Quantity = dto.Quantity,
-				//	Label = dto.Label,
-				//	Price = dto.Price,
-				//	DiscountPercent = dto.DiscountPercent,
-				//	ProductGuide = dto.ProductGuide,
-				//};
-				//await _productRepo.AddProductOptionAsync(productOption);
-
+			
 
 				return new ApiResponseModel<Product>()
 				{
