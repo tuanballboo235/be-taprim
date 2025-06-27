@@ -299,7 +299,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				}
 
 				//lấy ra hạn product
-				var dayAccount = (await _productRepository.GetProductByIdAsync(order.ProductId))?.DurationDay;
+				var dayAccount = (await _productRepository.GetProductDtoByIdAsync(order.ProductId))?.DurationDay;
 				
 				order.Status = OrderStatus.Active;
 				order.RemainGetCode = 3;
