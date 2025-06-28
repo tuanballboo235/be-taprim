@@ -48,11 +48,11 @@ namespace TAPrim.API.Controllers
 			var products = await _productService.GetProductOptionDataByProductId(productId);
 			return Ok(products);
 		}
-
-		//public async Task<IActionResult> GetProductOptionByProductIdList()
-		//{
-		//	var products = await _productService.GetProductListAsync();
-		//	return Ok(products);
-		//}
+		[HttpGet("list-product-by-category")]
+		public async Task<IActionResult> GetListProductByCategory()
+		{
+			var products = await _productService.GetProductByCategory();
+			return Ok(products);
+		}
 	}
 }

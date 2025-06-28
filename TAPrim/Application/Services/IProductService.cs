@@ -13,5 +13,6 @@ namespace TAPrim.Application.Services
 		Task<ApiResponseModel<ProductDetailResponseDto>> UpdateProductAsync(int productId, UpdateProductRequest dto);
 		Task<ApiResponseModel<List<ProductDetailResponseDto>>> GetProductListAsync();
 		Task<ApiResponseModel<object>> GetProductOptionDataByProductId(int productId);
+		Task<ApiResponseModel<object>> GetProductByCategory();
 	}
 }

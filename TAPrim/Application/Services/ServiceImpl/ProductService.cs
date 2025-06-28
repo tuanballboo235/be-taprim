@@ -36,7 +36,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				{
 					ProductName = dto.ProductName,
 					Status = dto.Status,
-					CategoryId = dto.CategoryId.Value,
+					CategoryId = dto.CategoryId,
 					Description = dto.Description,
 					ProductImage = imagePath,
 					CreateAt = DateTime.Now,
@@ -44,19 +44,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				await _productRepo.AddProductAsync(product);
 
-				//var productOption = new ProductOption
-				//{
-				//	ProductId = product.ProductId,
-				//	DurationValue = dto.DurationValue,
-				//	DurationUnit = dto.DurationUnit,
-				//	Quantity = dto.Quantity,
-				//	Label = dto.Label,
-				//	Price = dto.Price,
-				//	DiscountPercent = dto.DiscountPercent,
-				//	ProductGuide = dto.ProductGuide,
-				//};
-				//await _productRepo.AddProductOptionAsync(productOption);
-
+			
 
 				return new ApiResponseModel<Product>()
 				{
@@ -201,8 +189,29 @@ namespace TAPrim.Application.Services.ServiceImpl
 			{
 				return new ApiResponseModel<object>
 				{
-					Status = ApiResponseStatusConstant.FailedStatus,
+					Status = ApiResponseStatusConstant.SuccessStatus,
 					Data = await _productRepo.GetProductOptionByProductId(productId)
+				};
+
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+				};
+			}
+		}
+
+
+		public async Task<ApiResponseModel<object>> GetProductByCategory()
+		{
+			try
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Data = await _productRepo.GetListProductByCategoryId()
 				};
 
 			}
