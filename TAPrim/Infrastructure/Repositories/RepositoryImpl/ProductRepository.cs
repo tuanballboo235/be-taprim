@@ -103,6 +103,34 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			}).Where(x=>x.ProductId==productId).ToListAsync();
 		}
 
+		public async Task<List<CategoryWithProductsDto>> GetListProductByCategoryId()
+		{
+			var categories = await _context.Categories
+				.Include(c => c.Products)
+				.ThenInclude(x=>x.ProductOptions)
+				.ThenInclude(x=>x.ProductAccounts)// Navigation property
+				.Select(c => new CategoryWithProductsDto
+				{
+					Title = c.CategoryName,
+					Description = c.CategoryDescription,
+					Products = c.Products.Select(p => new ProductDto
+					{
+						Id = p.ProductId,
+						Name = p.ProductName,
+						Image = p.ProductImage,
+						MinPrice = p.ProductOptions.Min(x => x.Price),
+						MaxPrice = p.ProductOptions.Max(x => x.Price),
+
+						InStock = p.ProductOptions.Where(x=>x.ProductId == p.ProductId)
+						  .SelectMany(po => po.ProductAccounts)
+						  .Sum(pa => (int?)pa.SellCount) > 0
+					}).ToList()
+				})
+				.ToListAsync();
+
+			return categories;
+		}
+
 
 	}
 }

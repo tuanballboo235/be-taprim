@@ -28,6 +28,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 			return category;
 		}
+		//đệ quy lấy ra list tree category
 		public  List<CategoryTreeDto> BuildCategoryTree(List<Category> flatCategories, int? parentId = null)
 		{
 			return flatCategories
@@ -41,7 +42,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				})
 				.ToList();
 		}
-		public  List<Category> GetAllCategories()
+		public List<Category> GetAllCategories()
 		{
 			return  _context.Categories.ToList();
 		}

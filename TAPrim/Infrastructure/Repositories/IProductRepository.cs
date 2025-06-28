@@ -16,6 +16,6 @@ namespace TAPrim.Infrastructure.Repositories
 		Task<Product?> GetProductById(int id);
 		Task<List<ProductDetailResponseDto>> GetAllAsync();
 		Task<List<ProductOptionResponseDto>> GetProductOptionByProductId(int productId);
-
+		Task<List<CategoryWithProductsDto>> GetListProductByCategoryId();
 	}
 }

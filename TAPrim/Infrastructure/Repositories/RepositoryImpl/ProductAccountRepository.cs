@@ -152,5 +152,6 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				.SumAsync(pa => pa.SellCount ?? 0); // đề phòng sellCount null
 		}
 
+		
 	}
 }

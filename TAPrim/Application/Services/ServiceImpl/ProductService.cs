@@ -189,8 +189,29 @@ namespace TAPrim.Application.Services.ServiceImpl
 			{
 				return new ApiResponseModel<object>
 				{
-					Status = ApiResponseStatusConstant.FailedStatus,
+					Status = ApiResponseStatusConstant.SuccessStatus,
 					Data = await _productRepo.GetProductOptionByProductId(productId)
+				};
+
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+				};
+			}
+		}
+
+
+		public async Task<ApiResponseModel<object>> GetProductByCategory()
+		{
+			try
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Data = await _productRepo.GetListProductByCategoryId()
 				};
 
 			}
