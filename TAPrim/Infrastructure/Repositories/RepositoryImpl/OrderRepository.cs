@@ -38,7 +38,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			return await _context.Orders
 				.Include(x=>x.Payment)
 				.Include(x=>x.Coupon)
-				.Include(x=>x.Product)
+				.Include(x=>x.ProductOption).ThenInclude(x=>x.Product)
 				.Include(x=>x.ProductAccount)
 				.Where(x=>x.OrderId == orderId)
 				.Select(x=> new OrderResponseDto
@@ -47,8 +47,9 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 					CouponId = x.CouponId,
 					CouponCode = x.Coupon.CouponCode ??"N/A",
 					CouponDiscountPersent = x.Coupon.DiscountPercent,
-					ProductId = x.ProductId,
-					ProductName = x.Product.ProductName,
+					ProductId = x.ProductOption.ProductId,
+					ProductName = x.ProductOption.Product.ProductName,
+					ProductOptionLabel = x.ProductOption.Label,
 					ProductAccountId = x.ProductAccountId,
 					ProductAccountData = x.ProductAccount.AccountData ?? "N/A",
 					Status = x.Status,	

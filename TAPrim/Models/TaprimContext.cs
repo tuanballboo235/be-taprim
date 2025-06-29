@@ -123,7 +123,7 @@ public partial class TaprimContext : DbContext
                 .HasColumnName("expiredAt");
             entity.Property(e => e.PaymentId).HasColumnName("paymentId");
             entity.Property(e => e.ProductAccountId).HasColumnName("productAccountId");
-            entity.Property(e => e.ProductId).HasColumnName("productId");
+            entity.Property(e => e.ProductOptionId).HasColumnName("productOptionId");
             entity.Property(e => e.RemainGetCode).HasColumnName("remainGetCode");
             entity.Property(e => e.Status).HasColumnName("status");
             entity.Property(e => e.TotalAmount)
@@ -146,10 +146,10 @@ public partial class TaprimContext : DbContext
                 .HasForeignKey(d => d.ProductAccountId)
                 .HasConstraintName("Order__productAccountId_fk");
 
-            entity.HasOne(d => d.Product).WithMany(p => p.Orders)
-                .HasForeignKey(d => d.ProductId)
+            entity.HasOne(d => d.ProductOption).WithMany(p => p.Orders)
+                .HasForeignKey(d => d.ProductOptionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("Order__productId_fk");
+                .HasConstraintName("Order_ProductOption_productOptionId_fk");
         });
 
         modelBuilder.Entity<Payment>(entity =>

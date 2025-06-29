@@ -354,7 +354,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		//Hàm kiểm tra xem với payment transactionCode truyền vào có đc phép lấy email NETFLIX hay ko
 		private async Task<bool> IsAllowGetNetflixMail(Order order, ApiResponseModel<List<TempmailEmailItemDto>> apiResponse)
 		{
-			var product = await _productRepository.GetProductDtoByIdAsync(order.ProductId);
+			var product = await _productRepository.GetProductDtoByProductOptionIdAsync(order.ProductOptionId);
 			if (!product.ProductName.ToLower().Contains( CategoryConstant.NetflixCategory.ToLower()))
 			{
 				apiResponse.Status = ApiResponseStatusConstant.FailedStatus;
@@ -368,7 +368,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		//Hàm kiểm tra xem với payment transactionCode truyền vào có đc phép lấy email CHATGPT hay ko
 		private async Task<bool> IsAllowGetChatgptMail(Order order, ApiResponseModel<List<TempmailEmailItemDto>> apiResponse)
 		{
-			var product = await _productRepository.GetProductDtoByIdAsync(order.ProductId);
+			var product = await _productRepository.GetProductDtoByProductOptionIdAsync(order.ProductOptionId);
 			var category = await _categoryRepository.GetCategoryWithParentAsync(product.CategoryId);
 			if (category.CategoryName != CategoryConstant.ChatgptCategory)
 			{

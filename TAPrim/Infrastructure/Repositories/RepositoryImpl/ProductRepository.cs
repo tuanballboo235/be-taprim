@@ -64,9 +64,18 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		}
 
 
-		public Task<Application.DTOs.Products.ProductDetailResponseDto?> GetProductDtoByIdAsync(int id)
+		public async Task<Application.DTOs.Products.ProductDetailResponseDto?> GetProductDtoByProductOptionIdAsync(int productOptionid)
 		{
-			throw new NotImplementedException();
+			return await _context.ProductOptions.Include(x => x.Product).Select(x => new ProductDetailResponseDto
+			{
+				ProductId = x.Product.ProductId,
+				ProductName = x.Product.ProductName,
+				CategoryName = x.Product.Category.CategoryName,
+				CategoryId = x.Product.Category.CategoryId,
+				Description = x.Product.Description,
+				Status = x.Product.Status,
+				ProductImage = x.Product.ProductImage
+			}).FirstOrDefaultAsync(x => x.ProductId == productOptionid);
 		}
 
 		public async Task<ProductDetailResponseDto?> GetProductOptionByProductId(int productId)

@@ -9,7 +9,7 @@ public partial class Order
 
     public int? CouponId { get; set; }
 
-    public int ProductId { get; set; }
+    public int ProductOptionId { get; set; }
 
     public int? ProductAccountId { get; set; }
 
@@ -35,7 +35,7 @@ public partial class Order
 
     public virtual Payment Payment { get; set; } = null!;
 
-    public virtual Product Product { get; set; } = null!;
-
     public virtual ProductAccount? ProductAccount { get; set; }
+
+    public virtual ProductOption ProductOption { get; set; } = null!;
 }
