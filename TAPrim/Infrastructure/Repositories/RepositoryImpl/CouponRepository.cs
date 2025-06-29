@@ -11,9 +11,10 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
             _context = context;
         }
 
+        //Lấy ra coupon thỏa mãn 
         public async Task<Coupon?> FindByCode(string couponCode)
         {
-            return await _context.Coupons.Where(x=>x.CouponCode == couponCode).FirstOrDefaultAsync();
+            return await _context.Coupons.Where(x=>x.CouponCode == couponCode && x.IsActive ==true && x.RemainTurn>0).FirstOrDefaultAsync();
         }
    
 
@@ -21,5 +22,11 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
         {
             return await _context.Coupons.FirstOrDefaultAsync(x=>x.CouponId == couponId);
         }
-    }
+
+		public async Task UpdateAsync(Coupon coupon)
+		{
+			_context.Coupons.Update(coupon);
+			await _context.SaveChangesAsync();
+		}
+	}
 }

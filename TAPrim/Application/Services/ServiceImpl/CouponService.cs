@@ -1,4 +1,5 @@
 ﻿using TAPrim.Application.DTOs.Common;
+using TAPrim.Application.DTOs.Coupon;
 using TAPrim.Common.Helpers;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Models;
@@ -23,7 +24,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					return new ApiResponseModel<object>
 					{
 						Status = ApiResponseStatusConstant.FailedStatus,
-						Message = "Mã giảm giá không khả dụng",
+						Message = "Mã giảm giá không khả dụng hoặc đã hết lượt",
 						Data = await _couponRepository.FindByCode(couponCode),
 					};
 				}
@@ -43,6 +44,18 @@ namespace TAPrim.Application.Services.ServiceImpl
 				};
 
 			}
+		}
+
+		public async Task<bool> DecreaseTurnByCodeAsync(string couponCode)
+		{
+			var coupon = await _couponRepository.FindByCode(couponCode);
+			if (coupon == null || !coupon.IsActive.GetValueOrDefault()) return false;
+
+			if (coupon.RemainTurn > 0)
+				coupon.RemainTurn -= 1;
+
+			await _couponRepository.UpdateAsync(coupon);
+			return true;
 		}
 	}
 }

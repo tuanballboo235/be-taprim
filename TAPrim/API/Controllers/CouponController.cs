@@ -21,6 +21,15 @@ namespace TAPrim.API.Controllers
 		{
 			return Ok( await _couponService.GetCouponByCouponCode(request.CouponCode));
 		}
+		[HttpPut("{couponCode}/decrease-turn")]
+		public async Task<IActionResult> DecreaseCouponTurn(string couponCode)
+		{
+			var success = await _couponService.DecreaseTurnByCodeAsync(couponCode);
+			if (!success)
+				return NotFound(new { message = "Mã giảm giá không tồn tại hoặc không hợp lệ." });
+
+			return Ok(new { message = "Đã cập nhật lượt sử dụng của mã giảm giá." });
+		}
 
 	}
 }

@@ -6,5 +6,6 @@ namespace TAPrim.Infrastructure.Repositories
 	{
 		Task<Coupon?> FindById(int? couponId);
 		Task<Coupon?> FindByCode(string couponCode);
+		Task UpdateAsync(Coupon coupon);
 	}
 }

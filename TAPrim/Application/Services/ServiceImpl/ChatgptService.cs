@@ -3,7 +3,7 @@ using TAPrim.Application.DTOs.Chatgpt;
 using TAPrim.Application.DTOs.Common;
 using TAPrim.Shared.Constants;
 
-namespace TAPrim.Application.Services
+namespace TAPrim.Application.Services.ServiceImpl
 {
     public class ChatgptService : IChatgptService
     {
