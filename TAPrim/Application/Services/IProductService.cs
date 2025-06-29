@@ -9,10 +9,9 @@ namespace TAPrim.Application.Services
     {
         Task<ApiResponseModel<Product>> CreateProductAsync(CreateProductRequest dto);
         Task<ApiResponseModel<ProductDetailResponseDto>> GetProductDetailAsync(int productId);
-		Task<List<ProductDetailResponseDto>> GetProductOptionList();
 		Task<ApiResponseModel<ProductDetailResponseDto>> UpdateProductAsync(int productId, UpdateProductRequest dto);
-		Task<ApiResponseModel<List<ProductDetailResponseDto>>> GetProductListAsync();
 		Task<ApiResponseModel<object>> GetProductOptionDataByProductId(int productId);
 		Task<ApiResponseModel<object>> GetProductByCategory();
+		Task<ApiResponseModel<object>> GetProductDetailByProductId(int productId);
 	}
 }

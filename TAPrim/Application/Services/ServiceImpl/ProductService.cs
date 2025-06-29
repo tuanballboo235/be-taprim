@@ -147,41 +147,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				Data = dto
 			};
 		}
-
-		public async Task<ApiResponseModel<List<ProductDetailResponseDto>>> GetProductListAsync()
-		{
-			try
-			{
-				var products = await _productRepo.GetAllAsync();
-
-				return new ApiResponseModel<List<ProductDetailResponseDto>>
-				{
-					Status = ApiResponseStatusConstant.SuccessStatus,
-					Data = products
-				};
-			}
-			catch (Exception ex)
-			{
-				return new ApiResponseModel<List<ProductDetailResponseDto>>
-				{
-					Status = ApiResponseStatusConstant.FailedStatus,
-				};
-
-			}
-
-		}
-		//Hàm tính tổng tất cả sellCount của 1 productOption theo productOptionId
-		private async Task<int> CalculateProductAccountQuantityForAProductOption(int productOptionId)
-		{
-			var productAccount = await _productAccountRepository.GetTotalSellCountByProductOptionIdAsync(productOptionId);
-			return productAccount;
-		}
-		public async Task<List<ProductDetailResponseDto>> GetProductOptionList()
-		{
-			var products = await _productRepo.GetAllAsync();
-
-			return products;
-		}
+	
 
 		public async Task<ApiResponseModel<object>> GetProductOptionDataByProductId(int productId)
 		{
@@ -212,6 +178,26 @@ namespace TAPrim.Application.Services.ServiceImpl
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
 					Data = await _productRepo.GetListProductByCategoryId()
+				};
+
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+				};
+			}
+		}
+
+		public async Task<ApiResponseModel<object>> GetProductDetailByProductId(int productId)
+		{
+			try
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Data = await _productRepo.GetProductOptionByProductId(productId)
 				};
 
 			}

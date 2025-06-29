@@ -35,17 +35,17 @@ namespace TAPrim.API.Controllers
 			return ApiResponseHelper.HandleApiResponse(await _productService.UpdateProductAsync(productId,request));
 		}
 
-		[HttpGet("list-products")]
-		public async Task<IActionResult> GetProductList()
-		{
-			var products = await _productService.GetProductListAsync();
-			return Ok(products);
-		}
+		//[HttpGet("list-products")]
+		//public async Task<IActionResult> GetProductList()
+		//{
+		//	var products = await _productService.GetProductListAsync();
+		//	return Ok(products);
+		//}
 
 		[HttpGet("list-product-option-by-productId/{productId}")]
 		public async Task<IActionResult> GetProductOptionByProductId(int productId)
 		{
-			var products = await _productService.GetProductOptionDataByProductId(productId);
+			var products = await _productService.GetProductDetailByProductId(productId);
 			return Ok(products);
 		}
 		[HttpGet("list-product-by-category")]
@@ -54,5 +54,6 @@ namespace TAPrim.API.Controllers
 			var products = await _productService.GetProductByCategory();
 			return Ok(products);
 		}
+
 	}
 }

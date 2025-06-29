@@ -43,7 +43,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			return await _context.Products.Include(x=>x.ProductOptions).FirstOrDefaultAsync(x=>x.ProductId == id);
 		}
 
-		public async Task<ProductDetailResponseDto?> GetProductByIdAsync(int id)
+		public async Task<Application.DTOs.Products.ProductDetailResponseDto?> GetProductByIdAsync(int id)
 		{
 			return await _context.Products
 				.Include(p => p.ProductOptions)
@@ -64,43 +64,35 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		}
 
 
-		public async Task<List<ProductDetailResponseDto>> GetAllAsync()
-		{
-
-			return await _context.Products
-								 .Include(p => p.Category).Select(x=>new ProductDetailResponseDto
-								 {
-									 ProductId=x.ProductId,
-									 ProductName=x.ProductName ?? "N/A",
-									 Status = x.Status,
-									 CategoryId=x.CategoryId,
-									 CategoryName=x.Category.CategoryName ?? "N/A",
-									 Description = x.Description,
-									 ProductImage=x.ProductImage
-
-								 }).Where(x=>x.Status==1)
-								 .ToListAsync();
-		}
-
-		public Task<ProductDetailResponseDto?> GetProductDtoByIdAsync(int id)
+		public Task<Application.DTOs.Products.ProductDetailResponseDto?> GetProductDtoByIdAsync(int id)
 		{
 			throw new NotImplementedException();
 		}
 
-		public async Task<List<ProductOptionResponseDto>> GetProductOptionByProductId(int productId)
+		public async Task<ProductDetailResponseDto?> GetProductOptionByProductId(int productId)
 		{
-			return await _context.ProductOptions.Select(x=> new ProductOptionResponseDto
+			return await _context.Products.Include(x=>x.ProductOptions).Select(x=> new ProductDetailResponseDto
 			{
-				ProductOptionId=x.ProductOptionId,
 				ProductId=x.ProductId,
-				DurationUnit=x.DurationUnit,
-				DurationValue=x.DurationValue,
-				Price=x.Price,
-				Quantity=x.Quantity,
-				Label=x.Label,
-				DiscountPercent=x.DiscountPercent,
-				ProductGuide = x.ProductGuide
-			}).Where(x=>x.ProductId==productId).ToListAsync();
+				ProductName=x.ProductName,
+				ProductImage=x.ProductImage,
+				CategoryName =x.Category.CategoryName,
+				CategoryId =x.Category.CategoryId,
+				Status = x.Status,
+				ProductOptions =x.ProductOptions.Select(x=>new ProductOptionDto
+				{
+					ProductOptionId=x.ProductOptionId,
+					DurationUnit=x.DurationUnit,
+					DurationValue=x.DurationValue,
+					Price=x.Price,
+					Quantity=x.Quantity,
+					Label=x.Label,
+					DiscountPercent=x.DiscountPercent,
+					ProductGuide = x.ProductGuide,
+					StockAccount = x.ProductAccounts.Where(x=>x.SellFrom <DateTime.Now && x.SellTo > DateTime.Now).Sum(x=>x.SellCount) // lấy ra số lượng account 
+
+				}).ToList()
+			}).FirstOrDefaultAsync(x=>x.ProductId==productId);
 		}
 
 		public async Task<List<CategoryWithProductsDto>> GetListProductByCategoryId()
