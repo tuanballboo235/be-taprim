@@ -11,6 +11,12 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
             _context = context;
         }
 
+        public async Task<Coupon?> FindByCode(string couponCode)
+        {
+            return await _context.Coupons.Where(x=>x.CouponCode == couponCode).FirstOrDefaultAsync();
+        }
+   
+
         public async Task<Coupon?> FindById(int? couponId)
         {
             return await _context.Coupons.FirstOrDefaultAsync(x=>x.CouponId == couponId);
