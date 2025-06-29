@@ -79,7 +79,8 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				CategoryName =x.Category.CategoryName,
 				CategoryId =x.Category.CategoryId,
 				Status = x.Status,
-				ProductOptions =x.ProductOptions.Select(x=>new ProductOptionDto
+				ProductOptions =x.ProductOptions.OrderBy(opt => opt.Price) // Sắp xếp theo giá tăng dần
+								.Select(x=>new ProductOptionDto
 				{
 					ProductOptionId=x.ProductOptionId,
 					DurationUnit=x.DurationUnit,
