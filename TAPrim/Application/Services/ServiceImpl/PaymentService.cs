@@ -70,13 +70,13 @@ namespace TAPrim.Application.Services.ServiceImpl
 			try
 			{
 				// Kiểm tra nếu product ko có product account thì báo lỗi 
-				var productAccount = await _productAccountRepository.GetListProductAccountByProductOptionId(createPaymentRequest.ProductId);
+				var productAccount = await _productAccountRepository.GetListProductAccountByProductOptionId(createPaymentRequest.ProductOptionId);
 				if (productAccount == null)
 				{
 					return new ApiResponseModel<object>
 					{
 						Status = ApiResponseStatusConstant.FailedStatus,
-						Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098 ",
+						Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
 					};
 				}
 
@@ -107,11 +107,10 @@ namespace TAPrim.Application.Services.ServiceImpl
 					Status = 0 // Pending
 				};
 				await _paymentRepository.AddPaymentAsync(payment);
-
 				// Tạo order tạm
 				var order = new Order
 				{
-					ProductId = createPaymentRequest.ProductId,
+					ProductOptionId = createPaymentRequest.ProductOptionId,
 					PaymentId = payment.PaymentId,
 					CreateAt = DateTime.Now,
 					Status = OrderStatus.Deactive,//Not Active
@@ -121,6 +120,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					ClientNote = createPaymentRequest.ClientNote,
 				};
 				await _orderRepository.AddOrderAsync(order);
+
 				//khởi tạo object để có thể gene ra vietqr
 				var payload = new
 				{
@@ -128,7 +128,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 					accountName = _vietQrConfig.DefaultAccountName,
 					acqId = _vietQrConfig.DefaultAcqId,
 					addInfo = transactionCode,
-					amount = totalAmount,
+					amount = Math.Ceiling(totalAmount),
 					template = _vietQrConfig.DefaultTemplate
 				};
 
@@ -174,6 +174,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 						}
 					};
 				}
+			
 
 				return new ApiResponseModel<object>
 				{
@@ -251,7 +252,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				await _paymentRepository.SaveChange();
 
 				//Lấy ra danh sách account
-				var productAccountList = await _productAccountRepository.GetListProductAccountByProductOptionId(order.ProductId);
+				var productAccountList = await _productAccountRepository.GetListProductAccountByProductOptionId(order.ProductOptionId);
 				//kiểm tra còn tài khoản ko 
 				if (productAccountList.Count() <= 0) {
 					return new ApiResponseModel<object>

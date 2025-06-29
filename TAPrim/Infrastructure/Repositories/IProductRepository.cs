@@ -12,7 +12,7 @@ namespace TAPrim.Infrastructure.Repositories
 		Task<bool> UpdateProductAsync(Product updated);
 		Task<bool> UpdateProductOptionAsync(ProductOption updated);
 
-		Task<Application.DTOs.Products.ProductDetailResponseDto?> GetProductDtoByIdAsync(int id);
+		Task<Application.DTOs.Products.ProductDetailResponseDto?> GetProductDtoByProductOptionIdAsync(int productOptionId);
 		Task<Product?> GetProductById(int id);
 		Task<ProductDetailResponseDto?> GetProductOptionByProductId(int productId);
 		Task<List<CategoryWithProductsDto>> GetListProductByCategoryId();

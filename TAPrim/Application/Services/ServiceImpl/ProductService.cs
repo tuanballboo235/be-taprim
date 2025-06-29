@@ -119,7 +119,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 		public async Task<ApiResponseModel<ProductDetailResponseDto>> GetProductDetailAsync(int productId)
 		{
-			var product = await _productRepo.GetProductDtoByIdAsync(productId);
+			var product = await _productRepo.GetProductDtoByProductOptionIdAsync(productId);
 			var StockAccounts = await _productAccountRepository.GetQuantityStockProductAccountByProductOptionId(productId);
 			if (product == null)
 			{
