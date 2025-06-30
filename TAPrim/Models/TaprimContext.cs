@@ -108,6 +108,8 @@ public partial class TaprimContext : DbContext
 
             entity.ToTable("Order");
 
+            entity.HasIndex(e => e.PaymentId, "Order_paymentId_uindex").IsUnique();
+
             entity.Property(e => e.OrderId).HasColumnName("orderId");
             entity.Property(e => e.ClientNote).HasColumnName("clientNote");
             entity.Property(e => e.ContactInfo)
@@ -137,8 +139,8 @@ public partial class TaprimContext : DbContext
                 .HasForeignKey(d => d.CouponId)
                 .HasConstraintName("FK_Order_Coupon");
 
-            entity.HasOne(d => d.Payment).WithMany(p => p.Orders)
-                .HasForeignKey(d => d.PaymentId)
+            entity.HasOne(d => d.Payment).WithOne(p => p.Order)
+                .HasForeignKey<Order>(d => d.PaymentId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Order_Payment");
 
