@@ -123,9 +123,9 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 						MinPrice = p.ProductOptions.Min(x => x.Price),
 						MaxPrice = p.ProductOptions.Max(x => x.Price),
 
-						InStock = p.ProductOptions.Where(x=>x.ProductId == p.ProductId)
+						StockAccount = p.ProductOptions.Where(x=>x.ProductId == p.ProductId)
 						  .SelectMany(po => po.ProductAccounts)
-						  .Sum(pa => (int?)pa.SellCount) > 0
+						  .Sum(pa => (int?)pa.SellCount) ?? 0 
 					}).ToList()
 				})
 				.ToListAsync();
