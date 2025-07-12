@@ -115,6 +115,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				{
 					Title = c.CategoryName,
 					Description = c.CategoryDescription,
+					CategoryId = c.CategoryId,
 					Products = c.Products.Select(p => new ProductDto
 					{
 						Id = p.ProductId,
