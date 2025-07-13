@@ -123,7 +123,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 						Image = p.ProductImage,
 						MinPrice = p.ProductOptions.Min(x => x.Price),
 						MaxPrice = p.ProductOptions.Max(x => x.Price),
-
+						Status = p.Status,
 						StockAccount = p.ProductOptions.Where(x=>x.ProductId == p.ProductId)
 						  .SelectMany(po => po.ProductAccounts)
 						  .Sum(pa => (int?)pa.SellCount) ?? 0 
