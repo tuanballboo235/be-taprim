@@ -76,7 +76,10 @@ namespace TAPrim.Application.Services.ServiceImpl
 				PasswordProductAccount = pa.PasswordProductAccount,
 				Status = pa.Status,
 				DateChangePass = pa.DateChangePass,
-				SellCount = pa.SellCount
+				SellFrom = pa.SellFrom,
+				SellTo = pa.SellTo,
+				SellCount = pa.SellCount,
+				CreateAt = pa.CreateAt,
 			}).ToList();
 
 			return new ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>

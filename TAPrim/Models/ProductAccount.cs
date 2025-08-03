@@ -27,6 +27,8 @@ public partial class ProductAccount
 
     public DateTime? SellTo { get; set; }
 
+    public DateTime CreateAt { get; set; }
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual ProductOption ProductOption { get; set; } = null!;

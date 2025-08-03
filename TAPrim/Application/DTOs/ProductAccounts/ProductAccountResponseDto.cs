@@ -8,6 +8,9 @@
 		public string? UsernameProductAccount { get; set; }
 		public string? PasswordProductAccount { get; set; }
 		public DateTime? DateChangePass { get; set; }
+		public DateTime? SellFrom { get; set; }
+		public DateTime? SellTo { get; set; }
+		public DateTime? CreateAt { get; set; }
 		public int? SellCount { get; set; }
 		public int Status { get; set; }
 	}

@@ -218,6 +218,9 @@ public partial class TaprimContext : DbContext
 
             entity.Property(e => e.ProductAccountId).HasColumnName("productAccountId");
             entity.Property(e => e.AccountData).HasColumnName("accountData");
+            entity.Property(e => e.CreateAt)
+                .HasColumnType("datetime")
+                .HasColumnName("createAt");
             entity.Property(e => e.DateChangePass)
                 .HasColumnType("datetime")
                 .HasColumnName("dateChangePass");
