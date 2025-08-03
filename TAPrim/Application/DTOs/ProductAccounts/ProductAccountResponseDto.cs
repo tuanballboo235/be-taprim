@@ -12,6 +12,7 @@
 		public DateTime? SellTo { get; set; }
 		public DateTime? CreateAt { get; set; }
 		public int? SellCount { get; set; }
+		public bool? CanSell { get; set; }
 		public int Status { get; set; }
 	}
 }

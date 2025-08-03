@@ -80,6 +80,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				SellTo = pa.SellTo,
 				SellCount = pa.SellCount,
 				CreateAt = pa.CreateAt,
+				CanSell= pa.SellFrom < DateTime.Now && pa.SellTo > DateTime.Now && pa.SellCount > 0 && pa.Status ==1
 			}).ToList();
 
 			return new ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>
