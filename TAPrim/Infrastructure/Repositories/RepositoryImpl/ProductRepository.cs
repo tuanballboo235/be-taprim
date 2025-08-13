@@ -125,9 +125,12 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 						MaxPrice = p.ProductOptions.Max(x => x.Price),
 						Status = p.Status,
 						StockAccount = p.ProductOptions.Where(x=>x.ProductId == p.ProductId)
-						  .SelectMany(po => po.ProductAccounts)
-						  .Sum(pa => (int?)pa.SellCount) ?? 0 
-					}).ToList()
+						  .SelectMany(po => po.ProductAccounts).Where(p=>p.Status !=0)
+						  .Sum(pa => (int?)pa.SellCount) ?? 0 ,
+						CanSell = p.ProductOptions.Where(x => x.ProductId == p.ProductId)
+						  .SelectMany(po => po.ProductAccounts).Where(p => p.Status != 0 && p.SellFrom < DateTime.Now && p.SellTo > DateTime.Now )
+						  .Sum(pa => (int?)pa.SellCount) >0 
+					}).Where(x=>x.Status != 0 && x.StockAccount > 0).ToList()
 				})
 				.ToListAsync();
 

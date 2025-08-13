@@ -9,5 +9,6 @@
 		public decimal? MaxPrice { get; set; }
         public int Status { get; set; }
         public int StockAccount{ get; set; }
+		public bool CanSell { get; set; }
 	}
 }
