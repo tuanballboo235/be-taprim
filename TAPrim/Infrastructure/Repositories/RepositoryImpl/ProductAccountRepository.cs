@@ -146,12 +146,12 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				.SumAsync(pa => pa.SellCount ?? 0); // đề phòng sellCount null
 		}
 
-		public async Task<int> DeleteProductAccount()
-		{
-			return await _context.ProductAccounts
-				.Where(pa => pa.ProductOptionId == productOptionId)
-				.SumAsync(pa => pa.SellCount ?? 0); // đề phòng sellCount null
-		}
+		//public async Task<int> DeleteProductAccount(int )
+		//{
+		//	return await _context.ProductAccounts
+		//		.Where(pa => pa.ProductOptionId == productOptionId)
+		//		.SumAsync(pa => pa.SellCount ?? 0); // đề phòng sellCount null
+		//}
 
 
 	}

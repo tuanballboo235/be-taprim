@@ -3,23 +3,24 @@ using System;
 using TAPrim.Application.DTOs.ProductOption;
 using TAPrim.Application.DTOs.Products;
 using TAPrim.Models;
+using TAPrim.Shared.Constants;
 
 namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 {
-    public class ProductRepository : IProductRepository
-    {
-        private readonly TaprimContext _context;
+	public class ProductRepository : IProductRepository
+	{
+		private readonly TaprimContext _context;
 
-        public ProductRepository(TaprimContext context)
-        {
-            _context = context;
-        }
+		public ProductRepository(TaprimContext context)
+		{
+			_context = context;
+		}
 
-        public async Task AddProductAsync(Product product)
-        {
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
-        }
+		public async Task AddProductAsync(Product product)
+		{
+			_context.Products.Add(product);
+			await _context.SaveChangesAsync();
+		}
 
 		public async Task AddProductOptionAsync(ProductOption productOption)
 		{
@@ -40,7 +41,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		}
 		public async Task<Product?> GetProductById(int id)
 		{
-			return await _context.Products.Include(x=>x.ProductOptions).FirstOrDefaultAsync(x=>x.ProductId == id);
+			return await _context.Products.Include(x => x.ProductOptions).FirstOrDefaultAsync(x => x.ProductId == id);
 		}
 
 		public async Task<Application.DTOs.Products.ProductDetailResponseDto?> GetProductByIdAsync(int id)
@@ -53,7 +54,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				{
 					ProductId = p.ProductId,
 					ProductName = p.ProductName,
-				
+
 					CategoryName = p.Category.CategoryName,
 					CategoryId = p.Category.CategoryId,
 					Description = p.Description,
@@ -80,37 +81,40 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 		public async Task<ProductDetailResponseDto?> GetProductOptionByProductId(int productId)
 		{
-			return await _context.Products.Include(x=>x.ProductOptions).Select(x=> new ProductDetailResponseDto
+			return await _context.Products.Include(x => x.ProductOptions).Select(x => new ProductDetailResponseDto
 			{
-				ProductId=x.ProductId,
-				ProductName=x.ProductName,
-				ProductImage=x.ProductImage,
-				CategoryName =x.Category.CategoryName,
-				CategoryId =x.Category.CategoryId,
+				ProductId = x.ProductId,
+				ProductName = x.ProductName,
+				ProductImage = x.ProductImage,
+				CategoryName = x.Category.CategoryName,
+				CategoryId = x.Category.CategoryId,
 				Status = x.Status,
-				ProductOptions =x.ProductOptions.OrderBy(opt => opt.Price) // Sắp xếp theo giá tăng dần
-								.Select(x=>new ProductOptionDto
-				{
-					ProductOptionId=x.ProductOptionId,
-					DurationUnit=x.DurationUnit,
-					DurationValue=x.DurationValue,
-					Price=x.Price,
-					Quantity=x.Quantity,
-					Label=x.Label,
-					DiscountPercent=x.DiscountPercent,
-					ProductGuide = x.ProductGuide,
-					StockAccount = x.ProductAccounts.Where(x=>x.SellFrom <DateTime.Now && x.SellTo > DateTime.Now).Sum(x=>x.SellCount) // lấy ra số lượng account 
+				ProductOptions = x.ProductOptions.OrderBy(opt => opt.Price) // Sắp xếp theo giá tăng dần
+								.Select(x => new ProductOptionDto
+								{
+									ProductOptionId = x.ProductOptionId,
+									DurationUnit = x.DurationUnit,
+									DurationValue = x.DurationValue,
+									Price = x.Price,
+									Quantity = x.Quantity,
+									Label = x.Label,
+									DiscountPercent = x.DiscountPercent,
+									ProductGuide = x.ProductGuide,
+									StockAccount = x.ProductAccounts.Where(
+										x => x.SellFrom < DateTime.Now && 
+										x.SellTo > DateTime.Now &&
+										x.Status == ProductAccountStatusConstant.Available && x.SellCount >0).Count(), // lấy ra số lượng account 
 
-				}).ToList()
-			}).FirstOrDefaultAsync(x=>x.ProductId==productId);
+								}).ToList()
+			}).FirstOrDefaultAsync(x => x.ProductId == productId);
 		}
 
 		public async Task<List<CategoryWithProductsDto>> GetListProductByCategoryId()
 		{
 			var categories = await _context.Categories
 				.Include(c => c.Products)
-				.ThenInclude(x=>x.ProductOptions)
-				.ThenInclude(x=>x.ProductAccounts)// Navigation property
+				.ThenInclude(x => x.ProductOptions)
+				.ThenInclude(x => x.ProductAccounts)// Navigation property
 				.Select(c => new CategoryWithProductsDto
 				{
 					Title = c.CategoryName,
@@ -124,13 +128,13 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 						MinPrice = p.ProductOptions.Min(x => x.Price),
 						MaxPrice = p.ProductOptions.Max(x => x.Price),
 						Status = p.Status,
-						StockAccount = p.ProductOptions.Where(x=>x.ProductId == p.ProductId)
-						  .SelectMany(po => po.ProductAccounts).Where(p=>p.Status !=0)
-						  .Sum(pa => (int?)pa.SellCount) ?? 0 ,
+						StockAccount = p.ProductOptions.Where(x => x.ProductId == p.ProductId)
+						  .SelectMany(po => po.ProductAccounts).Where(p => p.Status != 0)
+						  .Sum(pa => (int?)pa.SellCount) ?? 0,
 						CanSell = p.ProductOptions.Where(x => x.ProductId == p.ProductId)
-						  .SelectMany(po => po.ProductAccounts).Where(p => p.Status != 0 && p.SellFrom < DateTime.Now && p.SellTo > DateTime.Now )
-						  .Sum(pa => (int?)pa.SellCount) >0 
-					}).Where(x=>x.Status != 0 && x.StockAccount > 0).ToList()
+						  .SelectMany(po => po.ProductAccounts).Where(p => p.Status != 0 && p.SellFrom < DateTime.Now && p.SellTo > DateTime.Now)
+						  .Sum(pa => (int?)pa.SellCount) > 0
+					}).Where(x => x.Status != 0 && x.StockAccount > 0).ToList()
 				})
 				.ToListAsync();
 

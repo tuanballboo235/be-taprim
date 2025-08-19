@@ -21,6 +21,8 @@ namespace TAPrim.API.Controllers
 		{
 			_paymentService = paymentService;
 		}
+
+		//Xác nhận thanh toán thành công từ sepay và set product account cho đơn hàng
 		[HttpPost("sepay-webhook")]
 		public async Task<IActionResult> ReceiveAsync([FromBody] SePayWebhookDto data)
 		{
