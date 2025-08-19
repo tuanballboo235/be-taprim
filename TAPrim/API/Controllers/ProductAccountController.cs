@@ -41,6 +41,10 @@ namespace TAPrim.API.Controllers
 			return ApiResponseHelper.HandleApiResponse(await _productAccountService.UpdateProductAccount(productAccountId, request));
 		}
 
-
+		[HttpPost("delete-list-product-account")]
+		public async Task<IActionResult> DeleteListProductAcount([FromBody] List<int> productAccountId)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _productAccountService.DeleteListProductAccount(productAccountId));
+		}
 	}
 }

@@ -63,6 +63,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}	
 		}
 
+	
 		public async Task<ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>> GetProductAccountsAsync(ProductAccountQueryDto query)
 		{
 			var result = await _productAccountRepository.GetFilteredProductAccountsAsync(query);
@@ -168,5 +169,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 				};
 			}
 		}
+		public Task<ApiResponseModel<object>> DeleteListProductAccount(List<int> productAccountId)
+		{
+
+			return null;
+		}
+
 	}
 }
