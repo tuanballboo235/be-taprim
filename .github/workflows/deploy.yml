@@ -31,7 +31,9 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ env.IMAGE_NAME }}:latest
+        tags: |
+          ${{ env.IMAGE_NAME }}:latest
+          ${{ env.IMAGE_NAME }}:${{ github.sha }}
 
     - name: 🚀 Deploy to VPS via SSH
       uses: appleboy/ssh-action@v0.1.8
@@ -82,8 +84,8 @@ jobs:
           echo "🧼 Dừng & xóa container cũ (nếu có)"
           docker-compose -f docker-compose.yaml down -v --remove-orphans || true
           
-          echo "🧹 Remove container 'taprim' nếu bị giữ lại ngoài docker-compose"
-          docker rm -f taprim || true
+          echo "🧹 Remove container '${{ env.CONTAINER_NAME }}' nếu bị giữ lại ngoài docker-compose"
+          docker rm -f ${{ env.CONTAINER_NAME }} || true
           
           echo "🚀 Khởi chạy lại container"
           docker-compose -f docker-compose.yaml up -d --force-recreate
@@ -91,4 +93,33 @@ jobs:
           echo "📋 Trạng thái container hiện tại:"
           docker ps -a
 
-          echo "✅ Deploy thành công!"
+          echo "🧽 (1) Dọn ảnh dangling (an toàn)"
+          docker image prune -f || true
+
+          echo "🧽 (2) Giữ lại 3 image mới nhất của ${{ env.IMAGE_NAME }}, xoá phần còn lại"
+          # Lấy ID 3 image mới nhất theo CreatedAt (desc), phần còn lại sẽ bị xoá
+          KEEP_IDS=$(docker images ${{ env.IMAGE_NAME }} --format '{{"{{"}}.ID{{"}}"}} {{"{{"}}.CreatedAt{{"}}"}}' | sort -rk2 | awk 'NR<=3{print $1}')
+          ALL_IDS=$(docker images ${{ env.IMAGE_NAME }} --format '{{"{{"}}.ID{{"}}"}}' | sort -u)
+
+          # Lấy ID image đang được container sử dụng để không xoá nhầm
+          USED_IDS=$(docker ps -a --format '{{"{{"}}.Image{{"}}"}}' | xargs -r docker inspect --format='{{"{{"}}.Id{{"}}"}}' 2>/dev/null | cut -d: -f2 || true)
+
+          # Tính tập cần xoá = ALL - KEEP - USED
+          for id in $ALL_IDS; do
+            if echo "$KEEP_IDS" | grep -q "$id"; then
+              continue
+            fi
+            if echo "$USED_IDS" | grep -q "$id"; then
+              continue
+            fi
+            echo "🗑️  Xoá image $id"
+            docker rmi -f "$id" || true
+          done
+
+          echo "🧱 (3) Dọn cache buildkit cũ (không ảnh hưởng image đang dùng)"
+          docker builder prune -af --filter 'until=240h' || true
+
+          echo "📊 Sau dọn:"
+          docker system df || true
+
+          echo "✅ Deploy & cleanup hoàn tất!"
