@@ -105,6 +105,9 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 										x.SellTo > DateTime.Now &&
 										x.Status == ProductAccountStatusConstant.Available && x.SellCount >0).Count(), // lấy ra số lượng account 
 
+									SellCount = x.ProductAccounts.Where(x=>x.SellFrom<DateTime.Now && 
+									x.SellTo>DateTime.Now &&
+									x.Status ==ProductAccountStatusConstant.Available && x.SellCount>0).Sum(x=>x.SellCount)
 								}).ToList()
 			}).FirstOrDefaultAsync(x => x.ProductId == productId);
 		}
