@@ -263,8 +263,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 					};
 
 				}
-				else
-				{
+				
+					bool isAvailableAccountReturn = false;
 					foreach (var account in productAccountList)
 					{
 						if ( // ko thỏa mãn productAccount
@@ -283,21 +283,23 @@ namespace TAPrim.Application.Services.ServiceImpl
 							}
 							//sau khi thanh toán thành công thì set cho order tk 
 							order.ProductAccountId = account?.ProductAccountId;
-							break; // ✅ DỪNG vòng lặp, không xét tiếp sản phẩm thứ 2
 
-						}
-						else
-						{
-							return new ApiResponseModel<object>
-							{
-								Status = ApiResponseStatusConstant.FailedStatus,
-								Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
-
-							};
-						}
+							isAvailableAccountReturn = true;
+						break;
 					}
+						
+					}
+					
+				if(!isAvailableAccountReturn)
+				{
+					return new ApiResponseModel<object>
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
 
+					};
 				}
+
 
 				//lấy ra hạn product theo productDurationValue và productUnit
 				var dayAccount = 30;

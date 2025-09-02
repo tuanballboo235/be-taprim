@@ -38,7 +38,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 						SellCount = item.SellCount,
 						SellFrom = item.SellDateFrom,
 						SellTo = item.SellDateTo,
-						Status = item.Status
+						Status = item.Status,
+						CreateAt = DateTime.Now
 					};
 
 					// B2: Lưu vào DB
@@ -51,7 +52,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				return new ApiResponseModel<ProductAccountResponseDto>
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
-
+					Message = "Thêm tài khoản thành công"
 				};
 			}catch (Exception ex)
 			{

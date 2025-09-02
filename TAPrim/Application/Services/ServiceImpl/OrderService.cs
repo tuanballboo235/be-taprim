@@ -45,8 +45,6 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 		}
 
-
-
 		public async Task<ApiResponseModel<object>> UpdateOrderAsync(string transactionCode, UpdateOrderRequestDto orderUpdateRequest)
 		{
 			try
