@@ -101,13 +101,13 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 									DiscountPercent = x.DiscountPercent,
 									ProductGuide = x.ProductGuide,
 									StockAccount = x.ProductAccounts.Where(
-										x => x.SellFrom < DateTime.Now && 
+										x => x.SellFrom < DateTime.Now &&
 										x.SellTo > DateTime.Now &&
-										x.Status == ProductAccountStatusConstant.Available && x.SellCount >0).Count(), // lấy ra số lượng account 
+										x.Status == ProductAccountStatusConstant.Available && x.SellCount > 0).Count(), // lấy ra số lượng account 
 
-									SellCount = x.ProductAccounts.Where(x=>x.SellFrom<DateTime.Now && 
-									x.SellTo>DateTime.Now &&
-									x.Status ==ProductAccountStatusConstant.Available && x.SellCount>0).Sum(x=>x.SellCount)
+									SellCount = x.ProductAccounts.Where(x => x.SellFrom < DateTime.Now &&
+									x.SellTo > DateTime.Now &&
+									x.Status == ProductAccountStatusConstant.Available && x.SellCount > 0).Sum(x => x.SellCount)
 								}).ToList()
 			}).FirstOrDefaultAsync(x => x.ProductId == productId);
 		}
@@ -132,7 +132,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 						MaxPrice = p.ProductOptions.Max(x => x.Price),
 						Status = p.Status,
 						StockAccount = p.ProductOptions.Where(x => x.ProductId == p.ProductId)
-						  .SelectMany(po => po.ProductAccounts).Where(p => p.Status != 0 && p.SellFrom < DateTime.Now && p.SellTo > DateTime.Now && p.SellCount > 0).Count()	  ,
+						  .SelectMany(po => po.ProductAccounts).Where(p => p.Status != 0 && p.SellFrom < DateTime.Now && p.SellTo > DateTime.Now && p.SellCount > 0).Count(),
 						CanSell = p.ProductOptions.Where(x => x.ProductId == p.ProductId)
 						  .SelectMany(po => po.ProductAccounts).Where(p => p.Status != 0 && p.SellFrom < DateTime.Now && p.SellTo > DateTime.Now && p.SellCount > 0)
 						  .Sum(pa => (int?)pa.SellCount) > 0

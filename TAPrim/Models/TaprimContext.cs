@@ -264,6 +264,9 @@ public partial class TaprimContext : DbContext
                 .HasColumnName("price");
             entity.Property(e => e.ProductGuide).HasColumnName("productGuide");
             entity.Property(e => e.ProductId).HasColumnName("productId");
+            entity.Property(e => e.ProductOptionImage)
+                .IsUnicode(false)
+                .HasColumnName("productOptionImage");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
 
             entity.HasOne(d => d.Product).WithMany(p => p.ProductOptions)

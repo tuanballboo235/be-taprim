@@ -23,6 +23,8 @@ public partial class ProductOption
 
     public string? ProductGuide { get; set; }
 
+    public string? ProductOptionImage { get; set; }
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual Product Product { get; set; } = null!;

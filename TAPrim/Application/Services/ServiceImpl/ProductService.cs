@@ -1,5 +1,6 @@
 ﻿using Azure;
 using TAPrim.Application.DTOs.Common;
+using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Application.DTOs.ProductOption;
 using TAPrim.Application.DTOs.Products;
 using TAPrim.Infrastructure.Repositories;
@@ -209,5 +210,10 @@ namespace TAPrim.Application.Services.ServiceImpl
 				};
 			}
 		}
+
+		public async Task<ApiResponseModel<object>> UpdateProductOptionById(int Id, UpdateProductProductAccountRequest request)
+		{
+
+			}
 	}
 }

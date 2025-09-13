@@ -42,6 +42,13 @@ namespace TAPrim.API.Controllers
 		//	return Ok(products);
 		//}
 
+		[HttpPut("update-productoption-by-id/{Id}")]
+		public async Task<IActionResult> UpdateProductoptionById(int id)
+		{
+			var products = await _productService.GetProductDetailByProductId(id);
+			return Ok(products);
+		}
+
 		[HttpGet("list-product-option-by-productId/{productId}")]
 		public async Task<IActionResult> GetProductOptionByProductId(int productId)
 		{
