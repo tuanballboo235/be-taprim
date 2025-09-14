@@ -76,6 +76,25 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			{
 				q = q.Where(pa => pa.SellCount <= query.MaxSellCount);
 			}
+			if (query.CanSell.HasValue)
+			{
+				if (query.CanSell.Value)
+				{
+					q = q.Where(pa =>
+						pa.Status == 1 &&
+						pa.SellCount > 0 &&
+						pa.SellFrom < DateTime.Now &&
+						pa.SellTo > DateTime.Now);
+				}
+				else
+				{
+					q = q.Where(pa =>
+						pa.Status != 1 ||
+						pa.SellCount <= 0 ||
+						pa.SellFrom >= DateTime.Now ||
+						pa.SellTo <= DateTime.Now);
+				}
+			}
 
 			var totalRecords = await q.CountAsync();
 			var totalPages = (int)Math.Ceiling((double)totalRecords / query.PageSize);

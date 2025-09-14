@@ -10,7 +10,7 @@
 
 		public DateTime? FromDateChangePass { get; set; }
 		public DateTime? ToDateChangePass { get; set; }
-
+		public bool? CanSell { get; set; }
 		public int? MinSellCount { get; set; }
 		public int? MaxSellCount { get; set; }
 
