@@ -18,6 +18,6 @@
 		public string? ProductGuide { get; set; }
 		public int? StockAccount {  get; set; }
 		public int? SellCount { get; set; }
-
-	}
+        public string? ProductOptionImage { get; set; }
+    }
 }

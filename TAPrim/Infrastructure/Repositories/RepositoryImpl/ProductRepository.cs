@@ -103,6 +103,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 									Label = x.Label,
 									DiscountPercent = x.DiscountPercent,
 									ProductGuide = x.ProductGuide,
+									ProductOptionImage = x.ProductOptionImage,
 									StockAccount = x.ProductAccounts.Where(
 										x => x.SellFrom < DateTime.Now &&
 										x.SellTo > DateTime.Now &&
