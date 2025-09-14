@@ -1,6 +1,6 @@
 ﻿namespace TAPrim.Application.DTOs.ProductOption
 {
-	public class ProductOptionUpdateRequest
+	public class UpdateProductOptionRequest
 	{
 		public int ProductOptionId { get; set; }
 

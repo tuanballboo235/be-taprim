@@ -211,9 +211,61 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 		}
 
-		public async Task<ApiResponseModel<object>> UpdateProductOptionById(int Id, UpdateProductProductAccountRequest request)
+		public async Task<ApiResponseModel<object>> UpdateProductOptionById(int id, UpdateProductOptionRequest request)
 		{
+			try
+			{
+				var productOption = await _productRepo.GetProductOptionByIdAsync(id);
+				if (productOption == null)
+				{
+					return new ApiResponseModel<object>
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Không tìm thấy sản phẩm"
+					};
+				}
+				//lưu lại đường dẫn cũ của file để xóa 
+				string oldImgPath = productOption.ProductOptionImage;
 
+				string imagePath = productOption.ProductOptionImage;
+				if (request.ProductOptionImage != null)
+				{
+					imagePath = await _fileService.SaveImageAsync(request.ProductOptionImage);
+				}
+
+				// Gán lại thông tin
+
+				productOption.DurationUnit = request.DurationUnit ?? productOption.DurationUnit;
+				productOption.DurationValue = request.DurationValue ?? productOption.DurationValue;
+
+				productOption.DiscountPercent = request.DiscountPercent ?? productOption.DiscountPercent;
+				productOption.Quantity = request.Quantity ?? productOption.Quantity;
+				productOption.Label = request.Label ?? productOption.Label;
+				productOption.Price = request.Price ?? productOption.Price;
+				productOption.ProductGuide = request.ProductGuide ?? productOption.ProductGuide;
+				productOption.ProductGuide = request.ProductGuide ?? productOption.ProductGuide;
+
+
+				productOption.ProductOptionImage = imagePath;  // nếu như ko truyền ảnh thì sẽ giữ nguyên ảnh gốc, còn truyền ảnh thì cũng đã cập nhật vào biến imgPath và gắn r
+
+				var updated = await _productRepo.UpdateProductOptionAsync(productOption);
+
+				//xóa file ảnh cũ ngay khi update thành công
+				await _fileService.DeleteImage(oldImgPath);
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Message = "Cập nhật thành công",
+				};
 			}
+			catch (Exception e)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Đã xảy ra lỗi",
+				};
+			}
+		}
 	}
 }

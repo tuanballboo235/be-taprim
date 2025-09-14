@@ -63,7 +63,10 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				})
 				.FirstOrDefaultAsync();
 		}
-
+		public async Task<ProductOption?> GetProductOptionByIdAsync(int id)
+		{
+			return await _context.ProductOptions.FindAsync(id);
+		}
 
 		public async Task<Application.DTOs.Products.ProductDetailResponseDto?> GetProductDtoByProductOptionIdAsync(int productOptionid)
 		{

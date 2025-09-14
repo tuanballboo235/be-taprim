@@ -6,7 +6,11 @@ namespace TAPrim.Infrastructure.Repositories
 {
     public interface IProductRepository
     {
-        Task AddProductAsync(Product product);
+
+		//Product Option
+		Task<ProductOption?> GetProductOptionByIdAsync(int id);
+		//Product
+		Task AddProductAsync(Product product);
 		Task AddProductOptionAsync(ProductOption productOption);
 		Task<bool> UpdateProductAsync(Product updated);
 		Task<bool> UpdateProductOptionAsync(ProductOption updated);

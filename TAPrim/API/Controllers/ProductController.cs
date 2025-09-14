@@ -5,6 +5,7 @@ using TAPrim.Common.Helpers;
 using TAPrim.Application.Services;
 using TAPrim.Application.DTOs;
 using TAPrim.Models;
+using TAPrim.Application.DTOs.ProductOption;
 
 namespace TAPrim.API.Controllers
 {
@@ -42,10 +43,10 @@ namespace TAPrim.API.Controllers
 		//	return Ok(products);
 		//}
 
-		[HttpPut("update-productoption-by-id/{Id}")]
-		public async Task<IActionResult> UpdateProductoptionById(int id)
+		[HttpPut("update-productoption-by-id/{id}")]
+		public async Task<IActionResult> UpdateProductoptionById(int id, UpdateProductOptionRequest request)
 		{
-			var products = await _productService.GetProductDetailByProductId(id);
+			var products = await _productService.UpdateProductOptionById(id, request);
 			return Ok(products);
 		}
 

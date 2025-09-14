@@ -11,7 +11,7 @@ namespace TAPrim.Application.Services
 
 		//Product Option
 		Task<ApiResponseModel<object>> GetProductOptionDataByProductId(int productId);
-		Task<ApiResponseModel<object>> UpdateProductOptionById(int id , UpdateProductProductAccountRequest request);
+		Task<ApiResponseModel<object>> UpdateProductOptionById(int id , UpdateProductOptionRequest request);
 
 		//Product 
 		Task<ApiResponseModel<Product>> CreateProductAsync(CreateProductRequest dto);
