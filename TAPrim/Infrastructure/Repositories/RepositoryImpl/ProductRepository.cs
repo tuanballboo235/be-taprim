@@ -140,7 +140,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 						CanSell = p.ProductOptions.Where(x => x.ProductId == p.ProductId)
 						  .SelectMany(po => po.ProductAccounts).Where(p => p.Status != 0 && p.SellFrom < DateTime.Now && p.SellTo > DateTime.Now && p.SellCount > 0)
 						  .Sum(pa => (int?)pa.SellCount) > 0
-					}).Where(x => x.Status != 0 && x.StockAccount > 0).ToList()
+					}).ToList()
 				})
 				.ToListAsync();
 
