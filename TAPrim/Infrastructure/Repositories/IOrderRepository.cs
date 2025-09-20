@@ -10,7 +10,9 @@ namespace TAPrim.Infrastructure.Repositories
 		Task<Order?> FindByPaymentTransactionCodeAsync(string transactionCode);
 		Task<Order?> FindByProductAccountId(int productAccountId);
 		Task<bool> UpdateOrderAsync(Order order);
-		Task<OrderResponseDto?> GetOrderDetailsById(int orderId);
+		Task<OrderResponseDto?> GetOrderDetailsById(int orderId); 
+		Task DeleteOrderById(int orderId);
+		Task DeleteOrderByPaymentId(int paymentId);
 		Task SaveChange();
 	}
 }

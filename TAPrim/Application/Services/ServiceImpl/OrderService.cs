@@ -111,5 +111,43 @@ namespace TAPrim.Application.Services.ServiceImpl
 				};
 			}
 		}
+
+		public async Task<ApiResponseModel<object>> DeleteOrderById(int orderId)
+		{
+			try
+			{
+				await _orderRepository.DeleteOrderById(orderId);
+				return new ApiResponseModel<object>()
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus
+				};
+			}
+			catch (Exception e)
+			{
+				return new ApiResponseModel<object>()
+				{
+					Status = ApiResponseStatusConstant.FailedStatus
+				};
+			}
+		}
+
+		public async Task<ApiResponseModel<object>> DeleteOrderByPaymentId(int paymentId)
+		{
+			try
+			{
+				await _orderRepository.DeleteOrderByPaymentId(paymentId);
+				return new ApiResponseModel<object>()
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus
+				};
+			}
+			catch (Exception e)
+			{
+				return new ApiResponseModel<object>()
+				{
+					Status = ApiResponseStatusConstant.FailedStatus
+				};
+			}
+		}
 	}
 }

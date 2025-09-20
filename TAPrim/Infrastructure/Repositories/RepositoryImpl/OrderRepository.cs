@@ -69,6 +69,28 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		{
 			await _context.SaveChangesAsync();
 		}
+		public async Task DeleteOrderById(int orderId)
+		{
+			var order = await _context.Orders.FindAsync(orderId);
+			if (order != null)
+			{
+				_context.Orders.Remove(order);
+				await _context.SaveChangesAsync();
+			}
+		}
+
+		public async Task DeleteOrderByPaymentId(int paymentId)
+		{
+			var order = await _context.Orders
+				.FirstOrDefaultAsync(o => o.PaymentId == paymentId);
+
+			if (order != null)
+			{
+				_context.Orders.Remove(order);
+				await _context.SaveChangesAsync();
+			}
+		}
+
 
 		public async Task<bool> UpdateOrderAsync(Order order)
 		{

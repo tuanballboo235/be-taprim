@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 using TAPrim.Application.DTOs.Payment;
 using TAPrim.Models;
 
@@ -20,9 +21,9 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 		public async Task<Payment?> GetPaymentByTransactionCode(string transactionCode)
 		{
-			return await _context.Payments.FirstOrDefaultAsync(x => x.TransactionCode == transactionCode); 
+			return await _context.Payments.FirstOrDefaultAsync(x => x.TransactionCode == transactionCode);
 
-		} 
+		}
 		public async Task<bool> IsExistedTransactionCode(string transactionCode)
 		{
 			return await _context.Payments.AnyAsync(x => x.TransactionCode == transactionCode);
@@ -65,6 +66,18 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		public async Task SaveChange()
 		{
 			await _context.SaveChangesAsync();
+		}
+
+		public async Task DeletePaymentById(int paymentId)
+		{
+			var payments = await _context.Payments
+						.FirstOrDefaultAsync(o => o.PaymentId == paymentId);
+
+			if (payments != null)
+			{
+				_context.Payments.Remove(payments);
+				await _context.SaveChangesAsync();
+			}
 		}
 	}
 }

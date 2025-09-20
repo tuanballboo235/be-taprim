@@ -14,5 +14,6 @@ namespace TAPrim.Application.Services
 		Task<ApiResponseModel<object>> SetProductAccountForPaymentByTransactionCode(SePayWebhookDto data);
 		Task<ApiResponseModel<object>> GetPaymentsAsync(PaymentFilterDto filter);
 		Task<ApiResponseModel<object>> TestEmail();
+		Task<ApiResponseModel<object>> ClearOrderAndPaymentTempByPaymentId(int paymentId);
 	}
 }

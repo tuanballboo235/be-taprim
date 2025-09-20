@@ -6,6 +6,7 @@ using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.Payment;
 using TAPrim.Application.DTOs.Products;
 using TAPrim.Application.Services;
+using TAPrim.Application.Services.ServiceImpl;
 using TAPrim.Common.Helpers;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Shared.Constants;
@@ -47,5 +48,13 @@ namespace TAPrim.API.Controllers
 		{
 			return ApiResponseHelper.HandleApiResponse(await _paymentService.TestEmail());
 		}
+
+		[HttpPost("clear-order-and-payment-temp-by-paymentId")]
+		public async Task<IActionResult> ClearOrderAndPaymentTempByPaymentId([FromBody] int paymentId)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _paymentService.ClearOrderAndPaymentTempByPaymentId(paymentId));
+
+		}
+
 	}
 }

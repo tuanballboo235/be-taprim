@@ -354,5 +354,25 @@ namespace TAPrim.Application.Services.ServiceImpl
 				};
 			}
 		}
+
+		public async Task<ApiResponseModel<object>> ClearOrderAndPaymentTempByPaymentId(int paymentId)
+		{
+			try
+			{
+				await _orderRepository.DeleteOrderByPaymentId(paymentId);
+				await _paymentRepository.DeletePaymentById(paymentId);
+
+				return new ApiResponseModel<object>()
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus
+				};
+			}
+			catch (Exception ex) {
+				return new ApiResponseModel<object>()
+				{
+					Status = ApiResponseStatusConstant.FailedStatus
+				};
+			}
+		}
 	}
 }

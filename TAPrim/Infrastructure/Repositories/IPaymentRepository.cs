@@ -9,7 +9,7 @@ namespace TAPrim.Infrastructure.Repositories
 		Task<Payment?> GetPaymentByTransactionCode(string transactionCode);
 		Task<bool> IsExistedTransactionCode(string transactionCode);
 		Task<List<PaymentDetailsDto>> GetPaymentsAsync(PaymentFilterDto filter);
-
+		Task DeletePaymentById(int paymentId);
 		Task SaveChange();
 	}
 }
