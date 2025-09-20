@@ -49,10 +49,10 @@ namespace TAPrim.API.Controllers
 			return ApiResponseHelper.HandleApiResponse(await _paymentService.TestEmail());
 		}
 
-		[HttpPost("clear-order-and-payment-temp-by-paymentId")]
-		public async Task<IActionResult> ClearOrderAndPaymentTempByPaymentId([FromBody] int paymentId)
+		[HttpPost("clear-order-and-payment-temp-by-trancsactionCode")]
+		public async Task<IActionResult> ClearOrderAndPaymentTempByTrancsactionCode([FromBody] string transactionCode)
 		{
-			return ApiResponseHelper.HandleApiResponse(await _paymentService.ClearOrderAndPaymentTempByPaymentId(paymentId));
+			return ApiResponseHelper.HandleApiResponse(await _paymentService.ClearOrderAndPaymentTempByTrancsactionCode(transactionCode));
 
 		}
 

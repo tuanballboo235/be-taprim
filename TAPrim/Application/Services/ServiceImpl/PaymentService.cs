@@ -355,12 +355,13 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 		}
 
-		public async Task<ApiResponseModel<object>> ClearOrderAndPaymentTempByPaymentId(int paymentId)
+		public async Task<ApiResponseModel<object>> ClearOrderAndPaymentTempByTrancsactionCode(string transactionCode)
 		{
 			try
 			{
-				await _orderRepository.DeleteOrderByPaymentId(paymentId);
-				await _paymentRepository.DeletePaymentById(paymentId);
+				var payment = await _paymentRepository.GetPaymentByTransactionCode(transactionCode);
+				await _orderRepository.DeleteOrderByPaymentId(payment.PaymentId);
+				await _paymentRepository.DeletePaymentById(payment.PaymentId);
 
 				return new ApiResponseModel<object>()
 				{
