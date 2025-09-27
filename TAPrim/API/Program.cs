@@ -85,8 +85,10 @@ builder.Services.AddCors(options =>
 	options.AddPolicy("AllowFrontend", policy =>
 	{
 		policy.WithOrigins(
-				"http://localhost:5173",
-				"http://103.238.235.227:8080"
+				 "http://localhost:5174",   // ← Vite on 5174 (your current Origin)
+				"http://localhost:5173",   // if you also use 5173
+				"http://103.238.235.227",  // if the site is sometimes served direct on :80
+				"http://103.238.235.227:8080" // your API if it listens on 8080
 			)
 			.AllowAnyHeader()
 			.AllowAnyMethod();
