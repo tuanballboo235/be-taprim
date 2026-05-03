@@ -22,7 +22,7 @@ namespace TAPrim.Infrastructure.Telegram
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
 			if (string.IsNullOrWhiteSpace(_options.TelegramSecretToken) ||
-						string.IsNullOrWhiteSpace(_options.Telegram__WebhookUrl))
+						string.IsNullOrWhiteSpace(_options.TelegramWebhookUrl))
 			{
 				_logger.LogWarning("Telegram webhook chưa được cấu hình đầy đủ.");
 				return;
@@ -33,7 +33,7 @@ namespace TAPrim.Infrastructure.Telegram
 
 			var payload = new
 			{
-				url = _options.Telegram__WebhookUrl,
+				url = _options.TelegramWebhookUrl,
 				secret_token = _options.TelegramSecretToken,
 				drop_pending_updates = false
 			};
@@ -45,7 +45,7 @@ namespace TAPrim.Infrastructure.Telegram
 
 				if (response.IsSuccessStatusCode)
 				{
-					_logger.LogInformation("Set Telegram webhook thành công: {WebhookUrl}", _options.Telegram__WebhookUrl);
+					_logger.LogInformation("Set Telegram webhook thành công: {WebhookUrl}", _options.TelegramWebhookUrl);
 					_logger.LogInformation("Telegram response: {Response}", content);
 				}
 				else

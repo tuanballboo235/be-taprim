@@ -6,6 +6,7 @@ using DotNetEnv;
 using TAPrim.Application.DTOs.Common;
 using BasketballAcademyManagementSystemAPI.Common.Helpers;
 using TAPrim.Infrastructure.Telegram;
+using TAPrim.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -67,7 +68,6 @@ var assemblies = new[]
 	Assembly.GetExecutingAssembly(),
 	typeof(TelegramWebhookHostedService).Assembly
 };
-
 foreach (var type in assemblies.SelectMany(a => a.GetTypes()))
 {
 	if (type.IsClass
@@ -105,6 +105,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+app.UseMiddleware<TelegramWebhookAuthMiddleware>();
 
 // ✅ Auto migrate DB nếu cần
 using (var scope = app.Services.CreateScope())
