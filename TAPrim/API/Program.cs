@@ -5,6 +5,7 @@ using TAPrim.Shared.Helpers;
 using DotNetEnv;
 using TAPrim.Application.DTOs.Common;
 using BasketballAcademyManagementSystemAPI.Common.Helpers;
+using TAPrim.Infrastructure.Telegram;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -58,27 +59,35 @@ builder.Services.AddStackExchangeRedisCache(options =>
 	options.Configuration = Environment.GetEnvironmentVariable("ConnectionStrings__Redis"); // ← THAY ĐOẠN NÀY
 	options.InstanceName = "NetflixLimiter:";
 });
-Console.WriteLine("Redis config: " + builder.Configuration["ConnectionStrings__Redis"]);
 
 
 // ✅ Đăng ký dịch vụ qua reflection
-var assembly = Assembly.GetExecutingAssembly();
-foreach (var type in assembly.GetTypes())
+var assemblies = new[]
 {
-	if (type.IsClass && !type.IsAbstract && !typeof(BackgroundService).IsAssignableFrom(type))
+	Assembly.GetExecutingAssembly(),
+	typeof(TelegramWebhookHostedService).Assembly
+};
+
+foreach (var type in assemblies.SelectMany(a => a.GetTypes()))
+{
+	if (type.IsClass
+		&& !type.IsAbstract
+		&& !typeof(IHostedService).IsAssignableFrom(type)
+		&& !typeof(BackgroundService).IsAssignableFrom(type))
 	{
 		var interfaceType = type.GetInterfaces().FirstOrDefault();
+
 		if (interfaceType != null)
 		{
 			builder.Services.AddScoped(interfaceType, type);
 		}
 	}
 }
+
 builder.Services.AddScoped<EmailHelper>();
 
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<TransactionCodeHelper>();
-
 // ✅ CORS - chỉ dùng khi dev hoặc cần allow FE IP cụ thể
 builder.Services.AddCors(options =>
 {
@@ -101,7 +110,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
 	var db = scope.ServiceProvider.GetRequiredService<TaprimContext>();
-	db.Database.Migrate(); // hoặc EnsureCreated()
+	//db.Database.Migrate(); // hoặc EnsureCreated()
 }
 
 app.UseStaticFiles();
