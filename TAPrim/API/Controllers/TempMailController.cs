@@ -15,7 +15,8 @@ namespace TAPrim.API.Controllers
 		private readonly ITempmailService _tempmailService;
 		public TempMailController(ITempmailService tempmailService) {
 			_tempmailService = tempmailService;
-		}
+		}		
+
 		[HttpGet("get-netflix-update-family")]
 		public async Task<IActionResult> GetNetflixMail()
 		{
@@ -38,7 +39,7 @@ namespace TAPrim.API.Controllers
 		[HttpPost("get-mail-content")]
 		public async Task<IActionResult> GetMailContent([FromBody] MailContentRequestDto request)
 		{
-			Console.WriteLine($"📥 EmailId nhận được từ client: {request?.EmailId}");
+			Console.WriteLine($"EmailId nhận được từ client: {request?.EmailId}");
 
 			return ApiResponseHelper.HandleApiResponse(await _tempmailService.GetMailContentByEmailId(request.EmailId));
 		}

@@ -7,6 +7,7 @@ using TAPrim.Application.DTOs.Common;
 using BasketballAcademyManagementSystemAPI.Common.Helpers;
 using TAPrim.Infrastructure.Telegram;
 using TAPrim.API.Middleware;
+using TAPrim.Application.DTOs.Telegram;
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -106,7 +107,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 app.UseMiddleware<TelegramWebhookAuthMiddleware>();
-
 // ✅ Auto migrate DB nếu cần
 using (var scope = app.Services.CreateScope())
 {
