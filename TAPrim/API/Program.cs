@@ -1,13 +1,15 @@
 ﻿using System.Reflection;
+using BasketballAcademyManagementSystemAPI.Common.Helpers;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
+using TAPrim.API.Middleware;
+using TAPrim.Application.DTOs.Common;
+using TAPrim.Application.DTOs.Telegram;
+using TAPrim.Infrastructure.Telegram;
 using TAPrim.Models;
 using TAPrim.Shared.Helpers;
-using DotNetEnv;
-using TAPrim.Application.DTOs.Common;
-using BasketballAcademyManagementSystemAPI.Common.Helpers;
-using TAPrim.Infrastructure.Telegram;
-using TAPrim.API.Middleware;
-using TAPrim.Application.DTOs.Telegram;
+
+Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
 
 var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 {
@@ -15,60 +17,71 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 	EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"
 });
 
-// ✅ Lắng nghe đúng cổng khi chạy trong Docker production
-if (builder.Environment.IsProduction())
-{
-	builder.WebHost.UseUrls("http://0.0.0.0:8080");
-}
-/* Cấu hình env
- */
-// Nếu cần, vẫn có thể load .env (nếu không inject từ system env)
-Env.Load(Path.Combine(Directory.GetCurrentDirectory(), ".env"));
-
-// Load cấu hình
 builder.Configuration
 	.SetBasePath(Directory.GetCurrentDirectory())
 	.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
 	.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true)
-	.AddEnvironmentVariables(); // load biến từ system hoặc từ .env đã Load()
+	.AddEnvironmentVariables();
 
-//==========================================
+if (builder.Environment.IsProduction())
+{
+	builder.WebHost.UseUrls("http://0.0.0.0:8080");
+}
 
-builder.Services.AddAutoMapper(typeof(Program));
-
-// ✅ Đăng ký dịch vụ & middleware
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-// ✅ Cấu hình DbContext
-builder.Services.AddDbContext<TaprimContext>(options =>
-	options.UseSqlServer(Environment.GetEnvironmentVariable("ConnectionStrings__MyCnn")));
+// =========================
+// Options
+// =========================
+builder.Services.Configure<TelegramOptions>(
+	builder.Configuration.GetSection("Telegram"));
 
 builder.Services.Configure<VietQrDto>(
-	builder.Configuration.GetSection("VietQr")
-);
-// ✅ Đăng ký config section VietQr
+	builder.Configuration.GetSection("VietQr"));
+
+// Nếu vẫn muốn override từ env thủ công
 builder.Services.Configure<VietQrDto>(options =>
 {
 	options.ClientId = Environment.GetEnvironmentVariable("VietQr__ClientId");
 	options.ApiKey = Environment.GetEnvironmentVariable("VietQr__ApiKey");
 });
+
+// =========================
+// Framework Services
+// =========================
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddAutoMapper(typeof(Program));
+builder.Services.AddHttpClient();
 builder.Services.AddMemoryCache();
 
+// =========================
+// Database
+// =========================
+builder.Services.AddDbContext<TaprimContext>(options =>
+	options.UseSqlServer(
+		builder.Configuration.GetConnectionString("MyCnn")
+		?? Environment.GetEnvironmentVariable("ConnectionStrings__MyCnn")));
+
+// =========================
+// Cache / Redis
+// =========================
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-	options.Configuration = Environment.GetEnvironmentVariable("ConnectionStrings__Redis"); // ← THAY ĐOẠN NÀY
+	options.Configuration =
+		builder.Configuration.GetConnectionString("Redis")
+		?? Environment.GetEnvironmentVariable("ConnectionStrings__Redis");
+
 	options.InstanceName = "NetflixLimiter:";
 });
 
-
-// ✅ Đăng ký dịch vụ qua reflection
+// =========================
+// Application Services
+// =========================
 var assemblies = new[]
 {
-	Assembly.GetExecutingAssembly(),
-	typeof(TelegramWebhookHostedService).Assembly
+	Assembly.GetExecutingAssembly()
 };
+
 foreach (var type in assemblies.SelectMany(a => a.GetTypes()))
 {
 	if (type.IsClass
@@ -76,7 +89,7 @@ foreach (var type in assemblies.SelectMany(a => a.GetTypes()))
 		&& !typeof(IHostedService).IsAssignableFrom(type)
 		&& !typeof(BackgroundService).IsAssignableFrom(type))
 	{
-		var interfaceType = type.GetInterfaces().FirstOrDefault();
+		var interfaceType = type.GetInterface($"I{type.Name}");
 
 		if (interfaceType != null)
 		{
@@ -86,19 +99,23 @@ foreach (var type in assemblies.SelectMany(a => a.GetTypes()))
 }
 
 builder.Services.AddScoped<EmailHelper>();
-
-builder.Services.AddHttpClient();
 builder.Services.AddScoped<TransactionCodeHelper>();
-// ✅ CORS - chỉ dùng khi dev hoặc cần allow FE IP cụ thể
+
+// =========================
+// Hosted Services
+// =========================
+builder.Services.AddHostedService<TelegramWebhookHostedService>();
+
+// =========================
+// CORS
+// =========================
 builder.Services.AddCors(options =>
 {
 	options.AddPolicy("AllowFrontend", policy =>
 	{
 		policy.WithOrigins(
-				 "http://localhost:5174",   // ← Vite on 5174 (your current Origin)
-				"http://localhost:5173",   // if you also use 5173
-				"http://103.238.235.227",  // if the site is sometimes served direct on :80
-				"http://103.238.235.227:8080" // your API if it listens on 8080
+				"http://localhost:5174",
+				"http://localhost:5173"
 			)
 			.AllowAnyHeader()
 			.AllowAnyMethod();
@@ -106,24 +123,32 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-app.UseMiddleware<TelegramWebhookAuthMiddleware>();
-// ✅ Auto migrate DB nếu cần
-using (var scope = app.Services.CreateScope())
-{
-	var db = scope.ServiceProvider.GetRequiredService<TaprimContext>();
-	//db.Database.Migrate(); // hoặc EnsureCreated()
-}
 
+// =========================
+// Middleware Pipeline
+// =========================
 app.UseStaticFiles();
+
 app.UseRouting();
 
-// ✅ Swagger (có thể ẩn nếu cần)
+app.UseCors("AllowFrontend");
+
+app.UseMiddleware<TelegramWebhookAuthMiddleware>();
+
 app.UseSwagger();
 app.UseSwaggerUI();
-
-app.UseCors("AllowFrontend");
 
 app.UseAuthorization();
 
 app.MapControllers();
+
+// =========================
+// Database Init
+// =========================
+using (var scope = app.Services.CreateScope())
+{
+	var db = scope.ServiceProvider.GetRequiredService<TaprimContext>();
+	// db.Database.Migrate();
+}
+
 app.Run();

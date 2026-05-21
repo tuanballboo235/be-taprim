@@ -2,6 +2,7 @@
 using System;
 using TAPrim.Application.DTOs.ProductOption;
 using TAPrim.Application.DTOs.Products;
+using TAPrim.Application.DTOs.Telegram;
 using TAPrim.Models;
 using TAPrim.Shared.Constants;
 
@@ -147,6 +148,10 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			return categories;
 		}
 
+		//public  async Task<List<ProductOptionTele>> GetListProductByCategoryId()
+		//{
+		//	return new();
+		//}
 
 	}
 }

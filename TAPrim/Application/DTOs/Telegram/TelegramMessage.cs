@@ -4,6 +4,7 @@ namespace TAPrim.Application.DTOs.Telegram
 {
 	public class TelegramMessage
 	{
+		public int Message_Id { get; set; }
 		public TelegramUser? From { get; set; }
 		public TelegramChat Chat { get; set; } = null!;
 		public string? Text { get; set; }

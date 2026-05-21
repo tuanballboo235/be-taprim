@@ -1,7 +1,9 @@
-﻿namespace TAPrim.Application.Services
+﻿using TAPrim.Application.DTOs.Telegram;
+
+namespace TAPrim.Application.Services
 {
 	public interface ITelegramBotService
 	{
-		private 
+		 Task ProcessUserRequestChatting(TelegramUpdate telegramUpdate); 
 	}
 }

@@ -25,6 +25,10 @@ public partial class ProductOption
 
     public string? ProductOptionImage { get; set; }
 
+    public string ProductOptionIdentifier { get; set; } = null!;
+
+    public int? SellPlatform { get; set; }
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual Product Product { get; set; } = null!;

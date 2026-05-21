@@ -31,6 +31,8 @@ public partial class Order
 
     public string? ClientNote { get; set; }
 
+    public int? OrderSource { get; set; }
+
     public virtual Coupon? Coupon { get; set; }
 
     public virtual Payment Payment { get; set; } = null!;

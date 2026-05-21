@@ -13,9 +13,9 @@
 
 		public async Task Invoke(HttpContext context)
 		{
-			if (context.Request.Path.StartsWithSegments("/telegram/webhook"))
+			if (context.Request.Path.StartsWithSegments("/telegram/telegram"))
 			{
-				var expected = _config["Telegram:TelegramSecretToken"];
+				var expected = _config["Telegram:SecretToken"];
 				var actual = context.Request.Headers["X-Telegram-Bot-Api-Secret-Token"].FirstOrDefault();
 
 				if (string.IsNullOrEmpty(expected) || actual != expected)

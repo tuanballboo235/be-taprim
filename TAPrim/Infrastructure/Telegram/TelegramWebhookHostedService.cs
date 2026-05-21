@@ -21,31 +21,28 @@ namespace TAPrim.Infrastructure.Telegram
 		}
 		public async Task StartAsync(CancellationToken cancellationToken)
 		{
-			if (string.IsNullOrWhiteSpace(_options.TelegramSecretToken) ||
-						string.IsNullOrWhiteSpace(_options.TelegramWebhookUrl))
+			if (string.IsNullOrWhiteSpace(_options.BotToken) ||
+				string.IsNullOrWhiteSpace(_options.SecretToken) ||
+				string.IsNullOrWhiteSpace(_options.WebhookUrl))
 			{
 				_logger.LogWarning("Telegram webhook chưa được cấu hình đầy đủ.");
 				return;
 			}
 
-			var url =
-				$"https://api.telegram.org/bot{_options.TelegramBotToken}/setWebhook";
-
-			var payload = new
-			{
-				url = _options.TelegramWebhookUrl,
-				secret_token = _options.TelegramSecretToken,
-				drop_pending_updates = false
-			};
 
 			try
 			{
-				var response = await _httpClient.PostAsJsonAsync(url, payload, cancellationToken);
+				var requestUrl =
+					$"https://api.telegram.org/bot{_options.BotToken}/setWebhook" +
+					$"?url={_options.WebhookUrl}" +
+					$"&secret_token={Uri.EscapeDataString(_options.SecretToken)}";
+
+				var response = await _httpClient.PostAsync(requestUrl, null, cancellationToken);
 				var content = await response.Content.ReadAsStringAsync(cancellationToken);
 
 				if (response.IsSuccessStatusCode)
 				{
-					_logger.LogInformation("Set Telegram webhook thành công: {WebhookUrl}", _options.TelegramWebhookUrl);
+					_logger.LogInformation("Set Telegram webhook thành công: {WebhookUrl}", _options.WebhookUrl);
 					_logger.LogInformation("Telegram response: {Response}", content);
 				}
 				else

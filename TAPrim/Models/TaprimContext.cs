@@ -23,6 +23,8 @@ public partial class TaprimContext : DbContext
 
     public virtual DbSet<Order> Orders { get; set; }
 
+    public virtual DbSet<OrderChanel> OrderChanels { get; set; }
+
     public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
@@ -30,6 +32,8 @@ public partial class TaprimContext : DbContext
     public virtual DbSet<ProductAccount> ProductAccounts { get; set; }
 
     public virtual DbSet<ProductOption> ProductOptions { get; set; }
+
+    public virtual DbSet<TelegramAccount> TelegramAccounts { get; set; }
 
     public virtual DbSet<TempMailEmailStore> TempMailEmailStores { get; set; }
 
@@ -123,6 +127,7 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.ExpiredAt)
                 .HasColumnType("datetime")
                 .HasColumnName("expiredAt");
+            entity.Property(e => e.OrderSource).HasColumnName("orderSource");
             entity.Property(e => e.PaymentId).HasColumnName("paymentId");
             entity.Property(e => e.ProductAccountId).HasColumnName("productAccountId");
             entity.Property(e => e.ProductOptionId).HasColumnName("productOptionId");
@@ -152,6 +157,19 @@ public partial class TaprimContext : DbContext
                 .HasForeignKey(d => d.ProductOptionId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("Order_ProductOption_productOptionId_fk");
+        });
+
+        modelBuilder.Entity<OrderChanel>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("OrderChanel_pk");
+
+            entity.ToTable("OrderChanel");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("name");
         });
 
         modelBuilder.Entity<Payment>(entity =>
@@ -190,12 +208,18 @@ public partial class TaprimContext : DbContext
 
             entity.ToTable("Product");
 
+            entity.HasIndex(e => e.ProductIdentifier, "Product_pk").IsUnique();
+
             entity.Property(e => e.ProductId).HasColumnName("productId");
             entity.Property(e => e.CategoryId).HasColumnName("categoryId");
             entity.Property(e => e.CreateAt)
                 .HasColumnType("datetime")
                 .HasColumnName("createAt");
             entity.Property(e => e.Description).HasColumnName("description");
+            entity.Property(e => e.ProductIdentifier)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("productIdentifier");
             entity.Property(e => e.ProductImage)
                 .IsUnicode(false)
                 .HasColumnName("productImage");
@@ -249,6 +273,8 @@ public partial class TaprimContext : DbContext
 
             entity.ToTable("ProductOption");
 
+            entity.HasIndex(e => e.ProductOptionIdentifier, "ProductOption_pk_2").IsUnique();
+
             entity.Property(e => e.ProductOptionId).HasColumnName("productOptionId");
             entity.Property(e => e.DiscountPercent).HasColumnName("discountPercent");
             entity.Property(e => e.DurationUnit)
@@ -264,15 +290,55 @@ public partial class TaprimContext : DbContext
                 .HasColumnName("price");
             entity.Property(e => e.ProductGuide).HasColumnName("productGuide");
             entity.Property(e => e.ProductId).HasColumnName("productId");
+            entity.Property(e => e.ProductOptionIdentifier)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("productOptionIdentifier");
             entity.Property(e => e.ProductOptionImage)
                 .IsUnicode(false)
                 .HasColumnName("productOptionImage");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
+            entity.Property(e => e.SellPlatform).HasColumnName("sellPlatform");
 
             entity.HasOne(d => d.Product).WithMany(p => p.ProductOptions)
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("ProductOption___fk");
+        });
+
+        modelBuilder.Entity<TelegramAccount>(entity =>
+        {
+            entity.HasKey(e => e.TelegramAccountId).HasName("PK__Telegram__3F466CCB550CACE4");
+
+            entity.ToTable("TelegramAccount");
+
+            entity.HasIndex(e => e.TelegramUserId, "UX_TelegramAccount_telegramUserId").IsUnique();
+
+            entity.Property(e => e.TelegramAccountId).HasColumnName("telegramAccountId");
+            entity.Property(e => e.ChatId).HasColumnName("chatId");
+            entity.Property(e => e.CreateAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("createAt");
+            entity.Property(e => e.FirstName)
+                .HasMaxLength(100)
+                .HasColumnName("firstName");
+            entity.Property(e => e.LastName)
+                .HasMaxLength(100)
+                .HasColumnName("lastName");
+            entity.Property(e => e.TelegramUserId).HasColumnName("telegramUserId");
+            entity.Property(e => e.UpdateAt)
+                .HasColumnType("datetime")
+                .HasColumnName("updateAt");
+            entity.Property(e => e.UserId).HasColumnName("userId");
+            entity.Property(e => e.Username)
+                .HasMaxLength(100)
+                .HasColumnName("username");
+
+            entity.HasOne(d => d.User).WithMany(p => p.TelegramAccounts)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("TelegramAccount_User__fk");
         });
 
         modelBuilder.Entity<TempMailEmailStore>(entity =>

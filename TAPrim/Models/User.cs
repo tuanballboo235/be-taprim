@@ -9,7 +9,7 @@ public partial class User
 
     public string Username { get; set; } = null!;
 
-    public string Password { get; set; } = null!;
+    public string? Password { get; set; }
 
     public bool IsEnable { get; set; }
 
@@ -20,4 +20,6 @@ public partial class User
     public string Role { get; set; } = null!;
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
+
+    public virtual ICollection<TelegramAccount> TelegramAccounts { get; set; } = new List<TelegramAccount>();
 }

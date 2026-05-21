@@ -19,6 +19,8 @@ public partial class Product
 
     public DateTime? CreateAt { get; set; }
 
+    public string ProductIdentifier { get; set; } = null!;
+
     public virtual Category Category { get; set; } = null!;
 
     public virtual ICollection<ProductOption> ProductOptions { get; set; } = new List<ProductOption>();
