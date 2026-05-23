@@ -148,10 +148,54 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			return categories;
 		}
 
-		//public  async Task<List<ProductOptionTele>> GetListProductByCategoryId()
-		//{
-		//	return new();
-		//}
+		public async Task<List<ProductOptionTele>> GetListProductTele()
+		{
+			return await _context.ProductOptions
+				.Include(x => x.Product).ThenInclude(x => x.Category)
+				.Where(x =>
+					x.SellPlatform == SellChanelConstant.TELEGRAMCHANEL ||
+					x.SellPlatform == SellChanelConstant.ALLCHANEL && x.IsActive == true)
+				.OrderBy(x => x.Product.CategoryId)   // get the product option list order by category id
+				.Select(x => new ProductOptionTele
+				{
+					ProductOptionName = x.ProductOptionName,
+					ProductOptionId = x.ProductOptionId,
+					ProductOptionIdentifier = x.ProductOptionIdentifier,
+					ProductGuide = x.ProductGuide,
+					Price = x.Price,
+					Quantity = x.Quantity,
+					Label = x.Label,
+				})
+				.ToListAsync();
+		}
 
+		//public async Task<ProductDetailResponseDto?> GetProductOptionByProductIndentifier(string productIndentifier)
+		//{
+		//	return await _context.Products.Include(x => x.ProductOptions).Select(x => new ProductDetailResponseDto
+		//	{
+
+		//		ProductOptions = x.ProductOptions.OrderBy(opt => opt.Price) // Sắp xếp theo giá tăng dần
+		//						.Select(x => new ProductOptionDto
+		//						{
+		//							ProductOptionId = x.ProductOptionId,
+		//							DurationUnit = x.DurationUnit,
+		//							DurationValue = x.DurationValue,
+		//							Price = x.Price,
+		//							Quantity = x.Quantity,
+		//							Label = x.Label,
+		//							DiscountPercent = x.DiscountPercent,
+		//							ProductGuide = x.ProductGuide,
+		//							ProductOptionImage = x.ProductOptionImage,
+		//							StockAccount = x.ProductAccounts.Where(
+		//								x => x.SellFrom < DateTime.Now &&
+		//								x.SellTo > DateTime.Now &&
+		//								x.Status == ProductAccountStatusConstant.Available && x.SellCount > 0).Count(), // lấy ra số lượng account 
+
+		//							SellCount = x.ProductAccounts.Where(x => x.SellFrom < DateTime.Now &&
+		//							x.SellTo > DateTime.Now &&
+		//							x.Status == ProductAccountStatusConstant.Available && x.SellCount > 0).Sum(x => x.SellCount)
+		//						}).ToList()
+		//	}).FirstOrDefaultAsync(x => x.ProductId == productId);
+		//}
 	}
 }

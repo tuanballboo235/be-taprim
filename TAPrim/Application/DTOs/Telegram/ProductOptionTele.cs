@@ -3,6 +3,7 @@
 	public class ProductOptionTele
 	{
 		public int ProductOptionId { get; set; }
+		public string? ProductOptionName { get; set; }
 
 		public int ProductId { get; set; }
 
@@ -21,6 +22,10 @@
 		public string? ProductGuide { get; set; }
 
 		public string? ProductOptionImage { get; set; }
+		public string ProductOptionIdentifier { get; set; } = null!;
+
+		public int? SellPlatform { get; set; }
+
 
 	}
 }

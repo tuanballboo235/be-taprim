@@ -1,4 +1,5 @@
 using TAPrim.Application.DTOs.Telegram;
+using TAPrim.Infrastructure.Repositories;
 
 namespace TAPrim.Application.Services.ServiceImpl
 {
@@ -6,9 +7,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 	{
 		private readonly IHttpClientFactory _httpClientFactory;
 		private readonly IConfiguration _config;
+		private readonly IProductRepository _productRepository;
 
-		public TelegramBotService(IHttpClientFactory httpClientFactory, IConfiguration config)
+		public TelegramBotService(IHttpClientFactory httpClientFactory, IConfiguration config, IProductRepository productRepository)
 		{
+			_productRepository = productRepository;
 			_httpClientFactory = httpClientFactory;
 			_config = config;
 		}
@@ -97,7 +100,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 			switch (action)
 			{
 				case "view":
-					await EditProductDetail(chatId, messageId, id);
+					await ShowProductDetailByProductOptionIndetifier(chatId, messageId, id);
 					break;
 
 				case "buy":
@@ -142,66 +145,58 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 		private async Task EditProductList(long chatId, int messageId)
 		{
+			var productOptionTele = await _productRepository.GetListProductTele();
 			await EditTelegramMessage(
 				chatId,
 				messageId,
 				"Vui lòng chọn sản phẩm:",
-				new
-				{
-					inline_keyboard = new[]
+
+					new
 					{
-						new[]
+						inline_keyboard = productOptionTele
+						.Select(x => new[]
 						{
-							new { text = "Netflix 1 tháng", callback_data = "product:view:1" }
-						},
-						new[]
-						{
-							new { text = "Spotify 3 tháng", callback_data = "product:view:2" }
-						},
-						new[]
-						{
-							new { text = "YouTube Premium", callback_data = "product:view:3" }
-						},
-						new[]
-						{
-							new { text = "⬅️ Quay lại", callback_data = "back:main" }
-						}
-					}
-				}
-			);
+							new
+							{
+								text = x.ProductOptionName,
+								callback_data = $"product:view:{x.ProductOptionIdentifier}"
+							}
+						}).ToArray()
+					});
 		}
 
-		private async Task EditProductDetail(long chatId, int messageId, string id)
+		private async Task ShowProductDetailByProductOptionIndetifier(long chatId, int messageId, string id)
 		{
-			switch (id)
-			{
-				case "1":
-					await EditTelegramMessage(chatId, messageId, """
-					🎬 Netflix 1 tháng
-					💰 Giá: 99.000đ
+			
+			//switch (id)
+			//{
+			//	case "1":
+			//		await EditTelegramMessage(chatId, messageId, """
+			//		🎬 Netflix 1 tháng
+			//		💰 Giá: 99.000đ
 
-					Bạn có muốn mua không?
-					""", BuyMarkup(id));
-					break;
+			//		Bạn có muốn mua không?
+			//		""", BuyMarkup(id));
+			//		break;
 
-				case "2":
-					await EditTelegramMessage(chatId, messageId, """
-					🎵 Spotify 3 tháng
-					💰 Giá: 129.000đ
+			//	case "2":
+			//		await EditTelegramMessage(chatId, messageId, """
+			//		🎵 Spotify 3 tháng
+			//		💰 Giá: 129.000đ
 
-					Bạn có muốn mua không?
-					""", BuyMarkup(id));
-					break;
+			//		Bạn có muốn mua không?
+			//		""", BuyMarkup(id));
+			//		break;
 
-				case "3":
-					await EditTelegramMessage(chatId, messageId, """
-					▶️ YouTube Premium
-					💰 Giá: 149.000đ
+			//	case "3":
+			//		await EditTelegramMessage(chatId, messageId, """
+			//		▶️ YouTube Premium
+			//		💰 Giá: 149.000đ
 
-					Bạn có muốn mua không?
-					""", BuyMarkup(id));
-					break;
-			}
+			//		Bạn có muốn mua không?
+			//		""", BuyMarkup(id));
+			//		break;
+			//}
 		}
 
 		private object MainMenuMarkup()

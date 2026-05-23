@@ -1,5 +1,6 @@
 ﻿using TAPrim.Application.DTOs.ProductOption;
 using TAPrim.Application.DTOs.Products;
+using TAPrim.Application.DTOs.Telegram;
 using TAPrim.Models;
 
 namespace TAPrim.Infrastructure.Repositories
@@ -17,6 +18,7 @@ namespace TAPrim.Infrastructure.Repositories
 		Task<Application.DTOs.Products.ProductDetailResponseDto?> GetProductDtoByProductOptionIdAsync(int productOptionId);
 		Task<Product?> GetProductById(int id);
 		Task<ProductDetailResponseDto?> GetProductOptionByProductId(int productId);
-		Task<List<CategoryWithProductsDto>> GetListProductByCategoryId();
+		Task<List<CategoryWithProductsDto>> GetListProductByCategoryId(); 
+		Task<List<ProductOptionTele>> GetListProductTele();
 	}
 }

@@ -29,6 +29,10 @@ public partial class ProductOption
 
     public int? SellPlatform { get; set; }
 
+    public string? ProductOptionName { get; set; }
+
+    public bool? IsActive { get; set; }
+
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual Product Product { get; set; } = null!;

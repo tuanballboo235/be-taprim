@@ -282,6 +282,7 @@ public partial class TaprimContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("durationUnit");
             entity.Property(e => e.DurationValue).HasColumnName("durationValue");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Label)
                 .HasMaxLength(100)
                 .HasColumnName("label");
@@ -297,6 +298,9 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.ProductOptionImage)
                 .IsUnicode(false)
                 .HasColumnName("productOptionImage");
+            entity.Property(e => e.ProductOptionName)
+                .HasMaxLength(200)
+                .HasColumnName("productOptionName");
             entity.Property(e => e.Quantity).HasColumnName("quantity");
             entity.Property(e => e.SellPlatform).HasColumnName("sellPlatform");
 
