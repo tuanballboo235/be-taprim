@@ -268,23 +268,23 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 		}
 
-		//Get product Option for telegram chanel
-		public async Task<ApiResponseModel<Product>> GetProductOptionTelegramChanel()
-		{
-			try
-			{
-				var product = await _productRepo.GetListProductTele();
-			}
-			catch (Exception ex)
-			{
-				return new ApiResponseModel<Product>()
-				{
-					Status = ApiResponseStatusConstant.FailedStatus,
-					Message = ex.Message
-				};
+		////Get product Option for telegram chanel
+		//public async Task<ApiResponseModel<Product>> GetProductOptionTelegramChanel()
+		//{
+		//	try
+		//	{
+		//		var product = await _productRepo.GetListProductTele();
+		//	}
+		//	catch (Exception ex)
+		//	{
+		//		return new ApiResponseModel<Product>()
+		//		{
+		//			Status = ApiResponseStatusConstant.FailedStatus,
+		//			Message = ex.Message
+		//		};
 
-			}
+		//	}
 
-		}
+		//}
 	}
 }
