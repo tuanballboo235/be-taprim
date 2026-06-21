@@ -109,29 +109,42 @@ builder.Services.AddHostedService<TelegramWebhookHostedService>();
 // =========================
 // CORS
 // =========================
+const string reactDevCorsPolicy = "AllowReactDev";
+
 builder.Services.AddCors(options =>
 {
-	options.AddPolicy("AllowFrontend", policy =>
+	options.AddPolicy(reactDevCorsPolicy, policy =>
 	{
-		policy.WithOrigins(
-				"http://localhost:5174",
-				"http://localhost:5173"
-			)
+		var configuredOrigins = builder.Configuration
+			.GetSection("Cors:AllowedOrigins")
+			.Get<string[]>() ?? Array.Empty<string>();
+
+		var allowedOrigins = new[]
+			{
+				"http://localhost:5173",
+				"http://127.0.0.1:5173"
+			}
+			.Concat(configuredOrigins)
+			.Where(origin => !string.IsNullOrWhiteSpace(origin))
+			.Select(origin => origin.Trim().TrimEnd('/'))
+			.Distinct(StringComparer.OrdinalIgnoreCase)
+			.ToArray();
+
+		policy.WithOrigins(allowedOrigins)
 			.AllowAnyHeader()
-			.AllowAnyMethod();
+			.AllowAnyMethod()
+			.AllowCredentials();
 	});
 });
 
 var app = builder.Build();
-
 // =========================
 // Middleware Pipeline
 // =========================
 app.UseStaticFiles();
 
 app.UseRouting();
-
-app.UseCors("AllowFrontend");
+app.UseCors(reactDevCorsPolicy);
 
 app.UseMiddleware<TelegramWebhookAuthMiddleware>();
 

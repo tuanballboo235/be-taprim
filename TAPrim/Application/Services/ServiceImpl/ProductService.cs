@@ -3,6 +3,8 @@ using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Application.DTOs.ProductOption;
 using TAPrim.Application.DTOs.Products;
+using TAPrim.Application.DTOs.Telegram;
+using TAPrim.Application.Helpers;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Infrastructure.Repositories.RepositoryImpl;
 using TAPrim.Models;
@@ -207,6 +209,51 @@ namespace TAPrim.Application.Services.ServiceImpl
 				return new ApiResponseModel<object>
 				{
 					Status = ApiResponseStatusConstant.FailedStatus,
+				};
+			}
+		}
+
+		public async Task<ApiResponseModel<ProductOptionDetailDto>> GetProductOptionDetailByIdentifierAsync(string productOptionIdentifier)
+		{
+			try
+			{
+				if (string.IsNullOrWhiteSpace(productOptionIdentifier))
+				{
+					return new ApiResponseModel<ProductOptionDetailDto>
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "productOptionIdentifier không hợp lệ"
+					};
+				}
+
+				var detail = await _productRepo.GetProductOptionDetailByProductOptionIdentifierAsync(productOptionIdentifier.Trim());
+				if (detail == null)
+				{
+					return new ApiResponseModel<ProductOptionDetailDto>
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Không tìm thấy sản phẩm hoặc sản phẩm đã ngừng bán"
+					};
+				}
+
+				detail.QuantityPromptMessage = detail.CanPurchase
+					? $"📝 Vui lòng nhập số lượng muốn mua (1-{detail.MaxQuantity}):"
+					: "⚠️ Sản phẩm hiện đang hết hàng.";
+
+				detail.TelegramHtmlMessage = TelegramProductOptionMessageBuilder.BuildHtmlMessage(detail);
+
+				return new ApiResponseModel<ProductOptionDetailDto>
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Data = detail
+				};
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<ProductOptionDetailDto>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = ex.Message
 				};
 			}
 		}

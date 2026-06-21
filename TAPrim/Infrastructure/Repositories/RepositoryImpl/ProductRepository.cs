@@ -169,33 +169,47 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				.ToListAsync();
 		}
 
-		//public async Task<ProductDetailResponseDto?> GetProductOptionByProductIndentifier(string productIndentifier)
-		//{
-		//	return await _context.Products.Include(x => x.ProductOptions).Select(x => new ProductDetailResponseDto
-		//	{
+		public async Task<ProductOptionDetailDto?> GetProductOptionDetailByProductOptionIdentifierAsync(string productOptionIdentifier)
+		{
+			var now = DateTime.Now;
 
-		//		ProductOptions = x.ProductOptions.OrderBy(opt => opt.Price) // Sắp xếp theo giá tăng dần
-		//						.Select(x => new ProductOptionDto
-		//						{
-		//							ProductOptionId = x.ProductOptionId,
-		//							DurationUnit = x.DurationUnit,
-		//							DurationValue = x.DurationValue,
-		//							Price = x.Price,
-		//							Quantity = x.Quantity,
-		//							Label = x.Label,
-		//							DiscountPercent = x.DiscountPercent,
-		//							ProductGuide = x.ProductGuide,
-		//							ProductOptionImage = x.ProductOptionImage,
-		//							StockAccount = x.ProductAccounts.Where(
-		//								x => x.SellFrom < DateTime.Now &&
-		//								x.SellTo > DateTime.Now &&
-		//								x.Status == ProductAccountStatusConstant.Available && x.SellCount > 0).Count(), // lấy ra số lượng account 
-
-		//							SellCount = x.ProductAccounts.Where(x => x.SellFrom < DateTime.Now &&
-		//							x.SellTo > DateTime.Now &&
-		//							x.Status == ProductAccountStatusConstant.Available && x.SellCount > 0).Sum(x => x.SellCount)
-		//						}).ToList()
-		//	}).FirstOrDefaultAsync(x => x.ProductId == productId);
-		//}
+			return await _context.ProductOptions
+				.Where(x =>
+					x.ProductOptionIdentifier == productOptionIdentifier &&
+					x.IsActive == true &&
+					(x.SellPlatform == SellChanelConstant.TELEGRAMCHANEL ||
+					 x.SellPlatform == SellChanelConstant.ALLCHANEL))
+				.Select(x => new ProductOptionDetailDto
+				{
+					ProductOptionId = x.ProductOptionId,
+					ProductOptionIdentifier = x.ProductOptionIdentifier,
+					ProductOptionName = x.ProductOptionName,
+					Price = x.Price,
+					ProductGuide = x.ProductGuide,
+					ProductOptionImage = x.ProductOptionImage,
+					StockAccount = x.ProductAccounts
+						.Where(pa =>
+							pa.SellFrom < now &&
+							pa.SellTo > now &&
+							pa.Status == ProductAccountStatusConstant.Available &&
+							pa.SellCount > 0)
+						.Sum(pa => pa.SellCount ?? 0),
+					SoldCount = x.Orders.Count(o => o.Status == OrderStatus.Active),
+					MaxQuantity = x.ProductAccounts
+						.Where(pa =>
+							pa.SellFrom < now &&
+							pa.SellTo > now &&
+							pa.Status == ProductAccountStatusConstant.Available &&
+							pa.SellCount > 0)
+						.Sum(pa => pa.SellCount ?? 0),
+					MinQuantity = 1,
+					CanPurchase = x.ProductAccounts.Any(pa =>
+						pa.SellFrom < now &&
+						pa.SellTo > now &&
+						pa.Status == ProductAccountStatusConstant.Available &&
+						pa.SellCount > 0)
+				})
+				.FirstOrDefaultAsync();
+		}
 	}
 }

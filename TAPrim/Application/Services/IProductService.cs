@@ -2,6 +2,7 @@
 using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Application.DTOs.ProductOption;
 using TAPrim.Application.DTOs.Products;
+using TAPrim.Application.DTOs.Telegram;
 using TAPrim.Models;
 
 namespace TAPrim.Application.Services
@@ -19,5 +20,6 @@ namespace TAPrim.Application.Services
 		Task<ApiResponseModel<ProductDetailResponseDto>> UpdateProductAsync(int productId, UpdateProductRequest dto);
 		Task<ApiResponseModel<object>> GetProductByCategory();
 		Task<ApiResponseModel<object>> GetProductDetailByProductId(int productId);
+		Task<ApiResponseModel<ProductOptionDetailDto>> GetProductOptionDetailByIdentifierAsync(string productOptionIdentifier);
 	}
 }
