@@ -1,7 +1,10 @@
 ﻿using System.Reflection;
+using System.Text;
 using BasketballAcademyManagementSystemAPI.Common.Helpers;
 using DotNetEnv;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using TAPrim.API.Middleware;
 using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.Telegram;
@@ -98,6 +101,27 @@ foreach (var type in assemblies.SelectMany(a => a.GetTypes()))
 	}
 }
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+	.AddJwtBearer(options =>
+	{
+		options.TokenValidationParameters = new TokenValidationParameters
+		{
+			ValidateIssuer = true,
+			ValidateAudience = true,
+			ValidateLifetime = true,
+			ValidateIssuerSigningKey = true,
+
+			ValidIssuer = builder.Configuration["Jwt:Issuer"],
+			ValidAudience = builder.Configuration["Jwt:Audience"],
+			IssuerSigningKey = new SymmetricSecurityKey(
+				Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+			),
+
+			ClockSkew = TimeSpan.Zero
+		};
+	});
+builder.Services.AddAuthorization();
+
 builder.Services.AddScoped<EmailHelper>();
 builder.Services.AddScoped<TransactionCodeHelper>();
 
@@ -145,6 +169,9 @@ app.UseStaticFiles();
 
 app.UseRouting();
 app.UseCors(reactDevCorsPolicy);
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseMiddleware<TelegramWebhookAuthMiddleware>();
 
