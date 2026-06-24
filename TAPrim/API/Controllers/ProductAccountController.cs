@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Application.Services;
 using TAPrim.Common.Helpers;
+using TAPrim.Shared.Constants;
 
 namespace TAPrim.API.Controllers
 {
-    [Route("api/[controller]")]
+	[Route("api/[controller]")]
 	[ApiController]
 	public class ProductAccountController : ControllerBase
 	{
@@ -14,17 +15,19 @@ namespace TAPrim.API.Controllers
 
 		public ProductAccountController(IProductAccountService productAccountService)
 		{
-			_productAccountService = productAccountService;	
+			_productAccountService = productAccountService;
 		}
 
 		[HttpPost("add-product-account/{productOptionId}")]
+		[Authorize(Roles = AuthRoleConstants.AdminRoles)]
 		public async Task<IActionResult> CreateProductAccount(int productOptionId, [FromBody] List<CreateProductAccountDto> request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productAccountService.AddProductAccountAsync(productOptionId, request));
 		}
 
 		[HttpGet("get-product-account")]
-		public async Task<IActionResult> CreateProductAccount([FromQuery] ProductAccountQueryDto filter)
+		[Authorize(Roles = AuthRoleConstants.AdminRoles)]
+		public async Task<IActionResult> GetProductAccounts([FromQuery] ProductAccountQueryDto filter)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productAccountService.GetProductAccountsAsync(filter));
 		}
@@ -36,12 +39,14 @@ namespace TAPrim.API.Controllers
 		}
 
 		[HttpPut("update-product-account/{productAccountId}")]
-		public async Task<IActionResult> UpdateProductAccount(int productAccountId,[FromBody] UpdateProductProductAccountRequest request)
+		[Authorize(Roles = AuthRoleConstants.AdminRoles)]
+		public async Task<IActionResult> UpdateProductAccount(int productAccountId, [FromBody] UpdateProductProductAccountRequest request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productAccountService.UpdateProductAccount(productAccountId, request));
 		}
 
 		[HttpPost("delete-list-product-account")]
+		[Authorize(Roles = AuthRoleConstants.AdminRoles)]
 		public async Task<IActionResult> DeleteListProductAcount([FromBody] List<int> productAccountId)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productAccountService.DeleteListProductAccount(productAccountId));

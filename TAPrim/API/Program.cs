@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using TAPrim.API.Middleware;
 using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.Telegram;
+using TAPrim.Application.Services;
+using TAPrim.Application.Services.ServiceImpl;
 using TAPrim.Infrastructure.Telegram;
 using TAPrim.Models;
 using TAPrim.Shared.Helpers;
@@ -101,6 +103,8 @@ foreach (var type in assemblies.SelectMany(a => a.GetTypes()))
 	}
 }
 
+builder.Services.AddScoped<IJwtSService, JwtService>();
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 	.AddJwtBearer(options =>
 	{
@@ -154,10 +158,28 @@ builder.Services.AddCors(options =>
 			.Distinct(StringComparer.OrdinalIgnoreCase)
 			.ToArray();
 
-		policy.WithOrigins(allowedOrigins)
+		policy.SetIsOriginAllowed(origin =>
+			{
+				if (string.IsNullOrWhiteSpace(origin)
+					|| !Uri.TryCreate(origin, UriKind.Absolute, out var uri))
+				{
+					return false;
+				}
+
+				var normalizedOrigin = origin.Trim().TrimEnd('/');
+				var host = uri.Host;
+
+				return allowedOrigins.Contains(normalizedOrigin, StringComparer.OrdinalIgnoreCase)
+					|| (uri.Scheme == "http"
+						&& (host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+							|| host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase)))
+					|| (uri.Scheme == "https"
+						&& (host.EndsWith(".ngrok-free.dev", StringComparison.OrdinalIgnoreCase)
+							|| host.EndsWith(".ngrok.app", StringComparison.OrdinalIgnoreCase)
+							|| host.EndsWith(".ngrok.io", StringComparison.OrdinalIgnoreCase)));
+			})
 			.AllowAnyHeader()
-			.AllowAnyMethod()
-			.AllowCredentials();
+			.AllowAnyMethod();
 	});
 });
 
