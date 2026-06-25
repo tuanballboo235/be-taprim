@@ -8,6 +8,7 @@ namespace TAPrim.Infrastructure.Repositories
     {
         Task<ProductAccount?> GetProductAccountByIdAsync(int productAccountId);
 		Task<Product?> GetProductByIdAsync(int productId);
+        Task<ProductOption?> GetProductOptionByIdAsync(int productOptionId);
         Task AddProductAccountAsync(ProductAccount account);
         Task<PagedResponseDto<ProductAccount>> GetFilteredProductAccountsAsync(ProductAccountQueryDto query);
         Task<int> GetQuantityStockProductAccountByProductOptionId(int productId);

@@ -20,22 +20,28 @@ namespace TAPrim.Application.Services.ServiceImpl
 		{
 			try
 			{
-				var product = await _productAccountRepository.GetProductByIdAsync(productOptionId);
-				if (product == null)
-					throw new Exception("Product not found");
+				var productOption = await _productAccountRepository.GetProductOptionByIdAsync(productOptionId);
+				if (productOption == null)
+					throw new Exception("Product option not found");
+
+				if (dto == null || dto.Count == 0)
+					throw new Exception("Product account list is empty");
 
 				foreach (var item in dto)
 				{
+					if (string.IsNullOrWhiteSpace(item.AccountData))
+						throw new Exception("Account data is required");
+
 					// B1: Tạo entity thực
 					var productAccount = new ProductAccount
 					{
 
 						ProductOptionId = productOptionId,
-						AccountData = item.AccountData,
-						UsernameProductAccount = item.UsernameProductAccount,
-						PasswordProductAccount = item.PasswordProductAccount,
+						AccountData = item.AccountData?.Trim(),
+						UsernameProductAccount = item.UsernameProductAccount?.Trim(),
+						PasswordProductAccount = item.PasswordProductAccount?.Trim(),
 						DateChangePass = item.DateChangePass,
-						SellCount = item.SellCount,
+						SellCount = item.SellCount ?? 1,
 						SellFrom = item.SellDateFrom,
 						SellTo = item.SellDateTo,
 						Status = item.Status,
