@@ -29,14 +29,14 @@ namespace TAPrim.API.Controllers
 
 			if (string.IsNullOrWhiteSpace(loginName) || string.IsNullOrWhiteSpace(dto.Password))
 			{
-				return BadRequest(new { message = "Vui long nhap ten dang nhap va mat khau." });
+				return BadRequest(new { message = "Vui lòng nhập tên đăng nhập và mật khẩu." });
 			}
 
 			var account = await _authService.LoginAsync(loginName, dto.Password);
 
 			if (account == null)
 			{
-				return Unauthorized(new { message = "Ten dang nhap hoac mat khau khong dung." });
+				return Unauthorized(new { message = "Tên đăng nhập hoặc mật khẩu không đúng." });
 			}
 
 			return Ok(new
@@ -55,14 +55,14 @@ namespace TAPrim.API.Controllers
 
 			if (!int.TryParse(idClaim, out var userId))
 			{
-				return Unauthorized(new { message = "Phien dang nhap khong hop le." });
+				return Unauthorized(new { message = "Phiên đăng nhập không hợp lệ." });
 			}
 
 			var account = await _authService.GetByIdAsync(userId);
 
 			if (account == null)
 			{
-				return Unauthorized(new { message = "Tai khoan khong ton tai hoac da bi khoa." });
+				return Unauthorized(new { message = "Tài khoản khong ton tai hoac da bi khoa." });
 			}
 
 			return Ok(new { user = MapUser(account) });
