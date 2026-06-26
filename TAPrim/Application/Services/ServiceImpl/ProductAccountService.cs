@@ -29,21 +29,22 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				foreach (var item in dto)
 				{
-					if (string.IsNullOrWhiteSpace(item.AccountData))
-						throw new Exception("Account data is required");
+					var credential = NormalizeCredential(item);
+					if (credential == null)
+						throw new Exception("Account data must use email:password or user:password format");
 
 					// B1: Tạo entity thực
 					var productAccount = new ProductAccount
 					{
 
 						ProductOptionId = productOptionId,
-						AccountData = item.AccountData?.Trim(),
-						UsernameProductAccount = item.UsernameProductAccount?.Trim(),
-						PasswordProductAccount = item.PasswordProductAccount?.Trim(),
+						AccountData = credential.Value.AccountData,
+						UsernameProductAccount = credential.Value.Username,
+						PasswordProductAccount = credential.Value.Password,
 						DateChangePass = item.DateChangePass,
 						SellCount = item.SellCount ?? 1,
-						SellFrom = item.SellDateFrom,
-						SellTo = item.SellDateTo,
+						SellFrom = item.SellDateFrom ?? DateTime.Now,
+						SellTo = item.SellDateTo ?? DateTime.Now.AddDays(1),
 						Status = item.Status,
 						CreateAt = DateTime.Now
 					};
@@ -68,6 +69,41 @@ namespace TAPrim.Application.Services.ServiceImpl
 					Message = ex.Message
 				};
 			}	
+		}
+
+		private static (string AccountData, string Username, string Password)? NormalizeCredential(CreateProductAccountDto item)
+		{
+			var accountData = item.AccountData?.Trim();
+			var username = item.UsernameProductAccount?.Trim();
+			var password = item.PasswordProductAccount?.Trim();
+
+			if (!string.IsNullOrWhiteSpace(accountData))
+			{
+				var separatorIndex = accountData.IndexOf(':');
+				if (separatorIndex <= 0 || separatorIndex == accountData.Length - 1)
+				{
+					return null;
+				}
+
+				username = accountData[..separatorIndex].Trim();
+				password = accountData[(separatorIndex + 1)..].Trim();
+			}
+			else if (!string.IsNullOrWhiteSpace(username) && !string.IsNullOrWhiteSpace(password))
+			{
+				accountData = $"{username}:{password}";
+			}
+
+			if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+			{
+				return null;
+			}
+
+			if (username.Contains(' ') || username.Contains(':'))
+			{
+				return null;
+			}
+
+			return ($"{username}:{password}", username, password);
 		}
 
 	

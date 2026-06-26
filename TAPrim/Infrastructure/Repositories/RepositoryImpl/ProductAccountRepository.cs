@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using TAPrim.Application.DTOs.Common;
+using TAPrim.Application.DTOs.Payment;
 using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Models;
 using TAPrim.Shared.Constants;
@@ -140,19 +142,89 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 		public async Task<ProductAccountResponseDto?> GetProductAccountByPaymentTransactionCode(string transactionCode)
 		{
+			var payment = await _context.Payments
+				.Include(x => x.Order)
+				.ThenInclude(x => x.ProductAccount)
+				.FirstOrDefaultAsync(x => x.TransactionCode == transactionCode);
 
-		
+			var order = payment?.Order;
+			if (order == null)
+			{
+				return null;
+			}
 
-			var productAccount = await _context.Payments.Include(x=>x.Order).ThenInclude(x=>x.ProductAccount)
-				.Where(x => x.TransactionCode == transactionCode).Select(x=>new ProductAccountResponseDto
+			var reservationItems = TryReadReservationMetadata(order.ClientNote)?.Items
+				.Where(x => x.ProductAccountId > 0 && x.Quantity > 0)
+				.ToList() ?? new List<PaymentReservationItem>();
+
+			if (reservationItems.Count == 0 && order.ProductAccountId.HasValue)
+			{
+				reservationItems.Add(new PaymentReservationItem
 				{
-					AccountData = x.Order.ProductAccount.AccountData,
-					UsernameProductAccount = x.Order.ProductAccount.UsernameProductAccount,
-					PasswordProductAccount = x.Order.ProductAccount.PasswordProductAccount
-				})
-				.FirstOrDefaultAsync();
+					ProductAccountId = order.ProductAccountId.Value,
+					Quantity = 1
+				});
+			}
 
-			return productAccount;
+			var accountIds = reservationItems.Select(x => x.ProductAccountId).Distinct().ToList();
+			var accounts = await _context.ProductAccounts
+				.Where(x => accountIds.Contains(x.ProductAccountId))
+				.ToListAsync();
+
+			var accountDataLines = new List<string>();
+			foreach (var item in reservationItems)
+			{
+				var account = accounts.FirstOrDefault(x => x.ProductAccountId == item.ProductAccountId);
+				if (account == null) continue;
+
+				var line = GetAccountDisplayValue(account);
+				for (var i = 0; i < item.Quantity; i++)
+				{
+					accountDataLines.Add(line);
+				}
+			}
+
+			var firstAccount = accounts.FirstOrDefault();
+			return new ProductAccountResponseDto
+			{
+				ProductAccountId = firstAccount?.ProductAccountId,
+				ProductOptionId = order.ProductOptionId,
+				AccountData = accountDataLines.Count > 0
+					? string.Join(Environment.NewLine, accountDataLines)
+					: firstAccount?.AccountData,
+				UsernameProductAccount = accounts.Count == 1 ? firstAccount?.UsernameProductAccount : null,
+				PasswordProductAccount = accounts.Count == 1 ? firstAccount?.PasswordProductAccount : null,
+				Status = firstAccount?.Status ?? 0
+			};
+		}
+
+		private static string GetAccountDisplayValue(ProductAccount account)
+		{
+			if (!string.IsNullOrWhiteSpace(account.AccountData))
+			{
+				return account.AccountData.Trim();
+			}
+
+			var username = account.UsernameProductAccount?.Trim();
+			var password = account.PasswordProductAccount?.Trim();
+			return string.IsNullOrWhiteSpace(password) ? username ?? string.Empty : $"{username}:{password}";
+		}
+
+		private static PaymentReservationMetadata? TryReadReservationMetadata(string? clientNote)
+		{
+			if (string.IsNullOrWhiteSpace(clientNote))
+			{
+				return null;
+			}
+
+			try
+			{
+				return JsonSerializer.Deserialize<PaymentReservationMetadata>(clientNote);
+			}
+			catch (JsonException)
+			{
+				return null;
+			}
 		}
 
 		public async Task<bool> UpdateProductAccount(ProductAccount productAccount)

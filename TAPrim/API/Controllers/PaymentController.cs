@@ -56,5 +56,11 @@ namespace TAPrim.API.Controllers
 
 		}
 
+		[HttpPost("clear-order-and-payment-temp-by-transaction-code")]
+		public async Task<IActionResult> ClearOrderAndPaymentTempByTransactionCode([FromBody] ClearPaymentTempRequest request)
+		{
+			return ApiResponseHelper.HandleApiResponse(await _paymentService.ClearOrderAndPaymentTempByTrancsactionCode(request.TransactionCode ?? string.Empty));
+		}
+
 	}
 }

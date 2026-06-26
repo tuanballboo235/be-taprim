@@ -133,6 +133,7 @@ builder.Services.AddScoped<TransactionCodeHelper>();
 // Hosted Services
 // =========================
 builder.Services.AddHostedService<TelegramWebhookHostedService>();
+builder.Services.AddHostedService<PaymentReservationCleanupHostedService>();
 
 // =========================
 // CORS

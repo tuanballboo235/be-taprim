@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using System.Data;
 using System.Text.Json;
 using System.Text;
 using TAPrim.Infrastructure.Repositories;
@@ -17,8 +18,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 {
     public class PaymentService : IPaymentService
 	{
+		private const int PendingPaymentTimeoutMinutes = 2;
+
 		private readonly HttpClient _httpClient;
 		private readonly VietQrDto _vietQrConfig;
+		private readonly TaprimContext _context;
 		private readonly IPaymentRepository _paymentRepository;
 		private readonly IOrderRepository _orderRepository;
 		private readonly TransactionCodeHelper _transactionCodeHelper;
@@ -29,6 +33,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 		public PaymentService(HttpClient httpClient,
 			IOptions<VietQrDto> options,
+			TaprimContext context,
 			IPaymentRepository paymentRepository,
 			IOrderRepository orderRepository,
 			TransactionCodeHelper transactionCodeHelper,
@@ -40,6 +45,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 		{
 			_httpClient = httpClient;
 			_vietQrConfig = options.Value;
+			_context = context;
 			_paymentRepository = paymentRepository;
 			_orderRepository = orderRepository;
 			_transactionCodeHelper = transactionCodeHelper;
@@ -66,60 +72,103 @@ namespace TAPrim.Application.Services.ServiceImpl
 		//hàm GenerateQrAsync
 		public async Task<ApiResponseModel<object>> GenerateQrAsync(CreatePaymentRequest createPaymentRequest)
 		{
-			var errors = new Dictionary<string, string>();
+			string? transactionCode = null;
 			try
 			{
-				// Kiểm tra nếu product ko có product account thì báo lỗi 
-				var productAccount = await _productAccountRepository.GetListProductAccountByProductOptionId(createPaymentRequest.ProductOptionId);
-				if (productAccount == null)
+				await ReleaseExpiredPendingReservationsAsync();
+
+				var quantity = createPaymentRequest.Quantity <= 0 ? 1 : createPaymentRequest.Quantity;
+				var now = DateTime.Now;
+				var totalAmount = createPaymentRequest.TotalAmount;
+
+				await using (var dbTransaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable))
 				{
-					return new ApiResponseModel<object>
+					var productAccounts = await _context.ProductAccounts
+						.FromSqlInterpolated($@"
+							SELECT *
+							FROM ProductAccount WITH (UPDLOCK, HOLDLOCK)
+							WHERE productOptionId = {createPaymentRequest.ProductOptionId}
+								AND status = {ProductAccountStatusConstant.Available}
+								AND sellCount > 0
+								AND sellFrom < {now}
+								AND sellTo > {now}")
+						.OrderByDescending(x => x.DateChangePass)
+						.ThenBy(x => x.ProductAccountId)
+						.ToListAsync();
+
+					var availableQuantity = productAccounts.Sum(x => x.SellCount ?? 0);
+					if (availableQuantity < quantity)
 					{
-						Status = ApiResponseStatusConstant.FailedStatus,
-						Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
+						return new ApiResponseModel<object>
+						{
+							Status = ApiResponseStatusConstant.FailedStatus,
+							Message = availableQuantity <= 0
+								? "Sản phẩm đang hết hàng, vui lòng liên hệ admin hoặc thử lại sau."
+								: $"Chỉ còn {availableQuantity} tài khoản khả dụng, vui lòng giảm số lượng."
+						};
+					}
+
+					var remainingQuantity = quantity;
+					var reservationItems = new List<PaymentReservationItem>();
+
+					foreach (var account in productAccounts)
+					{
+						if (remainingQuantity <= 0) break;
+
+						var currentSellCount = account.SellCount ?? 0;
+						var reservedQuantity = Math.Min(currentSellCount, remainingQuantity);
+						if (reservedQuantity <= 0) continue;
+
+						account.SellCount = currentSellCount - reservedQuantity;
+						reservationItems.Add(new PaymentReservationItem
+						{
+							ProductAccountId = account.ProductAccountId,
+							Quantity = reservedQuantity
+						});
+
+						remainingQuantity -= reservedQuantity;
+					}
+
+					transactionCode = await _transactionCodeHelper.GetCode();
+
+					var payment = new Payment
+					{
+						TransactionCode = transactionCode,
+						PaymentMethod = 1,
+						CreateAt = now,
+						UserId = createPaymentRequest.UserId,
+						Amount = totalAmount,
+						Status = PaymentConstatnt.Pending
 					};
+
+					_context.Payments.Add(payment);
+					await _context.SaveChangesAsync();
+
+					var reservationMetadata = new PaymentReservationMetadata
+					{
+						Quantity = quantity,
+						ClientNote = createPaymentRequest.ClientNote,
+						Items = reservationItems
+					};
+
+					var order = new Order
+					{
+						ProductOptionId = createPaymentRequest.ProductOptionId,
+						ProductAccountId = reservationItems.FirstOrDefault()?.ProductAccountId,
+						PaymentId = payment.PaymentId,
+						CreateAt = now,
+						Status = OrderStatus.Deactive,
+						CouponId = createPaymentRequest.CouponId,
+						TotalAmount = totalAmount,
+						ContactInfo = createPaymentRequest.EmailOrder,
+						ClientNote = JsonSerializer.Serialize(reservationMetadata),
+						ExpiredAt = now.AddMinutes(PendingPaymentTimeoutMinutes)
+					};
+
+					_context.Orders.Add(order);
+					await _context.SaveChangesAsync();
+					await dbTransaction.CommitAsync();
 				}
-
-				// Tính toán amount + coupon
-
-				dynamic couponValue = null;
-				decimal totalAmount = createPaymentRequest.TotalAmount;
-				// Xử lí giá đơn hàng dựa vào coupon
-				if (createPaymentRequest.CouponId != null)
-				{
-					//lấy ra giá trị 
-					couponValue = (await _couponRepository.FindById(createPaymentRequest.CouponId))?.DiscountPercent;
-
-					if (couponValue == null) totalAmount = createPaymentRequest.TotalAmount; //nếu ko có couponId
-					else totalAmount = (createPaymentRequest.TotalAmount * couponValue) / 100; // nếu có couponid
-				}
-
-
-				// Tạo payment
-				var transactionCode = await _transactionCodeHelper.GetCode();
-				var payment = new Payment
-				{
-					TransactionCode = transactionCode,
-					PaymentMethod = 1, // QR Code
-					CreateAt = DateTime.Now,
-					UserId = createPaymentRequest.UserId,
-					Amount = totalAmount,
-					Status = 0 // Pending
-				};
-				await _paymentRepository.AddPaymentAsync(payment);
-				// Tạo order tạm
-				var order = new Order
-				{
-					ProductOptionId = createPaymentRequest.ProductOptionId,
-					PaymentId = payment.PaymentId,
-					CreateAt = DateTime.Now,
-					Status = OrderStatus.Deactive,//Not Active
-					CouponId = createPaymentRequest.CouponId,
-					TotalAmount = totalAmount,
-					ContactInfo = createPaymentRequest.EmailOrder,
-					ClientNote = createPaymentRequest.ClientNote,
-				};
-				await _orderRepository.AddOrderAsync(order);
 
 				//khởi tạo object để có thể gene ra vietqr
 				var payload = new
@@ -145,6 +194,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				if (!response.IsSuccessStatusCode)
 				{
 					var errorContent = await response.Content.ReadAsStringAsync();
+					await ClearOrderAndPaymentTempByTrancsactionCode(transactionCode);
 					return new ApiResponseModel<object>
 					{
 						Status = ApiResponseStatusConstant.FailedStatus,
@@ -174,7 +224,12 @@ namespace TAPrim.Application.Services.ServiceImpl
 						}
 					};
 				}
-			
+
+
+				if (!string.IsNullOrWhiteSpace(transactionCode))
+				{
+					await ClearOrderAndPaymentTempByTrancsactionCode(transactionCode);
+				}
 
 				return new ApiResponseModel<object>
 				{
@@ -185,6 +240,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 			catch (JsonException ex)
 			{
+				if (!string.IsNullOrWhiteSpace(transactionCode))
+				{
+					await ClearOrderAndPaymentTempByTrancsactionCode(transactionCode);
+				}
+
 				return new ApiResponseModel<object>
 				{
 					Status = ApiResponseStatusConstant.FailedStatus,
@@ -194,6 +254,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 			catch (HttpRequestException ex)
 			{
+				if (!string.IsNullOrWhiteSpace(transactionCode))
+				{
+					await ClearOrderAndPaymentTempByTrancsactionCode(transactionCode);
+				}
+
 				return new ApiResponseModel<object>
 				{
 					Status = ApiResponseStatusConstant.FailedStatus,
@@ -203,6 +268,11 @@ namespace TAPrim.Application.Services.ServiceImpl
 			}
 			catch (Exception ex)
 			{
+				if (!string.IsNullOrWhiteSpace(transactionCode))
+				{
+					await ClearOrderAndPaymentTempByTrancsactionCode(transactionCode);
+				}
+
 				return new ApiResponseModel<object>
 				{
 					Status = ApiResponseStatusConstant.FailedStatus,
@@ -217,16 +287,15 @@ namespace TAPrim.Application.Services.ServiceImpl
 		{
 			try
 			{
-				// replace chuỗi 
-				var transactionCode = data.Content.Replace("QR - ", "");
+				var transactionCode = data.Content.Replace("QR - ", "").Trim();
+				await using var dbTransaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
 
-				var payment = await _paymentRepository.GetPaymentByTransactionCode(transactionCode);
+				var payment = await _context.Payments
+					.Include(x => x.Order)
+					.FirstOrDefaultAsync(x => x.TransactionCode == transactionCode);
 
-
-				// cập nhật order
-				var order = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode);
-
-				if (order == null)
+				var order = payment?.Order;
+				if (payment == null || order == null)
 				{
 					return new ApiResponseModel<object>()
 					{
@@ -234,81 +303,41 @@ namespace TAPrim.Application.Services.ServiceImpl
 						Message = "Đơn hàng không tồn tại",
 					};
 				}
-				// Nếu khách hàng chuyển sai tiền , thì ko cho thanh toán
-				if (order.TotalAmount != data.TransferAmount)
+
+				if (payment.Status == PaymentConstatnt.Paid)
 				{
 					return new ApiResponseModel<object>()
 					{
-						Status = ApiResponseStatusConstant.FailedStatus,
-						Message = "Bạn đã chuyển khoản sai giá trị đơn hàng, vui lòng liên hệ zalo: 0344665098 để được hỗ trợ",
+						Status = ApiResponseStatusConstant.SuccessStatus,
+						Message = "Đơn hàng đã được xác nhận thanh toán",
 					};
 				}
 
-				//Cập nhật lại trạng thái payment 
+				if (order.TotalAmount != data.TransferAmount)
+				{
+					await RestoreOrderReservationAsync(order);
+					_context.Orders.Remove(order);
+					_context.Payments.Remove(payment);
+					await _context.SaveChangesAsync();
+					await dbTransaction.CommitAsync();
+
+					return new ApiResponseModel<object>()
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Bạn đã chuyển khoản sai giá trị đơn hàng, vui lòng liên hệ Zalo 0344665098 để được hỗ trợ.",
+					};
+				}
+
 				payment.Status = PaymentConstatnt.Paid;
 				payment.PaidDateAt = DateTime.Parse(data.TransactionDate);
-				payment.Status = PaymentConstatnt.Paid;
 
-				await _paymentRepository.SaveChange();
-
-				//Lấy ra danh sách account
-				var productAccountList = await _productAccountRepository.GetListProductAccountByProductOptionId(order.ProductOptionId);
-				//kiểm tra còn tài khoản ko 
-				if (productAccountList.Count() <= 0) {
-					return new ApiResponseModel<object>
-					{
-						Status = ApiResponseStatusConstant.FailedStatus,
-						Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
-
-					};
-
-				}
-				
-					bool isAvailableAccountReturn = false;
-					foreach (var account in productAccountList)
-					{
-						if ( // ko thỏa mãn productAccount
-							(DateTime.Now > account.SellFrom && DateTime.Now < account.SellTo) &&
-							account.Status == ProductAccountStatusConstant.Available && account.SellCount > 0)
-						{
-
-							//Nếu lượt bán > 1 thì giảm lượt bán xuống
-							if (account.SellCount > 0)
-							{
-								account.SellCount -= 1;
-							}
-							else //còn ko thì cập nhật trạng thái thành 0, là đã bán
-							{
-								account.Status = ProductAccountStatusConstant.Unavailable;
-							}
-							//sau khi thanh toán thành công thì set cho order tk 
-							order.ProductAccountId = account?.ProductAccountId;
-
-							isAvailableAccountReturn = true;
-						break;
-					}
-						
-					}
-					
-				if(!isAvailableAccountReturn)
-				{
-					return new ApiResponseModel<object>
-					{
-						Status = ApiResponseStatusConstant.FailedStatus,
-						Message = $"Sản phẩm đang hết hàng, vui lòng chờ admin cập nhật kho hàng, hoặc liên hệ qua zalo 0344665098",
-
-					};
-				}
-
-
-				//lấy ra hạn product theo productDurationValue và productUnit
 				var dayAccount = 30;
-				
 				order.Status = OrderStatus.Active;
 				order.RemainGetCode = 3;
 				order.ExpiredAt = DateTime.Now.AddDays(dayAccount);
 
-				await _orderRepository.SaveChange();
+				await _context.SaveChangesAsync();
+				await dbTransaction.CommitAsync();
 
 				//gửi email thông báo tới khách hàng
 				await _sendMailService.SendMailByMailTemplateIdAsync(MailTemplateConstant.PaymentSucess,order.ContactInfo, new
@@ -328,7 +357,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				return new ApiResponseModel<object>()
 				{
 					Status = ApiResponseStatusConstant.FailedStatus,
-					Message = "Lấy tài khoản thành công",
+					Message = "Xác nhận thanh toán thất bại",
 				};
 
 			}
@@ -337,6 +366,8 @@ namespace TAPrim.Application.Services.ServiceImpl
 		{
 			try
 			{
+				await ReleaseExpiredPendingReservationsAsync(filter.TransactionCode);
+
 				return new ApiResponseModel<object>()
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
@@ -359,9 +390,47 @@ namespace TAPrim.Application.Services.ServiceImpl
 		{
 			try
 			{
-				var payment = await _paymentRepository.GetPaymentByTransactionCode(transactionCode);
-				await _orderRepository.DeleteOrderByPaymentId(payment.PaymentId);
-				await _paymentRepository.DeletePaymentById(payment.PaymentId);
+				if (string.IsNullOrWhiteSpace(transactionCode))
+				{
+					return new ApiResponseModel<object>()
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Mã giao dịch không hợp lệ"
+					};
+				}
+
+				await using var dbTransaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+				var payment = await _context.Payments
+					.Include(x => x.Order)
+					.FirstOrDefaultAsync(x => x.TransactionCode == transactionCode.Trim());
+
+				if (payment == null)
+				{
+					return new ApiResponseModel<object>()
+					{
+						Status = ApiResponseStatusConstant.SuccessStatus
+					};
+				}
+
+				var order = payment.Order;
+				if (payment.Status == PaymentConstatnt.Paid || order?.Status == OrderStatus.Active)
+				{
+					return new ApiResponseModel<object>()
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Đơn hàng đã thanh toán, không thể hủy đơn tạm."
+					};
+				}
+
+				if (order != null)
+				{
+					await RestoreOrderReservationAsync(order);
+					_context.Orders.Remove(order);
+				}
+
+				_context.Payments.Remove(payment);
+				await _context.SaveChangesAsync();
+				await dbTransaction.CommitAsync();
 
 				return new ApiResponseModel<object>()
 				{
@@ -371,8 +440,92 @@ namespace TAPrim.Application.Services.ServiceImpl
 			catch (Exception ex) {
 				return new ApiResponseModel<object>()
 				{
-					Status = ApiResponseStatusConstant.FailedStatus
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Không thể hủy đơn tạm"
 				};
+			}
+		}
+
+		public async Task ReleaseExpiredPendingReservationsAsync(string? transactionCode = null)
+		{
+			await using var dbTransaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable);
+			var now = DateTime.Now;
+			var query = _context.Orders
+				.Include(x => x.Payment)
+				.Where(x =>
+					x.Status == OrderStatus.Deactive &&
+					x.Payment.Status == PaymentConstatnt.Pending &&
+					x.ExpiredAt != null &&
+					x.ExpiredAt <= now);
+
+			if (!string.IsNullOrWhiteSpace(transactionCode))
+			{
+				var normalizedTransactionCode = transactionCode.Trim();
+				query = query.Where(x => x.Payment.TransactionCode == normalizedTransactionCode);
+			}
+
+			var expiredOrders = await query.ToListAsync();
+			foreach (var order in expiredOrders)
+			{
+				await RestoreOrderReservationAsync(order);
+				_context.Orders.Remove(order);
+				_context.Payments.Remove(order.Payment);
+			}
+
+			if (expiredOrders.Count > 0)
+			{
+				await _context.SaveChangesAsync();
+			}
+
+			await dbTransaction.CommitAsync();
+		}
+
+		private async Task RestoreOrderReservationAsync(Order order)
+		{
+			var metadata = TryReadReservationMetadata(order.ClientNote);
+			var items = metadata?.Items
+				.Where(x => x.ProductAccountId > 0 && x.Quantity > 0)
+				.ToList() ?? new List<PaymentReservationItem>();
+
+			if (items.Count == 0 && order.ProductAccountId.HasValue)
+			{
+				items.Add(new PaymentReservationItem
+				{
+					ProductAccountId = order.ProductAccountId.Value,
+					Quantity = 1
+				});
+			}
+
+			foreach (var item in items.GroupBy(x => x.ProductAccountId)
+				.Select(x => new PaymentReservationItem
+				{
+					ProductAccountId = x.Key,
+					Quantity = x.Sum(i => i.Quantity)
+				}))
+			{
+				var account = await _context.ProductAccounts
+					.FirstOrDefaultAsync(x => x.ProductAccountId == item.ProductAccountId);
+
+				if (account == null) continue;
+
+				account.SellCount = (account.SellCount ?? 0) + item.Quantity;
+			}
+		}
+
+		private static PaymentReservationMetadata? TryReadReservationMetadata(string? clientNote)
+		{
+			if (string.IsNullOrWhiteSpace(clientNote))
+			{
+				return null;
+			}
+
+			try
+			{
+				return JsonSerializer.Deserialize<PaymentReservationMetadata>(clientNote);
+			}
+			catch (JsonException)
+			{
+				return null;
 			}
 		}
 	}

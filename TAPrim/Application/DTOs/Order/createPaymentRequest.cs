@@ -8,6 +8,9 @@ namespace TAPrim.Application.DTOs.Payment
 		public int ProductOptionId { get; set; }
 		public int? CouponId { get; set; }
 
+		[Range(1, 1000, ErrorMessage = "Số lượng phải từ 1 đến 1000")]
+		public int Quantity { get; set; } = 1;
+
 		[Range(typeof(decimal), "1000", "79228162514264337593543950335", ErrorMessage = "Giá tiền phải từ 1.000 trở lên")]
 		public decimal TotalAmount { get; set; }
 		public string? EmailOrder { get; set; }
