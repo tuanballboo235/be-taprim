@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using TAPrim.Application.DTOs.ProductOption;
 using TAPrim.Application.DTOs.Products;
@@ -117,7 +117,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			}).FirstOrDefaultAsync(x => x.ProductId == productId);
 		}
 
-		public async Task<List<CategoryWithProductsDto>> GetListProductByCategoryId()
+		public async Task<List<CategoryWithProductsDto>> GetListProductByCategoryId(string keyword = null)
 		{
 			var categories = await _context.Categories
 				.Include(c => c.Products)
@@ -128,7 +128,9 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 					Title = c.CategoryName,
 					Description = c.CategoryDescription,
 					CategoryId = c.CategoryId,
-					Products = c.Products.Select(p => new ProductDto
+					Products = c.Products
+						.Where(p => string.IsNullOrEmpty(keyword) || p.ProductName.Contains(keyword))
+						.Select(p => new ProductDto
 					{
 						Id = p.ProductId,
 						Name = p.ProductName,
@@ -144,6 +146,8 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 					}).ToList()
 				})
 				.ToListAsync();
+
+			categories.RemoveAll(c => c.Products.Count == 0);
 
 			return categories;
 		}

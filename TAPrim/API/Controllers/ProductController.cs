@@ -55,9 +55,9 @@ namespace TAPrim.API.Controllers
 		}
 
 		[HttpGet("list-product-by-category")]
-		public async Task<IActionResult> GetListProductByCategory()
+		public async Task<IActionResult> GetListProductByCategory([FromQuery] string keyword = null)
 		{
-			var products = await _productService.GetProductByCategory();
+			var products = await _productService.GetProductByCategory(keyword);
 			return Ok(products);
 		}
 	}

@@ -1,4 +1,4 @@
-﻿using Azure;
+using Azure;
 using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Application.DTOs.ProductOption;
@@ -173,14 +173,14 @@ namespace TAPrim.Application.Services.ServiceImpl
 		}
 
 
-		public async Task<ApiResponseModel<object>> GetProductByCategory()
+		public async Task<ApiResponseModel<object>> GetProductByCategory(string keyword = null)
 		{
 			try
 			{
 				return new ApiResponseModel<object>
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
-					Data = await _productRepo.GetListProductByCategoryId()
+					Data = await _productRepo.GetListProductByCategoryId(keyword)
 				};
 
 			}
