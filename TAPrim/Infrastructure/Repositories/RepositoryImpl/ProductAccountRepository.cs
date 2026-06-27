@@ -40,14 +40,19 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 
 		public async Task<PagedResponseDto<ProductAccount>> GetFilteredProductAccountsAsync(ProductAccountQueryDto query)
 		{
-			var q = _context.ProductAccounts.AsQueryable();
-
 			// Nếu query null, khởi tạo mặc định
 			query ??= new ProductAccountQueryDto
 			{
 				PageIndex = 1,
 				PageSize = 100000
 			};
+
+			var q = _context.ProductAccounts.AsQueryable();
+
+			if (!query.IncludeDeleted && query.Status != ProductAccountStatusConstant.Deleted)
+			{
+				q = q.Where(pa => pa.Status != ProductAccountStatusConstant.Deleted);
+			}
 
 			if (query.ProductOptionId > 0)
 			{
@@ -88,7 +93,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				if (query.CanSell.Value)
 				{
 					q = q.Where(pa =>
-						pa.Status == 1 &&
+						pa.Status == ProductAccountStatusConstant.Available &&
 						pa.SellCount > 0 &&
 						pa.SellFrom < DateTime.Now &&
 						pa.SellTo > DateTime.Now);
@@ -96,7 +101,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				else
 				{
 					q = q.Where(pa =>
-						pa.Status != 1 ||
+						pa.Status != ProductAccountStatusConstant.Available ||
 						pa.SellCount <= 0 ||
 						pa.SellFrom >= DateTime.Now ||
 						pa.SellTo <= DateTime.Now);
@@ -134,7 +139,7 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		public async Task<List<ProductAccount>> GetListProductAccountByProductOptionId(int productOptionId)
 		{
 			var productAccountList = await _context.ProductAccounts.Where(x => x.ProductOptionId == productOptionId &&
-														x.Status != ProductAccountStatusConstant.Unavailable && // lấy ra account đc kích hoạt
+														x.Status == ProductAccountStatusConstant.Available && // lấy ra account đc kích hoạt
 														x.SellCount >0 // lấy ra lượt bán > 0
 														).ToListAsync();
 			return productAccountList;
@@ -196,6 +201,23 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				PasswordProductAccount = accounts.Count == 1 ? firstAccount?.PasswordProductAccount : null,
 				Status = firstAccount?.Status ?? 0
 			};
+		}
+
+		public async Task<List<ProductAccount>> GetProductAccountsByIdsAsync(List<int> productAccountIds)
+		{
+			var ids = productAccountIds
+				.Where(id => id > 0)
+				.Distinct()
+				.ToList();
+
+			if (ids.Count == 0)
+			{
+				return new List<ProductAccount>();
+			}
+
+			return await _context.ProductAccounts
+				.Where(account => ids.Contains(account.ProductAccountId))
+				.ToListAsync();
 		}
 
 		private static string GetAccountDisplayValue(ProductAccount account)

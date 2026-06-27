@@ -84,10 +84,13 @@ namespace TAPrim.Application.Services.ServiceImpl
 				//lưu lại đường dẫn cũ của file để xóa 
 				string oldImgPath = product.ProductImage;
 
+				var shouldDeleteOldImage = false;
 				string imagePath = product.ProductImage;
 				if (dto.ProductImage != null)
 				{
 					imagePath = await _fileService.SaveImageAsync(dto.ProductImage);
+					shouldDeleteOldImage = !string.IsNullOrWhiteSpace(oldImgPath)
+						&& !string.Equals(oldImgPath, imagePath, StringComparison.OrdinalIgnoreCase);
 				}
 
 				// Gán lại thông tin
@@ -103,7 +106,10 @@ namespace TAPrim.Application.Services.ServiceImpl
 				var updated = await _productRepo.UpdateProductAsync(product);
 
 				//xóa file ảnh cũ ngay khi update thành công
-				await _fileService.DeleteImage(oldImgPath);
+				if (shouldDeleteOldImage)
+				{
+					await _fileService.DeleteImage(oldImgPath);
+				}
 				return new ApiResponseModel<ProductDetailResponseDto>
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,

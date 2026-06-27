@@ -124,7 +124,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 				SellTo = pa.SellTo,
 				SellCount = pa.SellCount,
 				CreateAt = pa.CreateAt,
-				CanSell= pa.SellFrom < DateTime.Now && pa.SellTo > DateTime.Now && pa.SellCount > 0 && pa.Status ==1
+				CanSell= pa.SellFrom < DateTime.Now && pa.SellTo > DateTime.Now && pa.SellCount > 0 && pa.Status == ProductAccountStatusConstant.Available
 			}).ToList();
 
 			return new ApiResponseModel<PagedResponseDto<ProductAccountResponseDto>>
@@ -212,10 +212,65 @@ namespace TAPrim.Application.Services.ServiceImpl
 				};
 			}
 		}
-		public Task<ApiResponseModel<object>> DeleteListProductAccount(List<int> productAccountId)
+		public async Task<ApiResponseModel<object>> DeleteListProductAccount(List<int> productAccountId)
 		{
+			try
+			{
+				var ids = productAccountId?
+					.Where(id => id > 0)
+					.Distinct()
+					.ToList() ?? new List<int>();
 
-			return null;
+				if (ids.Count == 0)
+				{
+					return new ApiResponseModel<object>
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Vui lòng chọn account cần xóa"
+					};
+				}
+
+				var accounts = await _productAccountRepository.GetProductAccountsByIdsAsync(ids);
+				if (accounts.Count == 0)
+				{
+					return new ApiResponseModel<object>
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Không tìm thấy account cần xóa"
+					};
+				}
+
+				foreach (var account in accounts)
+				{
+					account.Status = ProductAccountStatusConstant.Deleted;
+					account.SellCount = 0;
+				}
+
+				foreach (var account in accounts)
+				{
+					await _productAccountRepository.UpdateProductAccount(account);
+				}
+
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Message = accounts.Count > 1
+						? $"Đã xóa {accounts.Count} account"
+						: "Đã xóa account",
+					Data = new
+					{
+						DeletedIds = accounts.Select(account => account.ProductAccountId).ToList()
+					}
+				};
+			}
+			catch (Exception)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Không thể xóa account"
+				};
+			}
 		}
 
 	}

@@ -2,6 +2,7 @@
 {
 	public class ProductAccountStatusConstant
 	{
+		public static int Deleted = -1;
 		public static int Available = 1;
 		public static int Unavailable = 0;
 	}

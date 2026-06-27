@@ -79,10 +79,63 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				var quantity = createPaymentRequest.Quantity <= 0 ? 1 : createPaymentRequest.Quantity;
 				var now = DateTime.Now;
+				var transactionFee = Math.Max(0, createPaymentRequest.TransactionFee);
 				var totalAmount = createPaymentRequest.TotalAmount;
+				decimal originalAmount = 0;
+				decimal discountAmount = 0;
+				int? couponId = null;
+				string? couponCode = null;
+				int? couponDiscountPercent = null;
 
 				await using (var dbTransaction = await _context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable))
 				{
+					var productOption = await _context.ProductOptions
+						.AsNoTracking()
+						.FirstOrDefaultAsync(x => x.ProductOptionId == createPaymentRequest.ProductOptionId);
+
+					if (productOption == null || productOption.Price == null)
+					{
+						return new ApiResponseModel<object>
+						{
+							Status = ApiResponseStatusConstant.FailedStatus,
+							Message = "Không tìm thấy gói sản phẩm."
+						};
+					}
+
+					originalAmount = Math.Round(productOption.Price.Value * quantity, 0, MidpointRounding.AwayFromZero);
+
+					if (!string.IsNullOrWhiteSpace(createPaymentRequest.CouponCode))
+					{
+						var normalizedCouponCode = createPaymentRequest.CouponCode.Trim().ToUpperInvariant();
+						var coupon = await _context.Coupons
+							.FromSqlInterpolated($@"
+								SELECT *
+								FROM Coupon WITH (UPDLOCK, HOLDLOCK)
+								WHERE couponCode = {normalizedCouponCode}")
+							.FirstOrDefaultAsync();
+
+						var couponValidationMessage = GetCouponInvalidMessage(coupon, now);
+						if (!string.IsNullOrWhiteSpace(couponValidationMessage))
+						{
+							return new ApiResponseModel<object>
+							{
+								Status = ApiResponseStatusConstant.FailedStatus,
+								Message = couponValidationMessage
+							};
+						}
+
+						couponId = coupon!.CouponId;
+						couponCode = coupon.CouponCode;
+						couponDiscountPercent = coupon.DiscountPercent;
+						discountAmount = Math.Round(
+							originalAmount * ((coupon.DiscountPercent ?? 0) / 100m),
+							0,
+							MidpointRounding.AwayFromZero);
+						coupon.RemainTurn -= 1;
+					}
+
+					totalAmount = Math.Max(0, originalAmount + transactionFee - discountAmount);
+
 					var productAccounts = await _context.ProductAccounts
 						.FromSqlInterpolated($@"
 							SELECT *
@@ -148,6 +201,13 @@ namespace TAPrim.Application.Services.ServiceImpl
 					{
 						Quantity = quantity,
 						ClientNote = createPaymentRequest.ClientNote,
+						OriginalAmount = originalAmount,
+						TransactionFee = transactionFee,
+						DiscountAmount = discountAmount,
+						FinalAmount = totalAmount,
+						CouponId = couponId,
+						CouponCode = couponCode,
+						CouponDiscountPercent = couponDiscountPercent,
 						Items = reservationItems
 					};
 
@@ -158,7 +218,7 @@ namespace TAPrim.Application.Services.ServiceImpl
 						PaymentId = payment.PaymentId,
 						CreateAt = now,
 						Status = OrderStatus.Deactive,
-						CouponId = createPaymentRequest.CouponId,
+						CouponId = couponId ?? createPaymentRequest.CouponId,
 						TotalAmount = totalAmount,
 						ContactInfo = createPaymentRequest.EmailOrder,
 						ClientNote = JsonSerializer.Serialize(reservationMetadata),
@@ -220,7 +280,13 @@ namespace TAPrim.Application.Services.ServiceImpl
 						{
 							Data = payload,
 							TransactionCode = transactionCode,
-							QrCode = qrDataUrl
+							QrCode = qrDataUrl,
+							OriginalAmount = originalAmount,
+							TransactionFee = transactionFee,
+							DiscountAmount = discountAmount,
+							TotalAmount = totalAmount,
+							CouponCode = couponCode,
+							CouponDiscountPercent = couponDiscountPercent
 						}
 					};
 				}
@@ -510,6 +576,17 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				account.SellCount = (account.SellCount ?? 0) + item.Quantity;
 			}
+
+			if (metadata?.CouponId > 0)
+			{
+				var coupon = await _context.Coupons
+					.FirstOrDefaultAsync(x => x.CouponId == metadata.CouponId);
+
+				if (coupon != null)
+				{
+					coupon.RemainTurn += 1;
+				}
+			}
 		}
 
 		private static PaymentReservationMetadata? TryReadReservationMetadata(string? clientNote)
@@ -527,6 +604,41 @@ namespace TAPrim.Application.Services.ServiceImpl
 			{
 				return null;
 			}
+		}
+
+		private static string? GetCouponInvalidMessage(Coupon? coupon, DateTime now)
+		{
+			if (coupon == null)
+			{
+				return "Mã giảm giá không tồn tại.";
+			}
+
+			if (!coupon.IsActive.GetValueOrDefault())
+			{
+				return "Mã giảm giá không còn hiệu lực.";
+			}
+
+			if (coupon.ValidFrom.HasValue && coupon.ValidFrom.Value > now)
+			{
+				return "Mã giảm giá chưa có hiệu lực.";
+			}
+
+			if (coupon.ValidUntil.HasValue && coupon.ValidUntil.Value < now)
+			{
+				return "Mã giảm giá đã hết hạn.";
+			}
+
+			if (coupon.RemainTurn <= 0)
+			{
+				return "Mã giảm giá đã hết lượt sử dụng.";
+			}
+
+			if (!coupon.DiscountPercent.HasValue || coupon.DiscountPercent <= 0)
+			{
+				return "Mã giảm giá không còn hiệu lực.";
+			}
+
+			return null;
 		}
 	}
 }
