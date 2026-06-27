@@ -11,7 +11,6 @@
 		public DateTime? FromDateChangePass { get; set; }
 		public DateTime? ToDateChangePass { get; set; }
 		public bool? CanSell { get; set; }
-		public bool IncludeDeleted { get; set; } = false;
 		public int? MinSellCount { get; set; }
 		public int? MaxSellCount { get; set; }
 
