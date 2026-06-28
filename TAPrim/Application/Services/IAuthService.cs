@@ -17,5 +17,7 @@ namespace TAPrim.Application.Services
 		Task<bool> RegisterAsync(string username, string email, string password);
 
 		Task<bool> ResetPasswordAsync(string email, string newPassword);
+
+		Task<bool> CheckUserExistsAsync(string emailOrUsername);
 	}
 }

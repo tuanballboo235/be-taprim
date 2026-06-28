@@ -164,5 +164,16 @@ namespace TAPrim.Application.Services.ServiceImpl
 			await _context.SaveChangesAsync();
 			return true;
 		}
+
+		public async Task<bool> CheckUserExistsAsync(string emailOrUsername)
+		{
+			if (string.IsNullOrWhiteSpace(emailOrUsername))
+			{
+				return false;
+			}
+
+			var name = emailOrUsername.Trim().ToLower();
+			return await _context.Users.AnyAsync(u => (u.Username == name || u.Email == name) && u.IsEnable);
+		}
 	}
 }

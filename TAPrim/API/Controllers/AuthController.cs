@@ -120,6 +120,19 @@ namespace TAPrim.API.Controllers
 				return BadRequest(new { message = "Địa chỉ email không hợp lệ." });
 			}
 
+			var trimmedEmail = dto.Email.Trim().ToLower();
+			var userExists = await _authService.CheckUserExistsAsync(trimmedEmail);
+
+			if (string.Equals(dto.Purpose, "register", StringComparison.OrdinalIgnoreCase) && userExists)
+			{
+				return BadRequest(new { message = "Email này đã được đăng ký tài khoản khác." });
+			}
+
+			if (string.Equals(dto.Purpose, "forgot", StringComparison.OrdinalIgnoreCase) && !userExists)
+			{
+				return BadRequest(new { message = "Tài khoản không tồn tại hoặc đã bị khóa." });
+			}
+
 			var success = await _authService.SendVerificationCodeAsync(dto.Email);
 			if (!success)
 			{
