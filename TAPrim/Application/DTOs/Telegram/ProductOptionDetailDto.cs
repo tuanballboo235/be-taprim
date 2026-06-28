@@ -1,4 +1,4 @@
-namespace TAPrim.Application.DTOs.Telegram
+﻿namespace TAPrim.Application.DTOs.Telegram
 {
 	public class ProductOptionDetailDto
 	{
@@ -11,6 +11,8 @@ namespace TAPrim.Application.DTOs.Telegram
 		public decimal? Price { get; set; }
 
 		public int StockAccount { get; set; }
+
+		public int SellCount { get; set; }
 
 		public int SoldCount { get; set; }
 

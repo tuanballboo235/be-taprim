@@ -1,5 +1,6 @@
 ﻿using Azure;
 using Azure.Core;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application.DTOs.Common;
@@ -33,6 +34,13 @@ namespace TAPrim.API.Controllers
 		[HttpPost("generate-vietqr")]
 		public async Task<IActionResult> GenerateQrAndCreatePayment(CreatePaymentRequest request)
 		{
+			request.UserId = null;
+			var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+			if (int.TryParse(idClaim, out var userId))
+			{
+				request.UserId = userId;
+			}
+
 			return ApiResponseHelper.HandleApiResponse(await _paymentService.GenerateQrAsync(request));
 		}
 

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Application.Services;
@@ -43,13 +43,6 @@ namespace TAPrim.API.Controllers
 		public async Task<IActionResult> UpdateProductAccount(int productAccountId, [FromBody] UpdateProductProductAccountRequest request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _productAccountService.UpdateProductAccount(productAccountId, request));
-		}
-
-		[HttpPost("delete-list-product-account")]
-		[Authorize(Roles = AuthRoleConstants.AdminRoles)]
-		public async Task<IActionResult> DeleteListProductAcount([FromBody] List<int> productAccountId)
-		{
-			return ApiResponseHelper.HandleApiResponse(await _productAccountService.DeleteListProductAccount(productAccountId));
 		}
 	}
 }

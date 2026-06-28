@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TAPrim.Application.DTOs.Order;
 using TAPrim.Application.DTOs.Payment;
@@ -178,6 +178,66 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				TotalPages = totalRecords == 0 ? 0 : (int)Math.Ceiling(totalRecords / (double)pageSize),
 				CurrentPage = page,
 				PageSize = pageSize
+			};
+		}
+		public async Task<AdminProductOrderResponseDto> GetUserProductOrdersAsync(int userId)
+		{
+			var rows = await _context.Orders
+				.AsNoTracking()
+				.Where(x => x.Payment.UserId == userId)
+				.OrderByDescending(x => x.Payment.PaidDateAt ?? x.CreateAt)
+				.ThenByDescending(x => x.OrderId)
+				.Select(x => new AdminProductOrderRawDto
+				{
+					OrderId = x.OrderId,
+					PaymentId = x.PaymentId,
+					PaymentTransactionCode = x.Payment.TransactionCode,
+					ProductId = x.ProductOption.ProductId,
+					ProductName = x.ProductOption.Product.ProductName,
+					ProductOptionId = x.ProductOptionId,
+					ProductOptionLabel = x.ProductOption.Label,
+					ProductAccountId = x.ProductAccountId,
+					ProductAccountData = x.ProductAccount != null ? x.ProductAccount.AccountData : null,
+					Quantity = 1,
+					ContactInfo = x.ContactInfo,
+					OrderStatus = x.Status,
+					PaymentStatus = x.Payment.Status,
+					PaymentMethod = x.Payment.PaymentMethod,
+					CreateAt = x.CreateAt,
+					PaidAt = x.Payment.PaidDateAt,
+					ExpiredAt = x.ExpiredAt,
+					TotalAmount = x.TotalAmount,
+					CouponCode = x.Coupon != null ? x.Coupon.CouponCode : null,
+					CouponDiscountPercent = x.Coupon != null ? x.Coupon.DiscountPercent : null,
+					ClientNote = x.ClientNote
+				})
+				.ToListAsync();
+
+			var items = rows
+				.Select(x => x.ToItemDto(ReadReservationMetadata(x.ClientNote)))
+				.ToList();
+			var paidItems = items
+				.Where(x => x.PaymentStatus == PaymentConstatnt.Paid)
+				.ToList();
+			var totalRevenue = paidItems.Sum(x => x.TotalAmount ?? 0);
+			var totalRecords = items.Count;
+
+			return new AdminProductOrderResponseDto
+			{
+				Items = items,
+				Summary = new AdminProductOrderSummaryDto
+				{
+					TotalOrders = totalRecords,
+					PaidOrders = paidItems.Count,
+					PendingOrders = items.Count(x => x.PaymentStatus == PaymentConstatnt.Pending),
+					TotalQuantity = paidItems.Sum(x => x.Quantity),
+					TotalRevenue = totalRevenue,
+					AverageOrderValue = paidItems.Count == 0 ? 0 : totalRevenue / paidItems.Count
+				},
+				TotalRecords = totalRecords,
+				TotalPages = totalRecords == 0 ? 0 : 1,
+				CurrentPage = 1,
+				PageSize = totalRecords
 			};
 		}
 

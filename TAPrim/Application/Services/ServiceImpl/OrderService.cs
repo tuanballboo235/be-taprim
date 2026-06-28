@@ -1,4 +1,4 @@
-using BasketballAcademyManagementSystemAPI.Common.Helpers;
+﻿using BasketballAcademyManagementSystemAPI.Common.Helpers;
 using Microsoft.Extensions.Caching.Memory;
 using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.Order;
@@ -264,6 +264,36 @@ namespace TAPrim.Application.Services.ServiceImpl
 				{
 					Status = ApiResponseStatusConstant.FailedStatus,
 					Message = "Không thể lấy danh sách đơn hàng sản phẩm",
+					Errors = new Dictionary<string, string> { { "Exception", ex.Message } }
+				};
+			}
+		}
+		public async Task<ApiResponseModel<object>> GetUserProductOrdersAsync(int userId)
+		{
+			try
+			{
+				if (userId <= 0)
+				{
+					return new ApiResponseModel<object>
+					{
+						Status = ApiResponseStatusConstant.FailedStatus,
+						Message = "Phiên đăng nhập không hợp lệ"
+					};
+				}
+
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.SuccessStatus,
+					Message = "Lấy danh sách đơn hàng của bạn thành công",
+					Data = await _orderRepository.GetUserProductOrdersAsync(userId)
+				};
+			}
+			catch (Exception ex)
+			{
+				return new ApiResponseModel<object>
+				{
+					Status = ApiResponseStatusConstant.FailedStatus,
+					Message = "Không thể lấy danh sách đơn hàng của bạn",
 					Errors = new Dictionary<string, string> { { "Exception", ex.Message } }
 				};
 			}

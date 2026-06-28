@@ -48,12 +48,6 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 			};
 
 			var q = _context.ProductAccounts.AsQueryable();
-
-			if (!query.IncludeDeleted && query.Status != ProductAccountStatusConstant.Deleted)
-			{
-				q = q.Where(pa => pa.Status != ProductAccountStatusConstant.Deleted);
-			}
-
 			if (query.ProductOptionId > 0)
 			{
 				q = q.Where(pa => pa.ProductOptionId == query.ProductOptionId);
@@ -202,24 +196,6 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 				Status = firstAccount?.Status ?? 0
 			};
 		}
-
-		public async Task<List<ProductAccount>> GetProductAccountsByIdsAsync(List<int> productAccountIds)
-		{
-			var ids = productAccountIds
-				.Where(id => id > 0)
-				.Distinct()
-				.ToList();
-
-			if (ids.Count == 0)
-			{
-				return new List<ProductAccount>();
-			}
-
-			return await _context.ProductAccounts
-				.Where(account => ids.Contains(account.ProductAccountId))
-				.ToListAsync();
-		}
-
 		private static string GetAccountDisplayValue(ProductAccount account)
 		{
 			if (!string.IsNullOrWhiteSpace(account.AccountData))

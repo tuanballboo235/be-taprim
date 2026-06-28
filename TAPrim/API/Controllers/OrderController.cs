@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using TAPrim.Application.DTOs.Order;
 using TAPrim.Application.DTOs.Payment;
 using TAPrim.Application.Services;
@@ -41,6 +42,19 @@ namespace TAPrim.API.Controllers
 		public async Task<IActionResult> RequestOrderLookupCode([FromBody] TransactionCodeRequestDto request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _orderService.SendOrderLookupVerificationCode(request.TransactionCode));
+		}
+		[HttpGet("my-product-orders")]
+		[Authorize]
+		public async Task<IActionResult> GetMyProductOrders()
+		{
+			var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+			if (!int.TryParse(idClaim, out var userId))
+			{
+				return Unauthorized(new { message = "Phiên đăng nhập không hợp lệ." });
+			}
+
+			return ApiResponseHelper.HandleApiResponse(await _orderService.GetUserProductOrdersAsync(userId));
 		}
 
 		[HttpGet("admin/product-orders")]

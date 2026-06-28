@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using TAPrim.Application.DTOs.Telegram;
 
 namespace TAPrim.Application.Helpers
@@ -17,7 +17,7 @@ namespace TAPrim.Application.Helpers
 			return $"""
 				<b>⭕ {name}</b>
 				💰 Giá: <b>{price}đ/tài khoản</b>
-				📦 Tồn kho: <b>{detail.StockAccount} tài khoản</b>
+				📦 Tồn kho: <b>{detail.StockAccount} tài khoản - {detail.SellCount} lượt bán</b>
 				📊 Đã bán: <b>{detail.SoldCount} tài khoản</b>
 
 				{guideBlock}{quantityPrompt}

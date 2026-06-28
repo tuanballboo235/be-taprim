@@ -10,6 +10,7 @@ namespace TAPrim.Application.Services
 		Task<ApiResponseModel<object>> SendOrderLookupVerificationCode(string transactionCode);
 		Task<ApiResponseModel<object>> GetOrderDetailsByTransactionCode(string transactionCode, string verificationCode);
 		Task<ApiResponseModel<object>> GetAdminProductOrdersAsync(AdminProductOrderFilterDto filter);
+		Task<ApiResponseModel<object>> GetUserProductOrdersAsync(int userId);
 		Task<ApiResponseModel<object>> DeleteOrderById(int orderId);
 		Task<ApiResponseModel<object>> DeleteOrderByPaymentId(int paymentId);
 	}

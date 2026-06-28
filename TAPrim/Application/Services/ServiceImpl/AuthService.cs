@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TAPrim.Application.Services;
 using TAPrim.Models;
 
@@ -39,6 +39,26 @@ namespace TAPrim.Application.Services.ServiceImpl
 			return _context.Users
 				.AsNoTracking()
 				.FirstOrDefaultAsync(u => u.UserId == userId && u.IsEnable);
+		}
+
+		public async Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword)
+		{
+			if (userId <= 0 || string.IsNullOrEmpty(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+			{
+				return false;
+			}
+
+			var user = await _context.Users
+				.FirstOrDefaultAsync(u => u.UserId == userId && u.IsEnable);
+
+			if (user == null || !string.Equals(user.Password, currentPassword, StringComparison.Ordinal))
+			{
+				return false;
+			}
+
+			user.Password = newPassword;
+			await _context.SaveChangesAsync();
+			return true;
 		}
 	}
 }

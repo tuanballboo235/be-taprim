@@ -12,6 +12,7 @@ namespace TAPrim.Infrastructure.Repositories
 		Task<bool> UpdateOrderAsync(Order order);
 		Task<OrderResponseDto?> GetOrderDetailsById(int orderId); 
 		Task<AdminProductOrderResponseDto> GetAdminProductOrdersAsync(AdminProductOrderFilterDto filter);
+		Task<AdminProductOrderResponseDto> GetUserProductOrdersAsync(int userId);
 		Task DeleteOrderById(int orderId);
 		Task DeleteOrderByPaymentId(int paymentId);
 		Task SaveChange();
