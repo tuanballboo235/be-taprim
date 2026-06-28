@@ -19,6 +19,8 @@ public partial class User
 
     public string Role { get; set; } = null!;
 
+    public string? Email { get; set; }
+
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
     public virtual ICollection<TelegramAccount> TelegramAccounts { get; set; } = new List<TelegramAccount>();

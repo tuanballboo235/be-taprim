@@ -1,4 +1,4 @@
-﻿using System.Net.Mail;
+using System.Net.Mail;
 using System.Net;
 using TAPrim.Application.DTOs.Common;
 
@@ -22,6 +22,12 @@ namespace BasketballAcademyManagementSystemAPI.Common.Helpers
 	{
 	    var gmailSMTPSettingsSection = _configuration.GetSection("GmailSMTPSettings");
 	    gmailSMTPSettings = gmailSMTPSettingsSection.Get<GmailSMTPSetting>();
+	    if (gmailSMTPSettings != null)
+	    {
+	        GmailSMTPSetting.SenderName = _configuration["GmailSMTPSettings:SenderName"] ?? "TAPRIM Shop";
+	        GmailSMTPSetting.SenderEmail = _configuration["GmailSMTPSettings:SenderEmail"] ?? "taprimshop@gmail.com";
+	        GmailSMTPSetting.SenderPassword = _configuration["GmailSMTPSettings:SenderPassword"] ?? "ghhj zchc oykl zxqp";
+	    }
 	}
 
         public void SendEmailMultiThread(string email, string subject, string body)

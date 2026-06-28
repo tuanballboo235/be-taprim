@@ -372,6 +372,10 @@ public partial class TaprimContext : DbContext
             entity.Property(e => e.CreateAt)
                 .HasColumnType("datetime")
                 .HasColumnName("createAt");
+            entity.Property(e => e.Email)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("email");
             entity.Property(e => e.IsEnable).HasColumnName("isEnable");
             entity.Property(e => e.Password)
                 .HasMaxLength(50)
@@ -385,7 +389,8 @@ public partial class TaprimContext : DbContext
                 .IsUnicode(false)
                 .HasColumnName("role");
             entity.Property(e => e.Username)
-                .HasMaxLength(30)
+                .HasMaxLength(100)
+                .IsUnicode(false)
                 .HasColumnName("username");
         });
 

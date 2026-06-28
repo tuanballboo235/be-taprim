@@ -31,7 +31,7 @@ public partial class ProductOption
 
     public string? ProductOptionName { get; set; }
 
-    public bool? IsActive { get; set; }
+    public bool IsActive { get; set; }
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 

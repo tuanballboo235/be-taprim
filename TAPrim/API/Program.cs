@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text;
 using BasketballAcademyManagementSystemAPI.Common.Helpers;
 using DotNetEnv;
@@ -212,6 +212,23 @@ using (var scope = app.Services.CreateScope())
 {
 	var db = scope.ServiceProvider.GetRequiredService<TaprimContext>();
 	// db.Database.Migrate();
+	try
+	{
+		db.Database.ExecuteSqlRaw("ALTER TABLE [User] ALTER COLUMN username VARCHAR(100) NOT NULL");
+	}
+	catch (Exception ex)
+	{
+		Console.WriteLine($"[DB Startup] Could not alter user table column: {ex.Message}");
+	}
+
+	try
+	{
+		db.Database.ExecuteSqlRaw("ALTER TABLE [User] ADD email VARCHAR(100) NULL");
+	}
+	catch (Exception)
+	{
+		// Column might already exist
+	}
 }
 
 app.Run();

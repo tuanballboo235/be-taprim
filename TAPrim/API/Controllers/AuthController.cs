@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TAPrim.Application.DTOs.Auth;
@@ -105,6 +105,85 @@ namespace TAPrim.API.Controllers
 			}
 
 			return Ok(new { message = "Đổi mật khẩu thành công." });
+		}
+
+		[HttpPost("send-code")]
+		public async Task<IActionResult> SendCode([FromBody] SendCodeDto dto)
+		{
+			if (string.IsNullOrWhiteSpace(dto.Email))
+			{
+				return BadRequest(new { message = "Vui lòng nhập địa chỉ email." });
+			}
+
+			if (!dto.Email.Contains("@"))
+			{
+				return BadRequest(new { message = "Địa chỉ email không hợp lệ." });
+			}
+
+			var success = await _authService.SendVerificationCodeAsync(dto.Email);
+			if (!success)
+			{
+				return BadRequest(new { message = "Gửi mã xác minh thất bại." });
+			}
+
+			return Ok(new { message = "Mã xác minh đã được gửi về email của bạn." });
+		}
+
+		[HttpPost("register")]
+		public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+		{
+			if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.Username) || string.IsNullOrWhiteSpace(dto.Password) || string.IsNullOrWhiteSpace(dto.Code))
+			{
+				return BadRequest(new { message = "Vui lòng điền đầy đủ các thông tin bắt buộc." });
+			}
+
+			var codeValid = await _authService.VerifyCodeAsync(dto.Email, dto.Code);
+			if (!codeValid)
+			{
+				return BadRequest(new { message = "Mã xác minh không chính xác hoặc đã hết hạn." });
+			}
+
+			if (dto.Password.Trim().Length < 6)
+			{
+				return BadRequest(new { message = "Mật khẩu phải có ít nhất 6 ký tự." });
+			}
+
+			var success = await _authService.RegisterAsync(dto.Username.Trim(), dto.Email.Trim(), dto.Password.Trim());
+			if (!success)
+			{
+				// In Vietnamese: "Tên đăng nhập hoặc Email này đã được đăng ký tài khoản khác."
+				return BadRequest(new { message = "Tên đăng nhập hoặc Email này đã được đăng ký tài khoản khác." });
+			}
+
+			return Ok(new { message = "Đăng ký tài khoản thành công." });
+		}
+
+		[HttpPost("forgot-password")]
+		public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+		{
+			if (string.IsNullOrWhiteSpace(dto.Email) || string.IsNullOrWhiteSpace(dto.NewPassword) || string.IsNullOrWhiteSpace(dto.Code))
+			{
+				return BadRequest(new { message = "Vui lòng điền đầy đủ các thông tin bắt buộc." });
+			}
+
+			var codeValid = await _authService.VerifyCodeAsync(dto.Email, dto.Code);
+			if (!codeValid)
+			{
+				return BadRequest(new { message = "Mã xác minh không chính xác hoặc đã hết hạn." });
+			}
+
+			if (dto.NewPassword.Trim().Length < 6)
+			{
+				return BadRequest(new { message = "Mật khẩu mới phải có ít nhất 6 ký tự." });
+			}
+
+			var success = await _authService.ResetPasswordAsync(dto.Email, dto.NewPassword.Trim());
+			if (!success)
+			{
+				return BadRequest(new { message = "Tài khoản không tồn tại hoặc đã bị khóa." });
+			}
+
+			return Ok(new { message = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại." });
 		}
 
 		private static object MapUser(User account)

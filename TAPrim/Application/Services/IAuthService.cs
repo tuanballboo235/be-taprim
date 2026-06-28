@@ -1,4 +1,4 @@
-﻿using TAPrim.Models;
+using TAPrim.Models;
 
 namespace TAPrim.Application.Services
 {
@@ -9,5 +9,13 @@ namespace TAPrim.Application.Services
 		Task<User?> GetByIdAsync(int userId);
 
 		Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
+
+		Task<bool> SendVerificationCodeAsync(string email);
+
+		Task<bool> VerifyCodeAsync(string email, string code);
+
+		Task<bool> RegisterAsync(string username, string email, string password);
+
+		Task<bool> ResetPasswordAsync(string email, string newPassword);
 	}
 }
