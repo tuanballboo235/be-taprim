@@ -68,6 +68,31 @@ namespace TAPrim.API.Controllers
 			return Ok(new { user = MapUser(account) });
 		}
 
+
+		[Authorize]
+		[HttpPut("me")]
+		public async Task<IActionResult> UpdateMe([FromBody] UpdateProfileRequestDto request)
+		{
+			var idClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+			if (!int.TryParse(idClaim, out var userId))
+			{
+				return Unauthorized(new { message = "Phiên đăng nhập không hợp lệ." });
+			}
+
+			var result = await _authService.UpdateProfileAsync(userId, request);
+			if (!result.Success)
+			{
+				return BadRequest(new { message = result.Message });
+			}
+
+			return Ok(new
+			{
+				message = result.Message,
+				user = result.User
+			});
+		}
+
 		[Authorize]
 		[HttpPut("change-password")]
 		public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto request)
@@ -206,6 +231,8 @@ namespace TAPrim.API.Controllers
 				id = account.UserId,
 				username = account.Username,
 				phone = account.Phone,
+				
+				email = account.Email,
 				role = account.Role
 			};
 		}

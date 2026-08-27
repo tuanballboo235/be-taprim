@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TAPrim.Application.DTOs.Order;
@@ -27,6 +27,7 @@ namespace TAPrim.API.Controllers
 		}
 
 		[HttpPut("update-order/{transactionCode}")]
+		[Authorize(Roles = AuthRoleConstants.AdminRoles)]
 		public async Task<IActionResult> UpdateOrder(string transactionCode, [FromBody] UpdateOrderRequestDto request)
 		{
 			return ApiResponseHelper.HandleApiResponse(await _orderService.UpdateOrderAsync(transactionCode, request));

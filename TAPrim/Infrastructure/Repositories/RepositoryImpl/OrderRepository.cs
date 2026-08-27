@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using TAPrim.Application.DTOs.Order;
 using TAPrim.Application.DTOs.Payment;
@@ -26,6 +26,9 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		{
 			return await _context.Orders
 				.Include(p => p.Payment)
+				.Include(p => p.ProductAccount)
+				.Include(p => p.ProductOption)
+				.ThenInclude(p => p.Product)
 				.Where(p => p.Payment.TransactionCode == transactionCode)
 				.FirstOrDefaultAsync();
 		}
@@ -33,7 +36,13 @@ namespace TAPrim.Infrastructure.Repositories.RepositoryImpl
 		public async Task<Order?> FindByProductAccountId(int productAccountId)
 		{
 			return await _context.Orders
+				.Include(o => o.Payment)
+				.Include(o => o.ProductAccount)
+				.Include(o => o.ProductOption)
+				.ThenInclude(o => o.Product)
 				.Where(o => o.ProductAccountId == productAccountId)
+				.OrderByDescending(o => o.Payment.PaidDateAt ?? o.CreateAt)
+				.ThenByDescending(o => o.OrderId)
 				.FirstOrDefaultAsync();
 		}
 

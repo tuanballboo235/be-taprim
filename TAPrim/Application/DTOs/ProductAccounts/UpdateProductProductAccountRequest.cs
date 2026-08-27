@@ -1,4 +1,4 @@
-﻿using TAPrim.Models;
+using TAPrim.Models;
 
 namespace TAPrim.Application.DTOs.ProductAccounts
 {
@@ -23,5 +23,9 @@ namespace TAPrim.Application.DTOs.ProductAccounts
 		public DateTime? SellFrom { get; set; }
 
 		public DateTime? SellTo { get; set; }
+
+		public bool SendNotification { get; set; } = true;
+
+		public string? NotificationMessage { get; set; }
 	}
 }

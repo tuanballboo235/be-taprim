@@ -4,96 +4,96 @@ using TAPrim.Application.DTOs.Common;
 
 namespace BasketballAcademyManagementSystemAPI.Common.Helpers
 {
-    public class EmailHelper
-    {
-    	private readonly IConfiguration _configuration;
-
-	private GmailSMTPSetting gmailSMTPSettings;
-	private static readonly string SmtpServer = "smtp.gmail.com";
-	private static readonly int SmtpPort = 587;
-	
-	public EmailHelper(IConfiguration configuration)
+	public class EmailHelper
 	{
-	    _configuration = configuration;
-	    GetGmailSMTPSettings();
-	}
-	
-	public void GetGmailSMTPSettings()
-	{
-	    var gmailSMTPSettingsSection = _configuration.GetSection("GmailSMTPSettings");
-	    gmailSMTPSettings = gmailSMTPSettingsSection.Get<GmailSMTPSetting>();
-	    if (gmailSMTPSettings != null)
-	    {
-	        GmailSMTPSetting.SenderName = _configuration["GmailSMTPSettings:SenderName"] ?? "TAPRIM Shop";
-	        GmailSMTPSetting.SenderEmail = _configuration["GmailSMTPSettings:SenderEmail"] ?? "taprimshop@gmail.com";
-	        GmailSMTPSetting.SenderPassword = _configuration["GmailSMTPSettings:SenderPassword"] ?? "ghhj zchc oykl zxqp";
-	    }
-	}
+		private readonly IConfiguration _configuration;
 
-        public void SendEmailMultiThread(string email, string subject, string body)
-        {
-            SendEmailAsync(email, subject, body).Wait();
-        }
+		private GmailSMTPSetting gmailSMTPSettings;
+		private static readonly string SmtpServer = "smtp.gmail.com";
+		private static readonly int SmtpPort = 587;
 
-        public Task SendEmailAsync(string email, string subject, string message)
-        {
-            var client = new SmtpClient("smtp.gmail.com", 587)
-            {
-                EnableSsl = true,
-                Credentials = new NetworkCredential(GmailSMTPSetting.SenderEmail, GmailSMTPSetting.SenderPassword)
-            };
-            var senderAddress = new MailAddress(GmailSMTPSetting.SenderEmail, GmailSMTPSetting.SenderName);
-            var mailMessage = new MailMessage
-            {
-                From = senderAddress,
-                Subject = subject,
-                Body = message,
-                IsBodyHtml = true
-            };
+		public EmailHelper(IConfiguration configuration)
+		{
+			_configuration = configuration;
+			GetGmailSMTPSettings();
+		}
 
-            mailMessage.To.Add(email);
+		public void GetGmailSMTPSettings()
+		{
+			var gmailSMTPSettingsSection = _configuration.GetSection("GmailSMTPSettings");
+			gmailSMTPSettings = gmailSMTPSettingsSection.Get<GmailSMTPSetting>();
+			if (gmailSMTPSettings != null)
+			{
+				GmailSMTPSetting.SenderName = _configuration["GmailSMTPSettings:SenderName"] ?? "TAPRIM Shop";
+				GmailSMTPSetting.SenderEmail = _configuration["GmailSMTPSettings:SenderEmail"] ?? "taprimshop@gmail.com";
+				GmailSMTPSetting.SenderPassword = _configuration["GmailSMTPSettings:SenderPassword"] ?? "ghhj zchc oykl zxqp";
+			}
+		}
 
-            return client.SendMailAsync(mailMessage);
-        }
+		public void SendEmailMultiThread(string email, string subject, string body)
+		{
+			SendEmailAsync(email, subject, body).Wait();
+		}
 
-        public void SendEmailMultiThread(string subject, string body, List<string> ccEmails)
-        {
-            SendEmailAsync(subject, body, ccEmails).Wait();
-        }
+		public Task SendEmailAsync(string email, string subject, string message)
+		{
+			var client = new SmtpClient("smtp.gmail.com", 587)
+			{
+				EnableSsl = true,
+				Credentials = new NetworkCredential(GmailSMTPSetting.SenderEmail, GmailSMTPSetting.SenderPassword)
+			};
+			var senderAddress = new MailAddress(GmailSMTPSetting.SenderEmail, GmailSMTPSetting.SenderName);
+			var mailMessage = new MailMessage
+			{
+				From = senderAddress,
+				Subject = subject,
+				Body = message,
+				IsBodyHtml = true
+			};
 
-        public Task SendEmailAsync(string subject, string body, List<string> ccEmails)
-        {
-            var client = new SmtpClient(SmtpServer, SmtpPort)
-            {
-                EnableSsl = true,
-                Credentials = new NetworkCredential(GmailSMTPSetting.SenderEmail, GmailSMTPSetting.SenderPassword)
-            };
+			mailMessage.To.Add(email);
 
-            var senderAddress = new MailAddress(GmailSMTPSetting.SenderEmail, GmailSMTPSetting.SenderName);
-            var mailMessage = new MailMessage
-            {
-                From = senderAddress,
-                Subject = subject,
-                Body = body,
-                IsBodyHtml = true
-            };
+			return client.SendMailAsync(mailMessage);
+		}
 
-            if (ccEmails != null)
-            {
-                foreach (var ccEmail in ccEmails)
-                {
-                    if (!string.IsNullOrWhiteSpace(ccEmail))
-                    {
-                        mailMessage.CC.Add(ccEmail);
-                    }
-                }
-            }
+		public void SendEmailMultiThread(string subject, string body, List<string> ccEmails)
+		{
+			SendEmailAsync(subject, body, ccEmails).Wait();
+		}
 
-            return client.SendMailAsync(mailMessage);
-        }
+		public Task SendEmailAsync(string subject, string body, List<string> ccEmails)
+		{
+			var client = new SmtpClient(SmtpServer, SmtpPort)
+			{
+				EnableSsl = true,
+				Credentials = new NetworkCredential(GmailSMTPSetting.SenderEmail, GmailSMTPSetting.SenderPassword)
+			};
 
-        //Bổ sung method sendEmail return boolean
-        public static async Task<bool> SendEmailBoolAsync(string email, string subject, string message)
+			var senderAddress = new MailAddress(GmailSMTPSetting.SenderEmail, GmailSMTPSetting.SenderName);
+			var mailMessage = new MailMessage
+			{
+				From = senderAddress,
+				Subject = subject,
+				Body = body,
+				IsBodyHtml = true
+			};
+
+			if (ccEmails != null)
+			{
+				foreach (var ccEmail in ccEmails)
+				{
+					if (!string.IsNullOrWhiteSpace(ccEmail))
+					{
+						mailMessage.CC.Add(ccEmail);
+					}
+				}
+			}
+
+			return client.SendMailAsync(mailMessage);
+		}
+
+		//Bổ sung method sendEmail return boolean
+		public static async Task<bool> SendEmailBoolAsync(string email, string subject, string message)
 		{
 			try
 			{

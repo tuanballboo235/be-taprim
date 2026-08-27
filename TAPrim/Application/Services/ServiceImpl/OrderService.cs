@@ -1,4 +1,4 @@
-﻿using BasketballAcademyManagementSystemAPI.Common.Helpers;
+using BasketballAcademyManagementSystemAPI.Common.Helpers;
 using Microsoft.Extensions.Caching.Memory;
 using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.Order;
@@ -13,15 +13,18 @@ namespace TAPrim.Application.Services.ServiceImpl
 		private readonly IOrderRepository _orderRepository;
 		private readonly IMemoryCache _memoryCache;
 		private readonly EmailHelper _emailHelper;
+		private readonly IOrderNotificationService _orderNotificationService;
 
 		public OrderService(
 			IOrderRepository orderRepository,
 			IMemoryCache memoryCache,
-			EmailHelper emailHelper)
+			EmailHelper emailHelper,
+			IOrderNotificationService orderNotificationService)
 		{
 			_orderRepository = orderRepository;
 			_memoryCache = memoryCache;
 			_emailHelper = emailHelper;
+			_orderNotificationService = orderNotificationService;
 		}
 
 		public async Task<ApiResponseModel<object>> GetOrderByProductAccount(int productAccountId)
@@ -79,10 +82,23 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				await _orderRepository.UpdateOrderAsync(order);
 
+				var message = "Cập nhật đơn hàng thành công";
+				if (orderUpdateRequest.SendNotification)
+				{
+					var updatedOrder = await _orderRepository.FindByPaymentTransactionCodeAsync(transactionCode) ?? order;
+					var notificationSent = await _orderNotificationService.SendOrderUpdateNotificationAsync(
+						updatedOrder,
+						orderUpdateRequest.NotificationMessage);
+
+					message = notificationSent
+						? "Cập nhật đơn hàng thành công và đã gửi thông báo cho người dùng"
+						: "Cập nhật đơn hàng thành công, nhưng chưa gửi được thông báo cho người dùng";
+				}
+
 				return new ApiResponseModel<object>
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
-					Message = "Cập nhật đơn hàng thành công"
+					Message = message
 				};
 			}
 			catch (Exception ex)

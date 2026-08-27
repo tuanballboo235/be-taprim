@@ -1,4 +1,4 @@
-﻿using TAPrim.Application.DTOs.Common;
+using TAPrim.Application.DTOs.Common;
 using TAPrim.Application.DTOs.ProductAccounts;
 using TAPrim.Infrastructure.Repositories;
 using TAPrim.Models;
@@ -9,10 +9,17 @@ namespace TAPrim.Application.Services.ServiceImpl
     public class ProductAccountService : IProductAccountService
 	{
 		private readonly IProductAccountRepository _productAccountRepository;
+		private readonly IOrderRepository _orderRepository;
+		private readonly IOrderNotificationService _orderNotificationService;
 
-		public ProductAccountService(IProductAccountRepository productAccountRepository)
+		public ProductAccountService(
+			IProductAccountRepository productAccountRepository,
+			IOrderRepository orderRepository,
+			IOrderNotificationService orderNotificationService)
 		{
 			_productAccountRepository = productAccountRepository;
+			_orderRepository = orderRepository;
+			_orderNotificationService = orderNotificationService;
 		}
 
 
@@ -187,10 +194,25 @@ namespace TAPrim.Application.Services.ServiceImpl
 
 				await _productAccountRepository.UpdateProductAccount(productAccount);
 
+				var message = "Cập nhật tài khoản thành công";
+				if (request.SendNotification)
+				{
+					var order = await _orderRepository.FindByProductAccountId(productAccountId);
+					var notificationSent = order != null
+						&& await _orderNotificationService.SendProductAccountUpdateNotificationAsync(
+							order,
+							productAccount,
+							request.NotificationMessage);
+
+					message = notificationSent
+						? "Cập nhật tài khoản thành công và đã gửi thông báo cho người dùng"
+						: "Cập nhật tài khoản thành công, nhưng chưa gửi được thông báo cho người dùng";
+				}
+
 				return new ApiResponseModel<object>()
 				{
 					Status = ApiResponseStatusConstant.SuccessStatus,
-					Message = "Lấy thông tin tài khoản thành công",
+					Message = message,
 					Data = new ProductAccountResponseDto
 					{
 						ProductAccountId = productAccount.ProductAccountId,

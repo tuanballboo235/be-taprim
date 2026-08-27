@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using BasketballAcademyManagementSystemAPI.Common.Helpers;
+using TAPrim.Application.DTOs.Auth;
 using TAPrim.Application.Services;
 using TAPrim.Models;
 
@@ -65,6 +66,110 @@ namespace TAPrim.Application.Services.ServiceImpl
 			user.Password = newPassword;
 			await _context.SaveChangesAsync();
 			return true;
+		}
+
+
+		public async Task<ProfileUpdateResultDto> UpdateProfileAsync(int userId, UpdateProfileRequestDto request)
+		{
+			request ??= new UpdateProfileRequestDto();
+
+			if (userId <= 0)
+			{
+				return ProfileUpdateResultDto.Failed("Phiên đăng nhập không hợp lệ.");
+			}
+
+			var user = await _context.Users
+				.FirstOrDefaultAsync(u => u.UserId == userId && u.IsEnable);
+
+			if (user == null)
+			{
+				return ProfileUpdateResultDto.Failed("Tài khoản không tồn tại hoặc đã bị khóa.");
+			}
+
+			var username = request.Username?.Trim().ToLowerInvariant();
+			var email = request.Email?.Trim().ToLowerInvariant();
+			var phone = request.Phone?.Trim();
+
+			if (string.IsNullOrWhiteSpace(username))
+			{
+				return ProfileUpdateResultDto.Failed("Tên đăng nhập không được để trống.");
+			}
+
+			if (username.Length > 100)
+			{
+				return ProfileUpdateResultDto.Failed("Tên đăng nhập không được vượt quá 100 ký tự.");
+			}
+
+			if (username.Contains(' ') || username.Contains('@'))
+			{
+				return ProfileUpdateResultDto.Failed("Tên đăng nhập không được chứa khoảng trắng hoặc ký tự @.");
+			}
+
+			if (!string.IsNullOrWhiteSpace(email))
+			{
+				if (email.Length > 50)
+				{
+					return ProfileUpdateResultDto.Failed("Email không được vượt quá 50 ký tự.");
+				}
+
+				if (!email.Contains('@') || email.StartsWith('@') || email.EndsWith('@'))
+				{
+					return ProfileUpdateResultDto.Failed("Email không hợp lệ.");
+				}
+			}
+			else
+			{
+				email = null;
+			}
+
+			if (!string.IsNullOrWhiteSpace(phone))
+			{
+				if (phone.Length > 11 || phone.Any(c => !char.IsDigit(c)))
+				{
+					return ProfileUpdateResultDto.Failed("Số điện thoại chỉ gồm số và tối đa 11 ký tự.");
+				}
+			}
+			else
+			{
+				phone = null;
+			}
+
+			var usernameExists = await _context.Users.AnyAsync(u =>
+				u.UserId != userId && u.Username == username);
+			if (usernameExists)
+			{
+				return ProfileUpdateResultDto.Failed("Tên đăng nhập này đã được sử dụng.");
+			}
+
+			if (!string.IsNullOrWhiteSpace(email))
+			{
+				var emailExists = await _context.Users.AnyAsync(u =>
+					u.UserId != userId && u.Email == email);
+				if (emailExists)
+				{
+					return ProfileUpdateResultDto.Failed("Email này đã được sử dụng.");
+				}
+			}
+
+			user.Username = username;
+			user.Email = email;
+			user.Phone = phone;
+
+			await _context.SaveChangesAsync();
+
+			return ProfileUpdateResultDto.Ok("Cập nhật thông tin cá nhân thành công.", MapProfile(user));
+		}
+
+		private static UserProfileDto MapProfile(User user)
+		{
+			return new UserProfileDto
+			{
+				Id = user.UserId,
+				Username = user.Username,
+				Email = user.Email,
+				Phone = user.Phone,
+				Role = user.Role
+			};
 		}
 
 		public async Task<bool> SendVerificationCodeAsync(string email)

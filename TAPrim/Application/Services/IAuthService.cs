@@ -1,3 +1,4 @@
+using TAPrim.Application.DTOs.Auth;
 using TAPrim.Models;
 
 namespace TAPrim.Application.Services
@@ -7,6 +8,8 @@ namespace TAPrim.Application.Services
 		Task<User?> LoginAsync(string usernameOrEmail, string password);
 
 		Task<User?> GetByIdAsync(int userId);
+
+		Task<ProfileUpdateResultDto> UpdateProfileAsync(int userId, UpdateProfileRequestDto request);
 
 		Task<bool> ChangePasswordAsync(int userId, string currentPassword, string newPassword);
 
